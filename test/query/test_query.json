@@ -1,0 +1,27 @@
+{
+	"fake_source_params" : {
+		"dataset" : "first_dataset",
+		"time_start" : 1519862400,
+		"time_end" : 1525132800,					
+		"rect" : {
+			"x1" : -180,
+			"x2" : 180,
+			"y1" : -90,
+			"y2" : 90
+		}
+	},
+	"filter_params" : {
+		"type" : "time",
+		"from" : 1590962400,
+		"to" : 1604185200
+	},
+	"expression_params" : {
+		"exp" : "A DIV B",
+		"operation" : "MUL",
+		"operands" : [ 
+			{ "value" : "A" },
+			{ "value" : "B" }
+		]
+
+	}
+}
