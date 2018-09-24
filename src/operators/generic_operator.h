@@ -3,30 +3,33 @@
 #define RASTER_TIME_SERIES_GENERIC_OPERATOR_H
 
 #include <json/json.h>
+#include <boost/optional.hpp>
 #include <vector>
-#include "datatypes/timeseries.h"
 #include "datatypes/raster.h"
 #include "util/parameters.h"
 #include "util/make_unique.h"
-
+#include "datatypes/descriptor.h"
 
 namespace rts {
 
-    class TimeSeries;
     class Descriptor;
 
     class GenericOperator {
     public:
+        explicit GenericOperator(Json::Value &params, const std::vector<GenericOperator*> &in);
         explicit GenericOperator(Json::Value &params);
-        virtual ~GenericOperator() { };
-        virtual std::unique_ptr<TimeSeries> createTimeSeries(std::vector<TimeSeries *> &inputs,
-                                                             std::shared_ptr<GenericOperator> op_ptr) = 0;
-        virtual Raster* executeOnRaster(Descriptor *descriptor) = 0;
-        static std::shared_ptr<GenericOperator> getSharedOperator(const std::string &op_name, Json::Value &params);
+        virtual ~GenericOperator() = default;
+        virtual UniqueDescriptor next() = 0;
+        void in(GenericOperator* in);
 
     protected:
         Json::Value params;
-        void checkInputCount(std::vector<TimeSeries*> &inputs, int expected);
+        std::vector<GenericOperator*> input_operators;
+        /**
+         * Throws an exception if the size of input_operators differs from expected.
+         * @param expected the amount of expected input operators.
+         */
+        void checkInputCount(int expected);
     };
 
 }

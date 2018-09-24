@@ -6,14 +6,23 @@
 
 namespace rts {
 
+    /**
+     * Source operator for creating test data used to test the workflow.
+     * It is based on datasets stored on disc providing resolution and time info. Each raster has its index as data.
+     */
     class FakeSource : public GenericOperator {
     public:
         explicit FakeSource(Json::Value &params);
-        std::unique_ptr<TimeSeries> createTimeSeries(std::vector<TimeSeries *> &inputs,
-                                                     std::shared_ptr<GenericOperator> op_ptr) override;
-        Raster* executeOnRaster(Descriptor *descriptor) override;
+        UniqueDescriptor next() override;
     private:
         Json::Value loadDatasetJson(std::string name);
+        Json::Value dataset_json;
+        int index;
+        int raster_count;
+        double time_start;
+        double time_duration;
+        int res_x;
+        int res_y;
     };
 
 }

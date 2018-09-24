@@ -5,47 +5,17 @@
 
 using namespace rts;
 
-Descriptor::Descriptor(int id,
-                       int res_x,
-                       int res_y,
-                       double time_start,
-                       double time_duration,
-                       std::vector<Descriptor*> inputs,
-                       std::shared_ptr<GenericOperator> operator_ptr)
-        : id(id),
-          res_x(res_x),
-          res_y(res_y),
-          time_start(time_start),
-          time_duration(time_duration),
-          inputs(std::move(inputs)),
-          raster_ptr(nullptr),
-          operator_ptr(std::move(operator_ptr))
-{
-    min = 0;
-    max = 256;
+Descriptor::Descriptor(double time_start, double time_end, double x1, double x2, double y1, double y2,
+                       uint32_t res_x, uint32_t res_y)
+       : st_ref(time_start, time_end, x1, x2, y1, y2, res_x, res_y) {
+
 }
 
-Raster* Descriptor::getRasterPtr(){
-    if(raster_ptr == nullptr){
-        raster_ptr = operator_ptr->executeOnRaster(this);
-    }
-    return raster_ptr;
+Descriptor::Descriptor(TemporalReference temp_ref, SpatialReference spat_ref, Resolution res)
+        : st_ref(temp_ref, spat_ref, res) {
+
 }
 
-bool Descriptor::isRasterLoaded() const {
-    return raster_ptr != nullptr;
-}
+Descriptor::Descriptor(SpatialTemporalReference st_ref) : st_ref(st_ref) {
 
-bool Descriptor::isValidBetween(double low, double high) const {
-    double time_end = time_start + time_duration;
-    return time_start >= low && time_start < high
-            || time_end >= low && time_end < high
-            || time_start <= low && time_end >= high;
-}
-
-Descriptor::~Descriptor() {
-    if(raster_ptr != nullptr){
-        delete raster_ptr;
-        raster_ptr = nullptr;
-    }
 }

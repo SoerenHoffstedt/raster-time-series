@@ -14,7 +14,7 @@ Raster::Raster(int res_x, int res_y) : res_x(res_x), res_y(res_y), data_lenght(r
 Raster::~Raster()
 {
     if(data != nullptr){
-        delete data;
+        delete[] data;
         data = nullptr;
     }
 }

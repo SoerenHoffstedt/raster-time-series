@@ -2,6 +2,8 @@
 #ifndef RASTER_TIME_SERIES_RASTER_H
 #define RASTER_TIME_SERIES_RASTER_H
 
+#include <memory>
+
 namespace rts {
 
     class Raster {
@@ -18,6 +20,7 @@ namespace rts {
         int res_y;
         const int data_lenght;
     };
+    using UniqueRaster = std::unique_ptr<Raster>;
 }
 
 #endif //RASTER_TIME_SERIES_RASTER_H

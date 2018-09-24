@@ -10,6 +10,17 @@
 			"y2" : 90
 		}
 	},
+	"fake_source_params_2" : {
+		"dataset" : "second_dataset",
+		"time_start" : 1519862400,
+		"time_end" : 1525132800,					
+		"rect" : {
+			"x1" : -180,
+			"x2" : 180,
+			"y1" : -90,
+			"y2" : 90
+		}
+	},
 	"filter_params" : {
 		"type" : "time",
 		"from" : 1590962400,
@@ -22,6 +33,8 @@
 			{ "value" : "A" },
 			{ "value" : "B" }
 		]
-
+	},
+	"print_params" : {
+		
 	}
 }
