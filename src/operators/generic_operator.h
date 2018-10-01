@@ -9,10 +9,12 @@
 #include "util/parameters.h"
 #include "util/make_unique.h"
 #include "datatypes/descriptor.h"
+#include "datatypes/timeseries_iterator.h"
 
 namespace rts {
 
     class Descriptor;
+    class TimeSeriesIterator;
 
     class GenericOperator {
     public:
@@ -21,6 +23,8 @@ namespace rts {
         virtual ~GenericOperator() = default;
         virtual UniqueDescriptor next() = 0;
         void in(GenericOperator* in);
+        TimeSeriesIterator begin();
+        TimeSeriesIterator end();
 
     protected:
         Json::Value params;
