@@ -20,7 +20,7 @@ int main() {
     FakeSource *s2   = new FakeSource(json_query["fake_source_params"]);
     Expression *e    = new Expression(json_query["expression"], { s });
     Print *p         = new Print(json_query["print_params"], { e });
-    p->next();
+    p->consume();
 
     delete p;
     delete e;
