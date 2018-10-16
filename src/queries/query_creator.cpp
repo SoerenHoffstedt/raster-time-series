@@ -1,8 +1,10 @@
 
-#include <operators/print.h>
-#include <operators/expression.h>
-#include <operators/source/fake_source.h>
-#include "query_creator.h"
+#include "operators/print.h"
+#include "operators/expression.h"
+#include "operators/source/fake_source.h"
+#include "operators/sampler.h"
+#include "operators/aggregator.h"
+#include "queries/query_creator.h"
 
 using namespace rts;
 
@@ -52,15 +54,10 @@ QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, J
         return new Expression(qrect, params, in);
     else if(op_name == "fake_source")
         return new FakeSource(qrect, params);
-    else
-        throw std::runtime_error("Unknown operator: " + op_name);
-}
-
-ConsumingOperator *
-QueryCreator::createConsumingOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params)
-{
-    if(op_name == "print")
-        return new Print(qrect, params, { });
+    else if(op_name == "sampler")
+        return new Sampler(qrect, params, in);
+    else if(op_name == "aggregator")
+        return new Aggregator(qrect, params, in);
     else
         throw std::runtime_error("Unknown operator: " + op_name);
 }

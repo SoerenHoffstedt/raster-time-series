@@ -13,12 +13,14 @@ add_library(rts_operators_lib
         operators/generic_operator.cpp
         operators/source/fake_source.cpp
         operators/print.cpp
-        operators/expression.cpp)
+        operators/expression.cpp
+        operators/sampler.cpp
+        operators/aggregator.cpp)
 target_link_libraries_internal(rts_operators_lib rts_base_lib)
 target_link_libraries_internal(rts_base_lib rts_operators_lib)
 
 add_library(rts_query_lib
-        queries/query_creator.cpp queries/query_creator.h)
+        queries/query_creator.cpp)
 target_link_libraries_internal(rts_query_lib rts_base_lib)
 target_link_libraries_internal(rts_base_lib rts_query_lib)
 

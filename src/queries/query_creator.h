@@ -12,7 +12,6 @@ namespace rts {
     private:
         ConsumingOperator *createConsumingOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator*> &in);
         GenericOperator *createOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator*> &in);
-        ConsumingOperator *createConsumingOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params);
         GenericOperator *createOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params);
 
         std::vector<GenericOperator *> createSources(Json::Value &sources, QueryRectangle &qrect);

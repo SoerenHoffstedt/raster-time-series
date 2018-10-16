@@ -22,7 +22,7 @@
 	"params" : {
 
 	},
-	"sources" : [
+	"sources" : [		
 		{
 			"operator" : "expression",
 			"params" : {
@@ -30,17 +30,26 @@
 			},
 			"sources" : [
 				{
-					"operator" : "fake_source",
+					"operator" : "sampler",
 					"params" : {
-						"dataset" : "first_dataset",
-						"tile_size_x" : 20,
-						"tile_size_y" : 10
+						"to_skip" : 1
 					},
 					"sources" : [
+						{
+							"operator" : "fake_source",
+							"params" : {
+								"dataset" : "first_dataset",
+								"tile_size_x" : 9,
+								"tile_size_y" : 9
+							},
+							"sources" : [
 
+							]
+						}
 					]
 				}
 			]
-		}
+			
+		}	
 	]
 }
