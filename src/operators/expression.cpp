@@ -3,8 +3,7 @@
 
 using namespace rts;
 
-Expression::Expression(Json::Value &params, const std::vector<GenericOperator *> &in) : GenericOperator(
-        params, in)
+Expression::Expression(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator *> &in) : GenericOperator(qrect, params, in)
 {
     checkInputCount(1);
 }
@@ -25,11 +24,16 @@ UniqueDescriptor Expression::next() {
         for (int x = 0; x < self->st_ref.res_x; ++x) {
             for (int y = 0; y < self->st_ref.res_y; ++y) {
                 int val = test->getCell(x,y);
-                test->setCell(x, y, val * val);
+                if(val != -1) //TODO: replace with nodata, that has to be put into Descriptor
+                    test->setCell(x, y, val * val);
             }
         }
         return test;
     };
 
-    return createUniqueDescriptor(std::move(getter), temp_ref, spat_ref, res);
+    return createUniqueDescriptor(std::move(getter), temp_ref, spat_ref, res, qrect.order);
+}
+
+bool Expression::supportsOrder(Order order) {
+    return order == Order::TemporalSpatial || order == Order::SpatialTemporal;
 }

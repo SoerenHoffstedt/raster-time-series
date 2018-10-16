@@ -9,17 +9,13 @@
 
 using namespace rts;
 
-GenericOperator::GenericOperator(Json::Value &params, const std::vector<GenericOperator*> &in)
-    : input_operators(in), params(params)
+GenericOperator::GenericOperator(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator*> &in)
+    : qrect(qrect), params(params), input_operators(in)
 {
 
 }
 
-void GenericOperator::in(GenericOperator *op) {
-    input_operators.push_back(op);
-}
-
-GenericOperator::GenericOperator(Json::Value &params) : params(params) {
+GenericOperator::GenericOperator(QueryRectangle qrect, Json::Value &params) : qrect(qrect), params(params) {
 
 }
 

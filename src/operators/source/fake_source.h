@@ -12,17 +12,28 @@ namespace rts {
      */
     class FakeSource : public GenericOperator {
     public:
-        explicit FakeSource(Json::Value &params);
+        explicit FakeSource(QueryRectangle qrect, Json::Value &params);
         UniqueDescriptor next() override;
+        bool supportsOrder(Order o) override;
     private:
         Json::Value loadDatasetJson(std::string name);
         Json::Value dataset_json;
         int index;
         int raster_count;
+        int nodata;
         double time_start;
+        double time_curr;
         double time_duration;
-        int res_x;
-        int res_y;
+        Resolution tile_res;
+        int state_x;
+        int state_y;
+
+        ///
+        /// \return returns true if end of temporal iteration is reached.
+        bool increaseTemporal();
+        ///
+        /// \return returns true if end of spatial iteration is reached.
+        bool increaseSpatial();
     };
 
 }

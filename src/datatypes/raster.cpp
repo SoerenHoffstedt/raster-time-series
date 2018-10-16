@@ -11,6 +11,13 @@ Raster::Raster(int res_x, int res_y) : res_x(res_x), res_y(res_y), data_lenght(r
     data = new int[res_x * res_y];
 }
 
+
+Raster::Raster(Resolution res) : data_lenght(res.res_x * res.res_y) {
+    res_x = res.res_x;
+    res_y = res.res_y;
+    data = new int[data_lenght];
+}
+
 Raster::~Raster()
 {
     if(data != nullptr){
@@ -40,7 +47,8 @@ void Raster::print() const {
 
     for(int y = 0; y < res_y; y++){
         for(int x = 0; x < res_x; x++){
-            std::cout << data[x + y * res_x] << " ";
+            int val = data[x + y * res_x];
+            std::cout << val << " ";
         }
         std::cout << "\n";
     }

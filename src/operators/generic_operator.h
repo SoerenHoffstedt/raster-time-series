@@ -18,15 +18,16 @@ namespace rts {
 
     class GenericOperator {
     public:
-        explicit GenericOperator(Json::Value &params, const std::vector<GenericOperator*> &in);
-        explicit GenericOperator(Json::Value &params);
+        explicit GenericOperator(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator*> &in);
+        explicit GenericOperator(QueryRectangle qrect, Json::Value &params);
         virtual ~GenericOperator() = default;
         virtual UniqueDescriptor next() = 0;
-        void in(GenericOperator* in);
+        virtual bool supportsOrder(Order order) = 0;
         TimeSeriesIterator begin();
         TimeSeriesIterator end();
 
     protected:
+        QueryRectangle qrect;
         Json::Value params;
         std::vector<GenericOperator*> input_operators;
         /**

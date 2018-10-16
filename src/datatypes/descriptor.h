@@ -9,6 +9,7 @@
 #include "datatypes/raster.h"
 #include "util/parameters.h"
 #include "datatypes/spatial_temporal_reference.h"
+#include "datatypes/order.h"
 
 namespace rts {
 
@@ -18,12 +19,13 @@ namespace rts {
     class Descriptor {
     public:
         virtual ~Descriptor() = default;
-        SpatialTemporalReference st_ref;
         virtual std::unique_ptr<Raster> getRaster() = 0;
+        QueryRectangle st_ref;
+        Order order;
     protected:
-        Descriptor(double time_start, double time_end, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y);
-        Descriptor(TemporalReference temp_ref, SpatialReference spat_ref, Resolution res);
-        Descriptor(SpatialTemporalReference st_ref);
+        Descriptor(double time_start, double time_end, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y, Order order);
+        Descriptor(TemporalReference temp_ref, SpatialReference spat_ref, Resolution res, Order order);
+        Descriptor(QueryRectangle st_ref);
     };
 
     /**
@@ -35,17 +37,17 @@ namespace rts {
     template <class GetterType>
     class GenericDescriptor : public Descriptor {
     public:
-        GenericDescriptor<GetterType>(GetterType getter, double time_start, double time_end, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t  res_y)
-                : Descriptor(time_start, time_end, x1, x2, y1, y2, res_x, res_y), getter(std::move(getter))
+        GenericDescriptor<GetterType>(GetterType getter, double time_start, double time_end, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t  res_y, Order order)
+                : Descriptor(time_start, time_end, x1, x2, y1, y2, res_x, res_y, order), getter(std::move(getter))
         {
 
         }
-        GenericDescriptor<GetterType>(GetterType getter, SpatialTemporalReference st_ref) : Descriptor(st_ref), getter(std::move(getter))
+        GenericDescriptor<GetterType>(GetterType getter, QueryRectangle st_ref) : Descriptor(st_ref), getter(std::move(getter))
         {
 
         }
-        GenericDescriptor<GetterType>(GetterType getter, TemporalReference temp_ref, SpatialReference spat_ref, Resolution res)
-                : Descriptor(temp_ref, spat_ref, res), getter(std::move(getter))
+        GenericDescriptor<GetterType>(GetterType getter, TemporalReference temp_ref, SpatialReference spat_ref, Resolution res, Order order)
+                : Descriptor(temp_ref, spat_ref, res, order), getter(std::move(getter))
         {
 
         }

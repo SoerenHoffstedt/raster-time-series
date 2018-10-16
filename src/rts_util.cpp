@@ -22,6 +22,6 @@ int main() {
     ConsumingOperator *p = queryCreator.createOperatorTree(json_query);
     p->consume();
     delete p;
-    
+
     return 0;
 }

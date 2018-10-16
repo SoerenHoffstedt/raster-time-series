@@ -3,12 +3,14 @@
 #define RASTER_TIME_SERIES_RASTER_H
 
 #include <memory>
+#include "datatypes/spatial_temporal_reference.h"
 
 namespace rts {
 
     class Raster {
     public:
         Raster(int res_x, int res_y);
+        Raster(Resolution res);
         ~Raster();
         int* getDataPointer();
         int getCell(int x, int y) const;
