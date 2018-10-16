@@ -1,14 +1,7 @@
 {
 	"name" : "fakeymcfake",
 	"time_start" : 1514764800,
-	"time_duration" : 2678400,
-	"resolution_x" : 18,
-	"resolution_y" : 9,
+	"time_duration" : 2592000,	
 	"raster_count" : 50,
-	"rect" : {
-		"x1" : -180,
-		"x2" : 180,
-		"y1" : -90,
-		"y2" : 90
-	}
+	"nodata" : -1	
 }

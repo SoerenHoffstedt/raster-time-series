@@ -1,40 +1,46 @@
 {
-	"fake_source_params" : {
-		"dataset" : "first_dataset",
-		"time_start" : 1519862400,
-		"time_end" : 1525132800,					
-		"rect" : {
-			"x1" : -180,
-			"x2" : 180,
-			"y1" : -90,
-			"y2" : 90
+	"query_rectangle" : {
+		"resolution" : {
+			"x" : 36,
+			"y" : 18
+		},
+		"temporal_reference" : {
+			"type" : "UNIX",
+        	"start" : 1519862400,
+        	"end": 1543622400
+		},
+		"spatial_reference" : {
+			"projection": "EPSG:4326",
+	        "x1": -180,
+	        "x2": 180,
+	        "y1": -90,
+	        "y2": 90
+		},
+		"order" : "SpatialTemporal"
+	},
+	"operator" : "print",
+	"params" : {
+
+	},
+	"sources" : [
+		{
+			"operator" : "expression",
+			"params" : {
+
+			},
+			"sources" : [
+				{
+					"operator" : "fake_source",
+					"params" : {
+						"dataset" : "first_dataset",
+						"tile_size_x" : 20,
+						"tile_size_y" : 10
+					},
+					"sources" : [
+
+					]
+				}
+			]
 		}
-	},
-	"fake_source_params_2" : {
-		"dataset" : "second_dataset",
-		"time_start" : 1519862400,
-		"time_end" : 1525132800,					
-		"rect" : {
-			"x1" : -180,
-			"x2" : 180,
-			"y1" : -90,
-			"y2" : 90
-		}
-	},
-	"filter_params" : {
-		"type" : "time",
-		"from" : 1590962400,
-		"to" : 1604185200
-	},
-	"expression_params" : {
-		"exp" : "A DIV B",
-		"operation" : "MUL",
-		"operands" : [ 
-			{ "value" : "A" },
-			{ "value" : "B" }
-		]
-	},
-	"print_params" : {
-		
-	}
+	]
 }
