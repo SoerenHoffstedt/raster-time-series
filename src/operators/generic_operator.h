@@ -37,6 +37,33 @@ namespace rts {
         void checkInputCount(int expected);
     };
 
+    class OperatorUtil {
+    public:
+        /**
+         * Skips all the tiles belonging to the raster of the passed Descriptor (same temporal information as currentDesc).
+         * @param op The operator that provides the Descriptors.
+         * @param currentDesc All the other tiles of the raster this Descriptor belongs to are skipped.
+         * @return The first Descriptor of the next raster.
+         */
+        static UniqueDescriptor skipCurrentTemporal(GenericOperator &op, UniqueDescriptor currentDesc);
+        /**
+         * Skips all the tiles of the same spatial coordinates as the passed Descriptor (currentDesc).
+         * @param op The operator that provides the Descriptors.
+         * @param currentDesc All the other tiles with the same spatial coordinates as this Descriptor are skipped.
+         * @return The first Descriptor of the next tile.
+         */
+        static UniqueDescriptor skipCurrentSpatial(GenericOperator &op, UniqueDescriptor currentDesc);
+        /**
+         * Skips all tiles that are of the same first dimension as the passed Descriptor.
+         * If the order of the passed Descriptor is TemporalSpatial skipCurrentTemporal is called
+         * and if the order is SpatialTemporal skipCurrentSpatial is called.
+         * @param op The operator that provides the Descriptors.
+         * @param currentDesc The descriptor whose current dimension should be skipped.
+         * @return The first Descriptor that does not belong to the skipped dimension.
+         */
+        static UniqueDescriptor skipCurrentDimension(GenericOperator &op, UniqueDescriptor currentDesc);
+    };
+
 }
 
 

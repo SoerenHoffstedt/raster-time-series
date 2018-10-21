@@ -32,12 +32,7 @@ UniqueDescriptor Sampler::next() {
 
         for(int i = 0; i < toSkip; ++i){
             //skip all tiles of this raster.
-            double skipping_t1 = currInput->tileInfo.t1;
-            while(true){
-                currInput = input_operators[0]->next();
-                if(skipping_t1 != currInput->tileInfo.t1)
-                    break;
-            }
+            currInput = OperatorUtil::skipCurrentTemporal(*input_operators[0], std::move(currInput));
         }
 
     } else if(qrect.order == Order::SpatialTemporal){
@@ -49,12 +44,7 @@ UniqueDescriptor Sampler::next() {
 
         //TODO: and here check if the same coords are skipped instead of time. but see above.
         for(int i = 0; i < toSkip; ++i){
-            double last_t1 = currInput->tileInfo.t1;
-            while(true){
-                currInput = input_operators[0]->next();
-                if(currInput->tileInfo.t1 <= last_t1)
-                    break;
-            }
+           currInput = OperatorUtil::skipCurrentSpatial(*input_operators[0], std::move(currInput));
         }
     }
 
