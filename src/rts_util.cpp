@@ -12,7 +12,7 @@ int main() {
 
     using namespace rts;
 
-    std::ifstream file_in("../../test/query/test_query.json");
+    std::ifstream file_in("../../test/query/test_query_2.json");
 
     Json::Value json_query;
     file_in >> json_query;
