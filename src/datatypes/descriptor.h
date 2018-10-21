@@ -20,12 +20,11 @@ namespace rts {
     public:
         virtual ~Descriptor() = default;
         virtual std::unique_ptr<Raster> getRaster() = 0;
-        QueryRectangle st_ref;
-        Order order;
+        QueryRectangle tileInfo;
+        QueryRectangle totalInfo;
     protected:
-        Descriptor(double time_start, double time_end, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y, Order order);
-        Descriptor(TemporalReference temp_ref, SpatialReference spat_ref, Resolution res, Order order);
-        Descriptor(QueryRectangle st_ref);
+        Descriptor(TemporalReference temp_ref_total, SpatialReference spat_ref_total, Resolution res_total, TemporalReference temp_ref_tile, SpatialReference spat_ref_tile, Resolution res_tile, Order order);
+        Descriptor(QueryRectangle qrect_total, QueryRectangle qrect_tile);
     };
 
     /**
@@ -37,17 +36,12 @@ namespace rts {
     template <class GetterType>
     class GenericDescriptor : public Descriptor {
     public:
-        GenericDescriptor<GetterType>(GetterType getter, double time_start, double time_end, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t  res_y, Order order)
-                : Descriptor(time_start, time_end, x1, x2, y1, y2, res_x, res_y, order), getter(std::move(getter))
+        GenericDescriptor<GetterType>(GetterType getter, QueryRectangle qrect_total, QueryRectangle qrect_tile) : Descriptor(qrect_total, qrect_tile), getter(std::move(getter))
         {
-
+            //TODO: check if qrect_total is smaller than qrect_tile (spatial or temporal) => error message that tile and total are mixed up?
         }
-        GenericDescriptor<GetterType>(GetterType getter, QueryRectangle st_ref) : Descriptor(st_ref), getter(std::move(getter))
-        {
-
-        }
-        GenericDescriptor<GetterType>(GetterType getter, TemporalReference temp_ref, SpatialReference spat_ref, Resolution res, Order order)
-                : Descriptor(temp_ref, spat_ref, res, order), getter(std::move(getter))
+        GenericDescriptor<GetterType>(GetterType getter, TemporalReference temp_ref_total, SpatialReference spat_ref_total, Resolution res_total, TemporalReference temp_ref_tile, SpatialReference spat_ref_tile, Resolution res_tile, Order order)
+                : Descriptor(temp_ref_total, spat_ref_total, res_total, temp_ref_tile, spat_ref_tile, res_tile, order), getter(std::move(getter))
         {
 
         }

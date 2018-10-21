@@ -11,6 +11,7 @@ namespace rts {
     public:
         Raster(int res_x, int res_y);
         Raster(Resolution res);
+        Raster(const Raster &other);
         ~Raster();
         int* getDataPointer();
         int getCell(int x, int y) const;

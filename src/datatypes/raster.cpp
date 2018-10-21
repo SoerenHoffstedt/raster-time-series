@@ -8,7 +8,7 @@
 using namespace rts;
 
 Raster::Raster(int res_x, int res_y) : res_x(res_x), res_y(res_y), data_lenght(res_x * res_y) {
-    data = new int[res_x * res_y];
+    data = new int[data_lenght];
 }
 
 
@@ -17,6 +17,13 @@ Raster::Raster(Resolution res) : data_lenght(res.res_x * res.res_y) {
     res_y = res.res_y;
     data = new int[data_lenght];
 }
+
+Raster::Raster(const Raster &other) : data_lenght(other.data_lenght), res_x(other.res_x), res_y(other.res_y) {
+    data = new int[data_lenght];
+    std::copy(other.data, other.data + other.data_lenght, data);
+}
+
+//TODO: rule of five: implement move con., move assign, copy assign.
 
 Raster::~Raster()
 {

@@ -11,7 +11,6 @@ Aggregator::Aggregator(QueryRectangle qrect, Json::Value &params, const std::vec
 
 UniqueDescriptor Aggregator::next() {
 
-
     std::vector<UniqueDescriptor> descriptors;
     for(UniqueDescriptor input = input_operators[0]->next(); input != nullptr; input = input_operators[0]->next()){
         descriptors.push_back(std::move(input));
@@ -21,24 +20,24 @@ UniqueDescriptor Aggregator::next() {
         return nullptr;
     }
 
-    QueryRectangle qrect = descriptors[0]->st_ref;
+    QueryRectangle tileInfo = descriptors[0]->tileInfo;
 
     //out raster size, right now just take the tile size.
     int size_x = 0;
     int size_y = 0;
     if(!descriptors.empty()){
-        size_x = descriptors[0]->st_ref.res_x;
-        size_y = descriptors[0]->st_ref.res_y;
+        size_x = descriptors[0]->tileInfo.res_x;
+        size_y = descriptors[0]->tileInfo.res_y;
     }
 
     auto getter = [descriptors = std::move(descriptors), size_x = size_x, size_y = size_y](Descriptor *self) -> UniqueRaster {
-        UniqueRaster out_raster = std::make_unique<Raster>(descriptors[0]->st_ref.res_x, descriptors[0]->st_ref.res_y);
+        UniqueRaster out_raster = std::make_unique<Raster>(descriptors[0]->tileInfo.res_x, descriptors[0]->tileInfo.res_y);
 
         for(int i = 0; i < descriptors.size(); i++){
             UniqueRaster r = descriptors[i]->getRaster();
 
-            for(int x = 0; x < self->st_ref.res_x; ++x){
-                for(int y = 0; y < self->st_ref.res_y; ++y){
+            for(int x = 0; x < self->tileInfo.res_x; ++x){
+                for(int y = 0; y < self->tileInfo.res_y; ++y){
                     int val = r->getCell(x,y);
                     int curr_avg = out_raster->getCell(x, y);
                     // A is current avg value after T values, than is the avg with the next value x: (A * T + x) / (T+1)
@@ -54,7 +53,10 @@ UniqueDescriptor Aggregator::next() {
     };
 
 
-    return createUniqueDescriptor(std::move(getter), qrect);
+    return createUniqueDescriptor(
+            std::move(getter),
+            qrect, //the aggregated rasters validity is the same as the whole qrect
+            tileInfo);
 }
 
 bool Aggregator::supportsOrder(Order order) {

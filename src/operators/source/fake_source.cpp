@@ -69,22 +69,34 @@ UniqueDescriptor FakeSource::next() {
         return out;
     };
 
-    TemporalReference temp(time_curr, time_curr + time_duration);
-    SpatialReference spat(state_x, state_x + tile_res.res_x, state_y, state_y + tile_res.res_y);
+    TemporalReference temp_tile(time_curr, time_curr + time_duration);
+    SpatialReference spat_tile(state_x, state_x + tile_res.res_x, state_y, state_y + tile_res.res_y);
+
+    TemporalReference temp_total;
+    SpatialReference spat_total;
 
     if(qrect.order == Order::TemporalSpatial){
+
+        temp_total = temp_tile;
+        spat_total = qrect;//is different
 
         if(increaseSpatial()){
             increaseTemporal();
         }
-
     } else if(qrect.order == Order::SpatialTemporal){
+        temp_total = qrect;
+        spat_total = spat_tile;
+
         if(increaseTemporal()){
             increaseSpatial();
         }
     }
 
-    return rts::createUniqueDescriptor(std::move(getter), temp, spat, tile_res, qrect.order);
+    // qrect_total, qrect_tile
+    return rts::createUniqueDescriptor(
+            std::move(getter),
+            QueryRectangle(temp_total, spat_total, Resolution(qrect.res_x, qrect.res_y), qrect.order),
+            QueryRectangle(temp_tile, spat_tile, tile_res, qrect.order));
 }
 
 bool FakeSource::supportsOrder(Order o) {

@@ -26,16 +26,16 @@ UniqueDescriptor Sampler::next() {
     if(qrect.order == Order::TemporalSpatial){
         //send all tiles that have same time as the last send time.
         //TODO: check start and end time?
-        if(lastSendT1 != -1 && lastSendT1 == currInput->st_ref.t1){
+        if(lastSendT1 != -1 && lastSendT1 == currInput->tileInfo.t1){
             return currInput;
         }
 
         for(int i = 0; i < toSkip; ++i){
             //skip all tiles of this raster.
-            double skipping_t1 = currInput->st_ref.t1;
+            double skipping_t1 = currInput->tileInfo.t1;
             while(true){
                 currInput = input_operators[0]->next();
-                if(skipping_t1 != currInput->st_ref.t1)
+                if(skipping_t1 != currInput->tileInfo.t1)
                     break;
             }
         }
@@ -43,16 +43,16 @@ UniqueDescriptor Sampler::next() {
     } else if(qrect.order == Order::SpatialTemporal){
 
         //TODO: actually has to check if coords of tile are same as before, but coords are not provided rightly by FakeSource atm.
-        if(lastSendT1 != -1 && currInput->st_ref.t1 > lastSendT1){
+        if(lastSendT1 != -1 && currInput->tileInfo.t1 > lastSendT1){
             return currInput;
         }
 
         //TODO: and here check if the same coords are skipped instead of time. but see above.
         for(int i = 0; i < toSkip; ++i){
-            double last_t1 = currInput->st_ref.t1;
+            double last_t1 = currInput->tileInfo.t1;
             while(true){
                 currInput = input_operators[0]->next();
-                if(currInput->st_ref.t1 <= last_t1)
+                if(currInput->tileInfo.t1 <= last_t1)
                     break;
             }
         }
@@ -61,8 +61,8 @@ UniqueDescriptor Sampler::next() {
     //TODO: can i simply return the descriptor I got? Some reproduction of the operator tree from a
     //      descriptor might not be possible this way. But its more performant to skip this.
 
-    lastSendT1 = currInput->st_ref.t1;
-    return std::move(currInput);
+    lastSendT1 = currInput->tileInfo.t1;
+    return currInput;
 }
 
 bool Sampler::supportsOrder(Order order) {

@@ -9,7 +9,6 @@
 
 namespace rts {
 
-
     class TemporalReference {
     public:
         TemporalReference(double t1, double t2) : t1(t1), t2(t2) { }
@@ -43,8 +42,8 @@ namespace rts {
         Resolution(uint32_t x, uint32_t y) : res_x(x), res_y(y) { }
         Resolution() : res_x(0), res_y(0) { }
         Resolution(const Json::Value &res){
-            res_x = res["x"].asInt();
-            res_y = res["y"].asInt();
+            res_x = res["x"].asUInt();
+            res_y = res["y"].asUInt();
         }
         uint32_t res_x;
         uint32_t res_y;
