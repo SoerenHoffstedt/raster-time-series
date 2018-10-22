@@ -12,16 +12,18 @@ namespace rts {
         Raster(int res_x, int res_y);
         Raster(Resolution res);
         Raster(const Raster &other);
+        Raster& operator=(const Raster &other);
         ~Raster();
         int* getDataPointer();
         int getCell(int x, int y) const;
         void setCell(int x, int y, int value);
         void print() const;
+        int getDataLength() const;
     private:
         int* data;
         int res_x;
         int res_y;
-        const int data_lenght;
+        int data_length;
     };
     using UniqueRaster = std::unique_ptr<Raster>;
 }

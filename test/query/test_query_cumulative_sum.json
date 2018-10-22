@@ -1,0 +1,46 @@
+{
+	"query_rectangle" : {
+		"resolution" : {
+			"x" : 36,
+			"y" : 18
+		},
+		"temporal_reference" : {
+			"type" : "UNIX",
+        	"start" : 1519862400,
+        	"end": 1543622400
+		},
+		"spatial_reference" : {
+			"projection": "EPSG:4326",
+	        "x1": -180,
+	        "x2": 180,
+	        "y1": -90,
+	        "y2": 90
+		},
+		"order" : "SpatialTemporal"
+	},
+	"operator" : "print",
+	"params" : {
+
+	},
+	"sources" : [
+		{
+			"operator" : "cumulative_sum",
+			"params" : {
+
+			},
+			"sources" : [
+				{
+					"operator" : "fake_source",
+					"params" : {
+						"dataset" : "first_dataset",
+						"tile_size_x" : 18,
+						"tile_size_y" : 18
+					},
+					"sources" : [
+
+					]
+				}
+			]
+		}					
+	]
+}

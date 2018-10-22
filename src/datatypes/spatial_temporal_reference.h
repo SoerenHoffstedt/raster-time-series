@@ -31,6 +31,10 @@ namespace rts {
             y1 = spat["y1"].asDouble();
             y2 = spat["y2"].asDouble();
         }
+        bool equalsSpatial(const SpatialReference &other){
+            //TODO: add delta for error?
+            return x1 == other.x1 && x2 == other.x2 && y1 == other.y1 && y2 == other.y2;
+        }
         double x1;
         double x2;
         double y1;

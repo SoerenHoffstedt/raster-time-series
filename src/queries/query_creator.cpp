@@ -1,4 +1,5 @@
 
+#include "operators/cumulative_sum.h"
 #include "operators/print.h"
 #include "operators/expression.h"
 #include "operators/source/fake_source.h"
@@ -58,6 +59,8 @@ QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, J
         return new Sampler(qrect, params, in);
     else if(op_name == "aggregator")
         return new Aggregator(qrect, params, in);
+    else if(op_name == "cumulative_sum")
+        return new CumulativeSum(qrect, params, in);
     else
         throw std::runtime_error("Unknown operator: " + op_name);
 }
