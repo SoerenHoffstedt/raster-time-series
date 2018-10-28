@@ -11,11 +11,11 @@ Sampler::Sampler(QueryRectangle qrect, Json::Value &params, const std::vector<Ge
     toSkip = params["to_skip"].asUInt();
 }
 
-UniqueDescriptor Sampler::next() {
+OptionalDescriptor Sampler::next() {
 
     auto currInput = input_operators[0]->next();
 
-    if(currInput == nullptr)
+    if(!currInput.has_value())
         return currInput;
 
     //TODO: how to handle the ordering?
@@ -32,7 +32,7 @@ UniqueDescriptor Sampler::next() {
 
         for(int i = 0; i < toSkip; ++i){
             //skip all tiles of this raster.
-            currInput = OperatorUtil::skipCurrentTemporal(*input_operators[0], std::move(currInput));
+            currInput = OperatorUtil::skipCurrentTemporal(*input_operators[0], currInput);
         }
 
     } else if(qrect.order == Order::SpatialTemporal){
@@ -44,14 +44,15 @@ UniqueDescriptor Sampler::next() {
 
         //TODO: and here check if the same coords are skipped instead of time. but see above.
         for(int i = 0; i < toSkip; ++i){
-           currInput = OperatorUtil::skipCurrentSpatial(*input_operators[0], std::move(currInput));
+           currInput = OperatorUtil::skipCurrentSpatial(*input_operators[0], currInput);
         }
     }
 
     //TODO: can i simply return the descriptor I got? Some reproduction of the operator tree from a
     //      descriptor might not be possible this way. But its more performant to skip this.
+    if(currInput.has_value())
+        lastSendT1 = currInput->tileInfo.t1;
 
-    lastSendT1 = currInput->tileInfo.t1;
     return currInput;
 }
 

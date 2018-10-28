@@ -10,7 +10,7 @@ namespace rts {
     class Sampler : public GenericOperator {
     public:
         Sampler(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator*> &in);
-        UniqueDescriptor next() override;
+        OptionalDescriptor next() override;
         bool supportsOrder(Order order) override;
     private:
         uint32_t toSkip;

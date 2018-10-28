@@ -21,7 +21,7 @@ namespace rts {
         explicit GenericOperator(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator*> &in);
         explicit GenericOperator(QueryRectangle qrect, Json::Value &params);
         virtual ~GenericOperator() = default;
-        virtual UniqueDescriptor next() = 0;
+        virtual OptionalDescriptor next() = 0;
         virtual bool supportsOrder(Order order) = 0;
         TimeSeriesIterator begin();
         TimeSeriesIterator end();
@@ -45,14 +45,14 @@ namespace rts {
          * @param currentDesc All the other tiles of the raster this Descriptor belongs to are skipped.
          * @return The first Descriptor of the next raster.
          */
-        static UniqueDescriptor skipCurrentTemporal(GenericOperator &op, UniqueDescriptor currentDesc);
+        static OptionalDescriptor skipCurrentTemporal(GenericOperator &op, OptionalDescriptor &currentDesc);
         /**
          * Skips all the tiles of the same spatial coordinates as the passed Descriptor (currentDesc).
          * @param op The operator that provides the Descriptors.
          * @param currentDesc All the other tiles with the same spatial coordinates as this Descriptor are skipped.
          * @return The first Descriptor of the next tile.
          */
-        static UniqueDescriptor skipCurrentSpatial(GenericOperator &op, UniqueDescriptor currentDesc);
+        static OptionalDescriptor skipCurrentSpatial(GenericOperator &op, OptionalDescriptor &currentDesc);
         /**
          * Skips all tiles that are of the same first dimension as the passed Descriptor.
          * If the order of the passed Descriptor is TemporalSpatial skipCurrentTemporal is called
@@ -61,7 +61,7 @@ namespace rts {
          * @param currentDesc The descriptor whose current dimension should be skipped.
          * @return The first Descriptor that does not belong to the skipped dimension.
          */
-        static UniqueDescriptor skipCurrentDimension(GenericOperator &op, UniqueDescriptor currentDesc);
+        static OptionalDescriptor skipCurrentDimension(GenericOperator &op, OptionalDescriptor &currentDesc);
     };
 
 }

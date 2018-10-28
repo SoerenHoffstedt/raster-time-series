@@ -8,11 +8,11 @@ Expression::Expression(QueryRectangle qrect, Json::Value &params, const std::vec
     checkInputCount(1);
 }
 
-UniqueDescriptor Expression::next() {
-    UniqueDescriptor in = input_operators[0]->next();
+OptionalDescriptor Expression::next() {
+    OptionalDescriptor in = input_operators[0]->next();
 
-    if(in == nullptr) {
-        return nullptr;
+    if(!in) {
+        return std::nullopt;
     }
 
     TemporalReference temp_ref(in->tileInfo.t1, in->tileInfo.t2);
@@ -21,10 +21,10 @@ UniqueDescriptor Expression::next() {
 
     QueryRectangle infoTotal = in->totalInfo;
 
-    auto getter = [in_desc = std::move(in)](Descriptor *self) -> std::unique_ptr<Raster> {
+    auto getter = [in_desc = std::move(in)](const Descriptor &self) -> std::unique_ptr<Raster> {
         UniqueRaster test = in_desc->getRaster();
-        for (int x = 0; x < self->tileInfo.res_x; ++x) {
-            for (int y = 0; y < self->tileInfo.res_y; ++y) {
+        for (int x = 0; x < self.tileInfo.res_x; ++x) {
+            for (int y = 0; y < self.tileInfo.res_y; ++y) {
                 int val = test->getCell(x,y);
                 if(val != -1) //TODO: replace with nodata, that has to be put into Descriptor
                     test->setCell(x, y, val * val);
@@ -33,7 +33,7 @@ UniqueDescriptor Expression::next() {
         return test;
     };
 
-    return createUniqueDescriptor(
+    return std::make_optional<Descriptor>(
             std::move(getter),
             infoTotal,
             QueryRectangle(temp_ref, spat_ref, res, qrect.order));

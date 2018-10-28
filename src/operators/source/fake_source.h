@@ -13,7 +13,7 @@ namespace rts {
     class FakeSource : public GenericOperator {
     public:
         explicit FakeSource(QueryRectangle qrect, Json::Value &params);
-        UniqueDescriptor next() override;
+        OptionalDescriptor next() override;
         bool supportsOrder(Order o) override;
     private:
         Json::Value loadDatasetJson(std::string name);

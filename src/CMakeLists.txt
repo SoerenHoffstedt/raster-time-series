@@ -27,7 +27,3 @@ target_link_libraries_internal(rts_base_lib rts_query_lib)
 
 target_link_libraries(rts_base_lib jsoncpp_lib_static)
 target_include_directories(rts_base_lib PRIVATE ${JSONCPP_INCLUDE_DIRS})
-
-find_package(Boost COMPONENTS date_time filesystem REQUIRED)
-target_link_libraries(rts_base_lib Boost::date_time Boost::filesystem)
-target_include_directories(rts_base_lib PRIVATE ${Boost_INCLUDE_DIRS})

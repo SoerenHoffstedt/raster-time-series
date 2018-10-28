@@ -32,16 +32,16 @@ TimeSeriesIterator GenericOperator::end() {
     return TimeSeriesIterator::createEndIterator();
 }
 
-UniqueDescriptor OperatorUtil::skipCurrentDimension(GenericOperator &op, UniqueDescriptor currentDesc) {
+OptionalDescriptor OperatorUtil::skipCurrentDimension(GenericOperator &op, OptionalDescriptor &currentDesc) {
     if(currentDesc->totalInfo.order == Order::SpatialTemporal)
-        return skipCurrentSpatial(op, std::move(currentDesc));
+        return skipCurrentSpatial(op, currentDesc);
     else if(currentDesc->totalInfo.order == Order::TemporalSpatial)
-        return skipCurrentTemporal(op, std::move(currentDesc));
+        return skipCurrentTemporal(op, currentDesc);
 }
 
-UniqueDescriptor OperatorUtil::skipCurrentTemporal(GenericOperator &op, UniqueDescriptor currentDesc) {
-    UniqueDescriptor returnDesc = nullptr;
-    if(currentDesc == nullptr)
+OptionalDescriptor OperatorUtil::skipCurrentTemporal(GenericOperator &op, OptionalDescriptor &currentDesc) {
+    OptionalDescriptor returnDesc = std::nullopt;
+    if(!currentDesc)
         return returnDesc;
 
     double time1_to_skip = currentDesc->tileInfo.t1;
@@ -49,22 +49,22 @@ UniqueDescriptor OperatorUtil::skipCurrentTemporal(GenericOperator &op, UniqueDe
 
     while(true){
         returnDesc = op.next();
-        if(returnDesc == nullptr || (returnDesc->totalInfo.t1 != time1_to_skip || returnDesc->totalInfo.t2 != time2_to_skip))
+        if(!returnDesc || (returnDesc->totalInfo.t1 != time1_to_skip || returnDesc->totalInfo.t2 != time2_to_skip))
             break;
     }
 
     return returnDesc;
 }
 
-UniqueDescriptor OperatorUtil::skipCurrentSpatial(GenericOperator &op, UniqueDescriptor currentDesc) {
-    UniqueDescriptor returnDesc = nullptr;
+OptionalDescriptor OperatorUtil::skipCurrentSpatial(GenericOperator &op, OptionalDescriptor &currentDesc) {
+    OptionalDescriptor returnDesc = std::nullopt;
 
     //TODO: make this more robust by checking the spatial reference
     double last_t1 = currentDesc->tileInfo.t1;
 
     while(true){
         returnDesc = op.next();
-        if(returnDesc == nullptr || currentDesc->tileInfo.t1 <= last_t1)
+        if(!returnDesc || currentDesc->tileInfo.t1 <= last_t1)
             break;
     }
 

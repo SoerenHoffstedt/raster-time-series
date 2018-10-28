@@ -9,7 +9,7 @@ namespace rts {
     class Expression : public GenericOperator {
     public:
         Expression(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator *> &in);
-        UniqueDescriptor next() override;
+        OptionalDescriptor next() override;
         bool supportsOrder(Order order) override;
     };
 

@@ -74,6 +74,7 @@ namespace rts {
             else
                 throw std::runtime_error("Invalid value for order enum: " + order_str);
         }
+        QueryRectangle(const QueryRectangle &other) = default;
         Order order;
     };
 

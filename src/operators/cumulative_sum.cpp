@@ -9,11 +9,11 @@ CumulativeSum::CumulativeSum(QueryRectangle qrect, Json::Value &params, const st
     checkInputCount(1);
 }
 
-UniqueDescriptor CumulativeSum::next() {
+OptionalDescriptor CumulativeSum::next() {
     auto input = input_operators[0]->next();
 
-    if(input == nullptr)
-        return nullptr;
+    if(!input)
+        return std::nullopt;
 
     //for first tile, sum.data_length will be 0,or when new tile started: set sum raster to 0s.
     if(sum.getDataLength() == 0 || !lastTileSpat.equalsSpatial(input->tileInfo)) {
@@ -28,11 +28,11 @@ UniqueDescriptor CumulativeSum::next() {
     totalRect.t1 = lastTileTemp.t1;
     tileRect.t1 = lastTileTemp.t1;
 
-    auto getter = [input = std::move(input), sum = &sum](Descriptor *self) -> UniqueRaster {
+    auto getter = [input = std::move(input), sum = &sum](const Descriptor &self) -> UniqueRaster {
         UniqueRaster raster_in = input->getRaster();
 
-        for (int x = 0; x < self->tileInfo.res_x; ++x) {
-            for (int y = 0; y < self->tileInfo.res_y; ++y) {
+        for (int x = 0; x < self.tileInfo.res_x; ++x) {
+            for (int y = 0; y < self.tileInfo.res_y; ++y) {
                 int val = sum->getCell(x, y) + raster_in->getCell(x, y);
                 sum->setCell(x, y, val);
                 raster_in->setCell(x, y, val);
@@ -42,7 +42,7 @@ UniqueDescriptor CumulativeSum::next() {
         return raster_in;
     };
 
-    return createUniqueDescriptor(
+    return std::make_optional<Descriptor>(
             std::move(getter),
             totalRect,
             tileRect);

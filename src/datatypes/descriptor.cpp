@@ -3,15 +3,27 @@
 #include "datatypes/descriptor.h"
 #include "descriptor.h"
 
+
 using namespace rts;
 
-Descriptor::Descriptor(QueryRectangle qrect_total, QueryRectangle qrect_tile) : tileInfo(qrect_tile), totalInfo(qrect_total) {
+Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter, QueryRectangle &qrect_total, QueryRectangle &qrect_tile)
+        : getter(std::move(getter)), totalInfo(qrect_total), tileInfo(qrect_tile) { }
 
+Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor &)> &&getter, QueryRectangle &&qrect_total, QueryRectangle &&qrect_tile)
+        : getter(std::move(getter)), totalInfo(qrect_total), tileInfo(qrect_tile) { }
+
+Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor &)> &&getter, QueryRectangle &qrect_total, QueryRectangle &&qrect_tile)
+        : getter(std::move(getter)), totalInfo(qrect_total), tileInfo(qrect_tile) { }
+
+Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor &)> &&getter, QueryRectangle &&qrect_total, QueryRectangle &qrect_tile)
+        : getter(std::move(getter)), totalInfo(qrect_total), tileInfo(qrect_tile) { }
+
+uint64_t Descriptor::tilesOfRaster() const {
+    uint64_t  x = totalInfo.res_x / tileInfo.res_x + totalInfo.res_x % tileInfo.res_x;
+    uint64_t  y = totalInfo.res_y / tileInfo.res_y + totalInfo.res_y % tileInfo.res_y;
+    return x * y;
 }
 
-Descriptor::Descriptor(TemporalReference temp_ref_total, SpatialReference spat_ref_total, Resolution res_total,
-                       TemporalReference temp_ref_tile, SpatialReference spat_ref_tile, Resolution res_tile, Order order)
-                       : totalInfo(temp_ref_total, spat_ref_total, res_total, order),
-                         tileInfo(temp_ref_tile, spat_ref_tile, res_tile, order) {
-
+std::unique_ptr<Raster> Descriptor::getRaster() const {
+    return getter(*this);
 }

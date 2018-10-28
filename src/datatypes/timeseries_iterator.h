@@ -29,8 +29,8 @@ namespace rts {
         TimeSeriesIterator(GenericOperator *op);
         static TimeSeriesIterator createEndIterator();
         // Get the data element at this position
-        Descriptor& operator*() const;
-        Descriptor* operator->() const;
+        Descriptor& operator*();
+        Descriptor* operator->();
 
         // get next element
         TimeSeriesIterator& operator++();
@@ -41,7 +41,7 @@ namespace rts {
 
     private:
         GenericOperator *op;
-        UniqueDescriptor next_descriptor;
+        OptionalDescriptor next_descriptor;
     };
 
 }

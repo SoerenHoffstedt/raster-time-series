@@ -33,28 +33,28 @@ Json::Value FakeSource::loadDatasetJson(std::string name) {
     return dataset_json;
 }
 
-UniqueDescriptor FakeSource::next() {
+OptionalDescriptor FakeSource::next() {
 
     if(index >= raster_count)
-        return nullptr;
+        return std::nullopt;
 
     while(time_curr < qrect.t1){
         time_curr += time_duration;
         index += 1;
         if(index >= raster_count)
-            return nullptr;
+            return std::nullopt;
     }
 
     if(time_curr > qrect.t2){
-        return nullptr;
+        return std::nullopt;
     }
     if(state_y >= qrect.res_y){ //when state_y is not reset, the end is reached.
-        return nullptr;
+        return std::nullopt;
     }
 
     Resolution res_left_to_fill(qrect.res_x - state_x, qrect.res_y - state_y);
 
-    auto getter = [index = index, tile_res = tile_res, res_left_to_fill = res_left_to_fill, nodata = nodata](Descriptor *self) -> std::unique_ptr<Raster> {
+    auto getter = [index = index, tile_res = tile_res, res_left_to_fill = res_left_to_fill, nodata = nodata](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = std::make_unique<Raster>(tile_res);
 
         for (int x = 0; x < tile_res.res_x; ++x) {
@@ -93,7 +93,7 @@ UniqueDescriptor FakeSource::next() {
     }
 
     // qrect_total, qrect_tile
-    return rts::createUniqueDescriptor(
+    return std::make_optional<Descriptor>(
             std::move(getter),
             QueryRectangle(temp_total, spat_total, Resolution(qrect.res_x, qrect.res_y), qrect.order),
             QueryRectangle(temp_tile, spat_tile, tile_res, qrect.order));
