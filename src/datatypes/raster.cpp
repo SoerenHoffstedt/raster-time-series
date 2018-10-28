@@ -18,8 +18,12 @@ Raster::Raster(Resolution res) : data_length(res.res_x * res.res_y) {
     data = new int[data_length];
 }
 
-Raster::Raster(const Raster &other) : data_length(other.data_length), res_x(other.res_x), res_y(other.res_y) {
-    data = new int[data_length];
+Raster::Raster(const Raster &other)
+        : data_length(other.data_length),
+          res_x(other.res_x),
+          res_y(other.res_y),
+          data(new int[data_length])
+{
     std::copy(other.data, other.data + other.data_length, data);
 }
 
@@ -29,10 +33,35 @@ Raster& Raster::operator=(const Raster &other) {
     res_x = other.res_x;
     res_y = other.res_y;
     data = new int[data_length];
+    std::copy(other.data, other.data + other.data_length, data);
     return *this;
 }
 
-//TODO: rule of five: implement move con., move assign.
+Raster::Raster(Raster &&other) noexcept
+        : data(other.data),
+          data_length(other.data_length),
+          res_x(other.res_x),
+          res_y(other.res_y)
+{
+    other.data = nullptr;
+    other.data_length = 0;
+    other.res_x = 0;
+    other.res_y = 0;
+}
+
+Raster &Raster::operator=(Raster &&other) noexcept {
+    data = other.data;
+    data_length = other.data_length;
+    res_x = other.res_x;
+    res_y = other.res_y;
+
+    other.data = nullptr;
+    other.data_length = 0;
+    other.res_x = 0;
+    other.res_y = 0;
+
+    return *this;
+}
 
 Raster::~Raster()
 {

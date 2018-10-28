@@ -13,6 +13,8 @@ namespace rts {
         Raster(Resolution res);
         Raster(const Raster &other);
         Raster& operator=(const Raster &other);
+        Raster(Raster &&other) noexcept;
+        Raster& operator=(Raster &&other) noexcept;
         ~Raster();
         int* getDataPointer();
         int getCell(int x, int y) const;
