@@ -9,8 +9,8 @@
 
 using namespace rts;
 
-GenericOperator::GenericOperator(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator*> &in)
-    : qrect(qrect), params(params), input_operators(in)
+GenericOperator::GenericOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+    : qrect(qrect), params(params), input_operators(std::move(in))
 {
 
 }

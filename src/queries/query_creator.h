@@ -8,13 +8,13 @@ namespace rts {
 
     class QueryCreator {
     public:
-        ConsumingOperator *createOperatorTree(const Json::Value &query);
+        std::unique_ptr<ConsumingOperator> createOperatorTree(const Json::Value &query);
     private:
-        ConsumingOperator *createConsumingOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator*> &in);
-        GenericOperator *createOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator*> &in);
-        GenericOperator *createOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params);
+        std::unique_ptr<ConsumingOperator> createConsumingOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
+        std::unique_ptr<GenericOperator> createOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
+        std::unique_ptr<GenericOperator> createOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params);
 
-        std::vector<GenericOperator *> createSources(Json::Value &sources, QueryRectangle &qrect);
+        std::vector<std::unique_ptr<GenericOperator>> createSources(Json::Value &sources, QueryRectangle &qrect);
     };
 
 }

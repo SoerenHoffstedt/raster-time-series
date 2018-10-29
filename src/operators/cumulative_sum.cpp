@@ -3,8 +3,8 @@
 
 using namespace rts;
 
-CumulativeSum::CumulativeSum(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator *> &in)
-        : GenericOperator(qrect, params, in), sum(0, 0), lastTileSpat(-9999.0, 9999.0, -9999.0, 9999.0)
+CumulativeSum::CumulativeSum(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+        : GenericOperator(qrect, params, std::move(in)), sum(0, 0), lastTileSpat(-9999.0, 9999.0, -9999.0, 9999.0)
 {
     checkInputCount(1);
 }

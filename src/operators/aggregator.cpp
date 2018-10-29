@@ -3,8 +3,8 @@
 
 using namespace rts;
 
-Aggregator::Aggregator(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator *> &in)
-        : GenericOperator(qrect, params, in)
+Aggregator::Aggregator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+        : GenericOperator(qrect, params, std::move(in))
 {
     checkInputCount(1);
 }

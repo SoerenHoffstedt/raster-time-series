@@ -3,8 +3,8 @@
 
 using namespace rts;
 
-TemporalOverlap::TemporalOverlap(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator *> &in)
-        : GenericOperator(qrect, params, in), input1Time(), input2Time(), lastTileOfRaster1(false), loadRasterFromCache1(false), loadRasterFromCache2(false)
+TemporalOverlap::TemporalOverlap(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+        : GenericOperator(qrect, params, std::move(in)), input1Time(), input2Time(), lastTileOfRaster1(false), loadRasterFromCache1(false), loadRasterFromCache2(false)
 {
     checkInputCount(2);
 }

@@ -8,7 +8,7 @@ namespace rts {
 
     class CumulativeSum : public GenericOperator {
     public:
-        CumulativeSum(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator *> &in);
+        CumulativeSum(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor next() override;
         bool supportsOrder(Order order) override;
     private:

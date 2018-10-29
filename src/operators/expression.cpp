@@ -3,7 +3,7 @@
 
 using namespace rts;
 
-Expression::Expression(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator *> &in) : GenericOperator(qrect, params, in)
+Expression::Expression(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in) : GenericOperator(qrect, params, std::move(in))
 {
     checkInputCount(1);
 }

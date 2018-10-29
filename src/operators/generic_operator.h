@@ -18,7 +18,7 @@ namespace rts {
 
     class GenericOperator {
     public:
-        explicit GenericOperator(QueryRectangle qrect, Json::Value &params, const std::vector<GenericOperator*> &in);
+        explicit GenericOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         explicit GenericOperator(QueryRectangle qrect, Json::Value &params);
         virtual ~GenericOperator() = default;
         virtual OptionalDescriptor next() = 0;
@@ -29,7 +29,7 @@ namespace rts {
     protected:
         QueryRectangle qrect;
         Json::Value params;
-        std::vector<GenericOperator*> input_operators;
+        std::vector<std::unique_ptr<GenericOperator>> input_operators;
         /**
          * Throws an exception if the size of input_operators differs from expected.
          * @param expected the amount of expected input operators.

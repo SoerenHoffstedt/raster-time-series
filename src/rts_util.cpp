@@ -12,16 +12,15 @@ int main() {
 
     using namespace rts;
 
-    std::ifstream file_in("../../test/query/test_query_2.json");
+    std::ifstream file_in("../../test/query/test_query_temporal_overlap.json");
 
     Json::Value json_query;
     file_in >> json_query;
 
     QueryCreator queryCreator;
 
-    ConsumingOperator *p = queryCreator.createOperatorTree(json_query);
+    std::unique_ptr<ConsumingOperator> p = queryCreator.createOperatorTree(json_query);
     p->consume();
-    delete p;
 
     return 0;
 }
