@@ -1,0 +1,14 @@
+{
+	"name" : "temp_overlap_2",
+	"time_start" : 10000,
+	"time_duration" : 500,	
+	"raster_count" : 20,
+	"nodata" : -1,
+	"spatial_reference" : {
+		"projection": "EPSG:4326",
+        "x1": 50,
+        "x2": 150,
+        "y1": 25,
+        "y2": 75
+	}
+}

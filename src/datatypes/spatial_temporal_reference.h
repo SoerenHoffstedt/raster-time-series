@@ -52,7 +52,7 @@ namespace rts {
             return SpatialReference(xx1, xx2, yy1, yy2);
         }
         bool overlapsWithSpatial(const SpatialReference &other){
-            return x1 < other.x2 && x2 > other.x1 && y1 > other.y2 && y2 < other.y1;
+            return x1 <= other.x2 && x2 >= other.x1 && y1 <= other.y2 && y2 >= other.y1;
         }
         double x1;
         double x2;
@@ -67,6 +67,9 @@ namespace rts {
         Resolution(const Json::Value &res){
             res_x = res["x"].asUInt();
             res_y = res["y"].asUInt();
+        }
+        bool equalsResolution(const Resolution &other) const {
+            return res_x == other.res_x && res_y == other.res_y;
         }
         uint32_t res_x;
         uint32_t res_y;

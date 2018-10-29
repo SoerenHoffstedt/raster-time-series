@@ -21,6 +21,13 @@ FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params) : GenericOperat
     state_y = 0;
     tile_res.res_x = params["tile_size_x"].asInt();
     tile_res.res_y = params["tile_size_y"].asInt();
+    if(dataset_json.isMember("spatial_reference")){
+        SpatialReference sref(dataset_json["spatial_reference"]);
+        this->qrect.x1 = sref.x1;
+        this->qrect.x2 = sref.x2;
+        this->qrect.y1 = sref.y1;
+        this->qrect.y2 = sref.y2;
+    }
 }
 
 Json::Value FakeSource::loadDatasetJson(std::string name) {
@@ -70,7 +77,7 @@ OptionalDescriptor FakeSource::next() {
     };
 
     TemporalReference temp_tile(time_curr, time_curr + time_duration);
-    SpatialReference spat_tile(state_x, state_x + tile_res.res_x, state_y, state_y + tile_res.res_y);
+    SpatialReference spat_tile = getCoordsForTile(qrect, qrect, tile_res, Resolution(state_x, state_y));
 
     TemporalReference temp_total;
     SpatialReference spat_total;
@@ -131,4 +138,32 @@ bool FakeSource::increaseSpatial() {
         }
     }
     return false;
+}
+
+//TODO: Move this somewhere else, so it is reusable at different points. Maybe in SpatialReference class?
+SpatialReference FakeSource::getCoordsForTile(const SpatialReference &totalCoords, const Resolution &totalRes, const Resolution &tileRes, const Resolution &startOfTile)
+{
+    if(totalRes.equalsResolution(tileRes))
+        return totalCoords;
+    SpatialReference res;
+
+    int x1 = startOfTile.res_x;
+    int x2 = x1 + tileRes.res_x;
+    int y1 = startOfTile.res_y;
+    int y2 = y1 + tileRes.res_y;
+
+    double perc_x1 = (float)x1 / totalRes.res_x;
+    double perc_x2 = (float)x2 / totalRes.res_x;
+    double perc_y1 = (float)y1 / totalRes.res_y;
+    double perc_y2 = (float)y2 / totalRes.res_y;
+
+    double coord_length_x = totalCoords.x2 - totalCoords.x1;
+    double coord_length_y = totalCoords.y2 - totalCoords.y1;
+
+    res.x1 = totalCoords.x1 + coord_length_x * perc_x1;
+    res.x2 = totalCoords.x1 + coord_length_x * perc_x2;
+    res.y1 = totalCoords.y1 + coord_length_y * perc_y1;
+    res.y2 = totalCoords.y1 + coord_length_y * perc_y2;
+
+    return res;
 }
