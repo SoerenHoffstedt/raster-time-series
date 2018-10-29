@@ -1,0 +1,57 @@
+{
+	"query_rectangle" : {
+		"resolution" : {
+			"x" : 6,
+			"y" : 6
+		},
+		"temporal_reference" : {
+			"type" : "UNIX",
+        	"start" : 12000,
+        	"end": 20000
+		},
+		"spatial_reference" : {
+			"projection": "EPSG:4326",
+	        "x1": -180,
+	        "x2": 180,
+	        "y1": -90,
+	        "y2": 90
+		},
+		"order" : "TemporalSpatial"
+	},
+	"operator" : "print",
+	"params" : {
+
+	},
+	"sources" : [
+		{
+			"operator" : "temporal_overlap",
+			"params" : {
+
+			},
+			"sources" : [
+				{
+					"operator" : "fake_source",
+					"params" : {
+						"dataset" : "temp_overlap_1",
+						"tile_size_x" : 6,
+						"tile_size_y" : 3
+					},
+					"sources" : [
+
+					]
+				},
+				{
+					"operator" : "fake_source",
+					"params" : {
+						"dataset" : "temp_overlap_2",
+						"tile_size_x" : 6,
+						"tile_size_y" : 3
+					},
+					"sources" : [
+
+					]
+				}
+			]
+		}					
+	]
+}

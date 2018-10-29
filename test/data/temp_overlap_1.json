@@ -1,0 +1,7 @@
+{
+	"name" : "temp_overlap_1",
+	"time_start" : 12000,
+	"time_duration" : 300,	
+	"raster_count" : 20,
+	"nodata" : -1	
+}

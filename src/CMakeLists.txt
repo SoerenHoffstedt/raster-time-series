@@ -16,7 +16,8 @@ add_library(rts_operators_lib
         operators/expression.cpp
         operators/sampler.cpp
         operators/aggregator.cpp
-        operators/cumulative_sum.cpp)
+        operators/cumulative_sum.cpp
+        operators/temporal_overlap.cpp)
 target_link_libraries_internal(rts_operators_lib rts_base_lib)
 target_link_libraries_internal(rts_base_lib rts_operators_lib)
 

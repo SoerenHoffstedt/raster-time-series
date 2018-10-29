@@ -17,6 +17,12 @@ namespace rts {
             t2 = temp["end"].asDouble();
         }
         TemporalReference() : t1(0.0), t2(0.0) { }
+        TemporalReference getOverlapTemporal(const TemporalReference &o){
+            return TemporalReference(t1 > o.t1 ? t1 : o.t1, t2 < o.t2 ? t2 : o.t2);
+        }
+        bool overlapsWithTemporal(const TemporalReference &other){
+            return t1 <= other.t2 && t2 >= other.t1;
+        }
         double t1;
         double t2;
     };
@@ -34,6 +40,19 @@ namespace rts {
         bool equalsSpatial(const SpatialReference &other){
             //TODO: add delta for error?
             return x1 == other.x1 && x2 == other.x2 && y1 == other.y1 && y2 == other.y2;
+        }
+        SpatialReference getOverlapSpatial(const SpatialReference &other){
+            if(!overlapsWithSpatial(other)){
+                return SpatialReference(0,0,0,0);
+            }
+            double xx1 = x1 > other.x1 ? x1 : other.x1;
+            double xx2 = x2 < other.x2 ? x2 : other.x2;
+            double yy1 = y1 > other.y1 ? y1 : other.y1;
+            double yy2 = y2 < other.y2 ? y2 : other.y2;
+            return SpatialReference(xx1, xx2, yy1, yy2);
+        }
+        bool overlapsWithSpatial(const SpatialReference &other){
+            return x1 < other.x2 && x2 > other.x1 && y1 > other.y2 && y2 < other.y1;
         }
         double x1;
         double x2;
@@ -61,7 +80,7 @@ namespace rts {
         QueryRectangle(const TemporalReference &temp_ref, const SpatialReference &spat_ref, const Resolution &res, Order order)
             : TemporalReference(temp_ref), SpatialReference(spat_ref), Resolution(res), order(order) { }
 
-        QueryRectangle(const Json::Value &qrect)
+        explicit QueryRectangle(const Json::Value &qrect)
                 : TemporalReference(qrect["temporal_reference"]),
                   SpatialReference(qrect["spatial_reference"]),
                   Resolution(qrect["resolution"])
