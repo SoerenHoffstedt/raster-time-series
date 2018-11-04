@@ -57,16 +57,10 @@ OptionalDescriptor OperatorUtil::skipCurrentTemporal(GenericOperator &op, Option
 }
 
 OptionalDescriptor OperatorUtil::skipCurrentSpatial(GenericOperator &op, OptionalDescriptor &currentDesc) {
-    OptionalDescriptor returnDesc = std::nullopt;
-
-    //TODO: make this more robust by checking the spatial reference: better tileIndex.
-    double last_t1 = currentDesc->rasterInfo.t1;
-
-    while(true){
+    OptionalDescriptor returnDesc = op.next();
+    const int tileIndex = currentDesc->tileIndex;
+    while(returnDesc.has_value() && currentDesc->tileIndex == tileIndex){
         returnDesc = op.next();
-        if(!returnDesc || currentDesc->rasterInfo.t1 <= last_t1)
-            break;
     }
-
     return returnDesc;
 }
