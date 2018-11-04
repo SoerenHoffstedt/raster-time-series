@@ -60,9 +60,14 @@ namespace rts {
          *
          * @return The coordinates of the described tile.
          */
-        SpatialReference calculateCoordinatesOfTile() const;
+        SpatialReference calcCoordinatesOfTile() const;
     private:
         std::function<UniqueRaster(const Descriptor&)> getter;
+
+        /**
+        * @return The pixel positions where the current tile starts in the raster.
+        */
+        Resolution calcStartOfTile() const;
     };
 
     using OptionalDescriptor = std::optional<Descriptor>;

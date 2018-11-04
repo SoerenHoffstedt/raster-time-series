@@ -35,7 +35,6 @@ namespace rts {
         ///
         /// \return returns true if end of spatial iteration is reached.
         bool increaseSpatial();
-        static SpatialReference getCoordsForTile(const SpatialReference &totalCoords, const Resolution &totalRes, const Resolution &tileRes, const Resolution &startOfTile);
     };
 
 }

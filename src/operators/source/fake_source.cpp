@@ -132,31 +132,3 @@ bool FakeSource::increaseSpatial() {
     }
     return false;
 }
-
-//TODO: Move this somewhere else, so it is reusable at different points. Maybe in SpatialReference class?
-SpatialReference FakeSource::getCoordsForTile(const SpatialReference &totalCoords, const Resolution &totalRes, const Resolution &tileRes, const Resolution &startOfTile)
-{
-    if(totalRes.equalsResolution(tileRes))
-        return totalCoords;
-    SpatialReference res;
-
-    int x1 = startOfTile.res_x;
-    int x2 = x1 + tileRes.res_x;
-    int y1 = startOfTile.res_y;
-    int y2 = y1 + tileRes.res_y;
-
-    double perc_x1 = (float)x1 / totalRes.res_x;
-    double perc_x2 = (float)x2 / totalRes.res_x;
-    double perc_y1 = (float)y1 / totalRes.res_y;
-    double perc_y2 = (float)y2 / totalRes.res_y;
-
-    double coord_length_x = totalCoords.x2 - totalCoords.x1;
-    double coord_length_y = totalCoords.y2 - totalCoords.y1;
-
-    res.x1 = totalCoords.x1 + coord_length_x * perc_x1;
-    res.x2 = totalCoords.x1 + coord_length_x * perc_x2;
-    res.y1 = totalCoords.y1 + coord_length_y * perc_y1;
-    res.y2 = totalCoords.y1 + coord_length_y * perc_y2;
-
-    return res;
-}
