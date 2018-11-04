@@ -13,9 +13,9 @@ namespace rts {
         bool supportsOrder(Order order) override;
     private:
         Raster sum;
-        SpatialReference lastTileSpat;
+        int lastTileIndex;
         TemporalReference lastTileTemp;
-        void setSumRasterZero(const QueryRectangle &rect);
+        void setSumRasterZero(const Resolution &res);
     };
 
 }

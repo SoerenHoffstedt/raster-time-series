@@ -18,20 +18,45 @@ namespace rts {
      */
     class Descriptor {
     public:
-        //Descriptor(std::function<UniqueRaster (const Descriptor&)> getter, TemporalReference temp_ref_total, SpatialReference spat_ref_total, Resolution res_total, TemporalReference temp_ref_tile, SpatialReference spat_ref_tile, Resolution res_tile, Order order);
-        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, QueryRectangle &qrect_total, QueryRectangle &qrect_tile);
-        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, QueryRectangle &&qrect_total, QueryRectangle &&qrect_tile);
-        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, QueryRectangle &qrect_total, QueryRectangle &&qrect_tile);
-        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, QueryRectangle &&qrect_total, QueryRectangle &qrect_tile);
+        Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter, SpatialTemporalReference &totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex);
+        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex);
+        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex);
+        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex);
 
         std::unique_ptr<Raster> getRaster() const;
-        QueryRectangle tileInfo;
-        QueryRectangle totalInfo;
+
+        /**
+         *
+         */
+        Order order;
+
+        /**
+         *
+         */
+        SpatialTemporalReference rasterInfo;
+
+        /**
+         * Which tile of the raster this descriptor describes. For spatial ordering it also describes the tile of
+         * the raster, not which tile of the the time series is described.
+         */
+        uint32_t tileIndex;
+
+        /**
+         *
+         */
+        Resolution tileResolution;
+
         /**
          *
          * @return The total number of tiles of the raster / tile-time-series the current tile belongs to
          */
         uint64_t tilesOfRaster() const;
+
+        /**
+         *
+         * @return The coordinates of the described tile.
+         */
+        SpatialReference calculateCoordinatesOfTile() const;
     private:
         std::function<UniqueRaster(const Descriptor&)> getter;
     };

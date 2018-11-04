@@ -15,16 +15,14 @@ OptionalDescriptor Expression::next() {
         return std::nullopt;
     }
 
-    TemporalReference temp_ref(in->tileInfo.t1, in->tileInfo.t2);
-    SpatialReference spat_ref(in->tileInfo.x1, in->tileInfo.x2, in->tileInfo.y1, in->tileInfo.y2);
-    Resolution res(in->tileInfo.res_x, in->tileInfo.res_y);
-
-    QueryRectangle infoTotal = in->totalInfo;
+    Resolution tileRes(in->tileResolution);
+    SpatialTemporalReference rasterInfo = in->rasterInfo;
+    int tileIndex = in->tileIndex;
 
     auto getter = [in_desc = std::move(in)](const Descriptor &self) -> std::unique_ptr<Raster> {
         UniqueRaster test = in_desc->getRaster();
-        for (int x = 0; x < self.tileInfo.res_x; ++x) {
-            for (int y = 0; y < self.tileInfo.res_y; ++y) {
+        for (int x = 0; x < self.tileResolution.res_x; ++x) {
+            for (int y = 0; y < self.tileResolution.res_y; ++y) {
                 int val = test->getCell(x,y);
                 if(val != -1) //TODO: replace with nodata, that has to be put into Descriptor
                     test->setCell(x, y, val * val);
@@ -33,10 +31,7 @@ OptionalDescriptor Expression::next() {
         return test;
     };
 
-    return std::make_optional<Descriptor>(
-            std::move(getter),
-            infoTotal,
-            QueryRectangle(temp_ref, spat_ref, res, qrect.order));
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileRes, qrect.order, tileIndex);
 }
 
 bool Expression::supportsOrder(Order order) {

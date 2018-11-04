@@ -10,7 +10,7 @@
 
 using namespace rts;
 
-FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params) : GenericOperator(qrect, params), index(0) {
+FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params) : GenericOperator(qrect, params), rasterIndex(0), tileIndex(0) {
     dataset_json = loadDatasetJson(params["dataset"].asString());
     raster_count = dataset_json["raster_count"].asInt();
     time_start = dataset_json["time_start"].asDouble();
@@ -19,8 +19,8 @@ FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params) : GenericOperat
     nodata = dataset_json["nodata"].asInt();
     state_x = 0;
     state_y = 0;
-    tile_res.res_x = params["tile_size_x"].asInt();
-    tile_res.res_y = params["tile_size_y"].asInt();
+    tile_res.res_x = params["tile_size_x"].asUInt();
+    tile_res.res_y = params["tile_size_y"].asUInt();
     if(dataset_json.isMember("spatial_reference")){
         SpatialReference sref(dataset_json["spatial_reference"]);
         this->qrect.x1 = sref.x1;
@@ -42,13 +42,13 @@ Json::Value FakeSource::loadDatasetJson(std::string name) {
 
 OptionalDescriptor FakeSource::next() {
 
-    if(index >= raster_count)
+    if(rasterIndex >= raster_count)
         return std::nullopt;
 
     while(time_curr < qrect.t1){
         time_curr += time_duration;
-        index += 1;
-        if(index >= raster_count)
+        rasterIndex += 1;
+        if(rasterIndex >= raster_count)
             return std::nullopt;
     }
 
@@ -61,7 +61,7 @@ OptionalDescriptor FakeSource::next() {
 
     Resolution res_left_to_fill(qrect.res_x - state_x, qrect.res_y - state_y);
 
-    auto getter = [index = index, tile_res = tile_res, res_left_to_fill = res_left_to_fill, nodata = nodata](const Descriptor &self) -> std::unique_ptr<Raster> {
+    auto getter = [index = rasterIndex, tile_res = tile_res, res_left_to_fill = res_left_to_fill, nodata = nodata](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = std::make_unique<Raster>(tile_res);
 
         for (int x = 0; x < tile_res.res_x; ++x) {
@@ -76,34 +76,25 @@ OptionalDescriptor FakeSource::next() {
         return out;
     };
 
-    TemporalReference temp_tile(time_curr, time_curr + time_duration);
-    SpatialReference spat_tile = getCoordsForTile(qrect, qrect, tile_res, Resolution(state_x, state_y));
-
-    TemporalReference temp_total;
-    SpatialReference spat_total;
+    TemporalReference tempInfo(time_curr, time_curr + time_duration);
+    int tileIndexNow = tileIndex;
 
     if(qrect.order == Order::TemporalSpatial){
-
-        temp_total = temp_tile;
-        spat_total = qrect;//is different
-
         if(increaseSpatial()){
             increaseTemporal();
         }
     } else if(qrect.order == Order::SpatialTemporal){
-        temp_total = qrect;
-        spat_total = spat_tile;
-
         if(increaseTemporal()){
             increaseSpatial();
         }
     }
 
+    SpatialTemporalReference rasterInfo = qrect;
+    rasterInfo.t1 = tempInfo.t1;
+    rasterInfo.t2 = tempInfo.t2;
+
     // qrect_total, qrect_tile
-    return std::make_optional<Descriptor>(
-            std::move(getter),
-            QueryRectangle(temp_total, spat_total, Resolution(qrect.res_x, qrect.res_y), qrect.order),
-            QueryRectangle(temp_tile, spat_tile, tile_res, qrect.order));
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_res, qrect.order, tileIndexNow);
 }
 
 bool FakeSource::supportsOrder(Order o) {
@@ -111,12 +102,12 @@ bool FakeSource::supportsOrder(Order o) {
 }
 
 bool FakeSource::increaseTemporal() {
-    index += 1;
+    rasterIndex += 1;
     time_curr += time_duration;
     if(time_curr >= qrect.t2){
         if(qrect.order == Order::SpatialTemporal){
             //reset only if temporal is the outer dimension, else keep time_curr above t2 as end condition at top of next() method
-            index = 0;
+            rasterIndex = 0;
             time_curr = time_start;
             return true;
         }
@@ -125,6 +116,7 @@ bool FakeSource::increaseTemporal() {
 }
 
 bool FakeSource::increaseSpatial() {
+    tileIndex += 1;
     state_x += tile_res.res_x;
     if(state_x >= qrect.res_x){
         state_x = 0;
@@ -132,6 +124,7 @@ bool FakeSource::increaseSpatial() {
         if(state_y >= qrect.res_y){
             if(qrect.order == Order::TemporalSpatial){
                 //reset only if spatial is the outer dimension, else keep state_y as end condition at start of next() method.
+                tileIndex = 0;
                 state_y = 0;
                 return true;
             }

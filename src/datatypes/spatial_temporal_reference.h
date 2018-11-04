@@ -38,7 +38,7 @@ namespace rts {
             y2 = spat["y2"].asDouble();
         }
         bool equalsSpatial(const SpatialReference &other){
-            //TODO: add delta for error?
+            //TODO: add delta for float inaccuracy?
             return x1 == other.x1 && x2 == other.x2 && y1 == other.y1 && y2 == other.y2;
         }
         SpatialReference getOverlapSpatial(const SpatialReference &other){
@@ -75,18 +75,31 @@ namespace rts {
         uint32_t res_y;
     };
 
-    class QueryRectangle : public TemporalReference, public SpatialReference, public Resolution {
+    class SpatialTemporalReference : public TemporalReference, public SpatialReference, public Resolution {
     public:
-        QueryRectangle(double t1, double t2, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y, Order order)
-            : TemporalReference(t1, t2), SpatialReference(x1, x2, y1, y2), Resolution(res_x, res_y), order(order) { }
+        SpatialTemporalReference(double t1, double t2, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y)
+                : TemporalReference(t1, t2), SpatialReference(x1, x2, y1, y2), Resolution(res_x, res_y){ }
 
-        QueryRectangle(const TemporalReference &temp_ref, const SpatialReference &spat_ref, const Resolution &res, Order order)
-            : TemporalReference(temp_ref), SpatialReference(spat_ref), Resolution(res), order(order) { }
+        SpatialTemporalReference(const TemporalReference &temp_ref, const SpatialReference &spat_ref, const Resolution &res)
+                : TemporalReference(temp_ref), SpatialReference(spat_ref), Resolution(res) { }
 
-        explicit QueryRectangle(const Json::Value &qrect)
+        explicit SpatialTemporalReference(const Json::Value &qrect)
                 : TemporalReference(qrect["temporal_reference"]),
                   SpatialReference(qrect["spatial_reference"]),
-                  Resolution(qrect["resolution"])
+                  Resolution(qrect["resolution"]) { }
+        SpatialTemporalReference(const SpatialTemporalReference &other) = default;
+    };
+
+    class QueryRectangle : public SpatialTemporalReference {
+    public:
+        QueryRectangle(double t1, double t2, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y, Order order)
+            : SpatialTemporalReference(t1,t2, x1, x2, y1, y2, res_x, res_y), order(order) { }
+
+        QueryRectangle(const TemporalReference &temp_ref, const SpatialReference &spat_ref, const Resolution &res, Order order)
+            : SpatialTemporalReference(temp_ref, spat_ref, res), order(order) { }
+
+        explicit QueryRectangle(const Json::Value &qrect)
+                : SpatialTemporalReference(qrect)
         {
             std::string order_str = qrect["order"].asString();
             if(order_str == "SpatialTemporal")

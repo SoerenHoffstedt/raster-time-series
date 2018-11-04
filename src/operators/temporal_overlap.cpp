@@ -35,7 +35,7 @@ OptionalDescriptor TemporalOverlap::next() {
             return std::nullopt;
     }
 
-    if(input1Time.t1 < input1->totalInfo.t1) { //new raster
+    if(input1Time.t1 < input1->rasterInfo.t1) { //new raster
         //check if there are raster in descriptor cache and use those
         if (!descriptorCache1.empty()) {
             loadRasterFromCache1 = true;
@@ -45,10 +45,10 @@ OptionalDescriptor TemporalOverlap::next() {
         } else {
             loadRasterFromCache1 = false;
         }
-        input1Time = input1->totalInfo; //set input1Time to new Rasters time.
+        input1Time = input1->rasterInfo; //set input1Time to new Rasters time.
     }
 
-    if(input2Time.t1 < input2->totalInfo.t1) { //new raster
+    if(input2Time.t1 < input2->rasterInfo.t1) { //new raster
         //check if there are raster in descriptor cache and use those
         if (!descriptorCache2.empty()) {
             loadRasterFromCache2 = true;
@@ -58,7 +58,7 @@ OptionalDescriptor TemporalOverlap::next() {
         } else {
             loadRasterFromCache2 = false;
         }
-        input2Time = input2->totalInfo; //set input1Time to new Rasters time.
+        input2Time = input2->rasterInfo; //set input1Time to new Rasters time.
     }
 
     //skip the earlier raster when both raster don't overlap
@@ -72,7 +72,7 @@ OptionalDescriptor TemporalOverlap::next() {
             } else {
                 input1 = OperatorUtil::skipCurrentTemporal(*input_operators[0], input1);
             }
-            input1Time = input1->totalInfo;
+            input1Time = input1->rasterInfo;
         } else {
             if(loadRasterFromCache2){
                 input2 = descriptorCache2[descriptorCache2.size() - 1];
@@ -81,7 +81,7 @@ OptionalDescriptor TemporalOverlap::next() {
             } else {
                 input2 = OperatorUtil::skipCurrentTemporal(*input_operators[1], input2);
             }
-            input2Time = input2->totalInfo;
+            input2Time = input2->rasterInfo;
         }
 
     }
@@ -106,16 +106,17 @@ OptionalDescriptor TemporalOverlap::next() {
         loadRasterFromCache2 = true;
 
     TemporalReference raster_result_time = input1Time.getOverlapTemporal(input2Time);
-    QueryRectangle totalInfo(raster_result_time, input1->totalInfo, input1->totalInfo, Order::SpatialTemporal);
-    QueryRectangle tileInfo(raster_result_time, input1->tileInfo, input1->tileInfo, Order::TemporalSpatial);
+    SpatialTemporalReference rasterInfo(raster_result_time, input1->rasterInfo, input1->rasterInfo);
+    Resolution tileResolution = input1->tileResolution;
+    int tileIndex = input1->tileIndex;
 
     auto getter = [input1 = std::move(input1), input2 = std::move(input2)](const Descriptor &self) -> UniqueRaster {
         UniqueRaster raster_in1 = input1->getRaster();
         UniqueRaster raster_in2 = input2->getRaster();
-        UniqueRaster out_raster = std::make_unique<Raster>(self.tileInfo.res_x, self.tileInfo.res_y);
+        UniqueRaster out_raster = std::make_unique<Raster>(self.tileResolution.res_x, self.tileResolution.res_y);
 
-        for (int x = 0; x < self.tileInfo.res_x; ++x) {
-            for (int y = 0; y < self.tileInfo.res_y; ++y) {
+        for (int x = 0; x < self.tileResolution.res_x; ++x) {
+            for (int y = 0; y < self.tileResolution.res_y; ++y) {
                 int val = raster_in1->getCell(x,y) * 1000 + raster_in2->getCell(x,y);
                 out_raster->setCell(x, y, val);
             }
@@ -124,7 +125,7 @@ OptionalDescriptor TemporalOverlap::next() {
         return out_raster;
     };
 
-    return std::make_optional<Descriptor>(std::move(getter), totalInfo, tileInfo);
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileResolution, Order::TemporalSpatial, tileIndex);
 }
 
 bool TemporalOverlap::supportsOrder(Order order) {

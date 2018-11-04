@@ -18,7 +18,8 @@ namespace rts {
     private:
         Json::Value loadDatasetJson(std::string name);
         Json::Value dataset_json;
-        int index;
+        int rasterIndex;
+        int tileIndex;
         int raster_count;
         int nodata;
         double time_start;

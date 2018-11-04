@@ -33,9 +33,9 @@ TimeSeriesIterator GenericOperator::end() {
 }
 
 OptionalDescriptor OperatorUtil::skipCurrentDimension(GenericOperator &op, OptionalDescriptor &currentDesc) {
-    if(currentDesc->totalInfo.order == Order::SpatialTemporal)
+    if(currentDesc->order == Order::SpatialTemporal)
         return skipCurrentSpatial(op, currentDesc);
-    else if(currentDesc->totalInfo.order == Order::TemporalSpatial)
+    else if(currentDesc->order == Order::TemporalSpatial)
         return skipCurrentTemporal(op, currentDesc);
 }
 
@@ -44,12 +44,12 @@ OptionalDescriptor OperatorUtil::skipCurrentTemporal(GenericOperator &op, Option
     if(!currentDesc)
         return returnDesc;
 
-    double time1_to_skip = currentDesc->tileInfo.t1;
-    double time2_to_skip = currentDesc->tileInfo.t2;
+    double time1_to_skip = currentDesc->rasterInfo.t1;
+    double time2_to_skip = currentDesc->rasterInfo.t2;
 
     while(true){
         returnDesc = op.next();
-        if(!returnDesc || (returnDesc->totalInfo.t1 != time1_to_skip || returnDesc->totalInfo.t2 != time2_to_skip))
+        if(!returnDesc || (returnDesc->rasterInfo.t1 != time1_to_skip || returnDesc->rasterInfo.t2 != time2_to_skip))
             break;
     }
 
@@ -59,12 +59,12 @@ OptionalDescriptor OperatorUtil::skipCurrentTemporal(GenericOperator &op, Option
 OptionalDescriptor OperatorUtil::skipCurrentSpatial(GenericOperator &op, OptionalDescriptor &currentDesc) {
     OptionalDescriptor returnDesc = std::nullopt;
 
-    //TODO: make this more robust by checking the spatial reference
-    double last_t1 = currentDesc->tileInfo.t1;
+    //TODO: make this more robust by checking the spatial reference: better tileIndex.
+    double last_t1 = currentDesc->rasterInfo.t1;
 
     while(true){
         returnDesc = op.next();
-        if(!returnDesc || currentDesc->tileInfo.t1 <= last_t1)
+        if(!returnDesc || currentDesc->rasterInfo.t1 <= last_t1)
             break;
     }
 

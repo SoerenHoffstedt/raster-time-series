@@ -26,7 +26,7 @@ OptionalDescriptor Sampler::next() {
     if(qrect.order == Order::TemporalSpatial){
         //send all tiles that have same time as the last send time.
         //TODO: check start and end time?
-        if(lastSendT1 != -1 && lastSendT1 == currInput->tileInfo.t1){
+        if(lastSendT1 != -1 && lastSendT1 == currInput->rasterInfo.t1){
             return currInput;
         }
 
@@ -38,7 +38,7 @@ OptionalDescriptor Sampler::next() {
     } else if(qrect.order == Order::SpatialTemporal){
 
         //TODO: actually has to check if coords of tile are same as before, but coords are not provided rightly by FakeSource atm.
-        if(lastSendT1 != -1 && currInput->tileInfo.t1 > lastSendT1){
+        if(lastSendT1 != -1 && currInput->rasterInfo.t1 > lastSendT1){
             return currInput;
         }
 
@@ -51,7 +51,7 @@ OptionalDescriptor Sampler::next() {
     //TODO: can i simply return the descriptor I got? Some reproduction of the operator tree from a
     //      descriptor might not be possible this way. But its more performant to skip this.
     if(currInput.has_value())
-        lastSendT1 = currInput->tileInfo.t1;
+        lastSendT1 = currInput->rasterInfo.t1;
 
     return currInput;
 }
