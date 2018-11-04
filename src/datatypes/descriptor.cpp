@@ -6,17 +6,17 @@
 
 using namespace rts;
 
-Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter, SpatialTemporalReference &totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex)
-        : getter(std::move(getter)), rasterInfo(totalInfo), order(order), tileResolution(tileResolution), tileIndex(tileIndex) { }
+Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter, SpatialTemporalReference &totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex, int nodata)
+        : getter(std::move(getter)), rasterInfo(totalInfo), order(order), tileResolution(tileResolution), tileIndex(tileIndex), nodata(nodata) { }
 
-Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor &)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex)
-        : getter(std::move(getter)), rasterInfo(totalInfo), order(order), tileResolution(tileResolution), tileIndex(tileIndex) { }
+Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor &)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex, int nodata)
+        : getter(std::move(getter)), rasterInfo(totalInfo), order(order), tileResolution(tileResolution), tileIndex(tileIndex), nodata(nodata) { }
 
-Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor &)> &&getter, SpatialTemporalReference &totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex)
-        : getter(std::move(getter)), rasterInfo(totalInfo), order(order), tileResolution(tileResolution), tileIndex(tileIndex) { }
+Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor &)> &&getter, SpatialTemporalReference &totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex, int nodata)
+        : getter(std::move(getter)), rasterInfo(totalInfo), order(order), tileResolution(tileResolution), tileIndex(tileIndex), nodata(nodata) { }
 
-Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor &)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex)
-        : getter(std::move(getter)), rasterInfo(totalInfo), order(order), tileResolution(tileResolution), tileIndex(tileIndex) { }
+Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor &)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex, int nodata)
+        : getter(std::move(getter)), rasterInfo(totalInfo), order(order), tileResolution(tileResolution), tileIndex(tileIndex), nodata(nodata) { }
 
 uint64_t Descriptor::tilesOfRaster() const {
     //TODO: tiles should always start at (-180,-90) and by alligned in totals of their resolution. Therefore this is more complex, if raster coords are not the whole world. FIX!

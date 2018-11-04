@@ -33,15 +33,16 @@ OptionalDescriptor SpatialOverlap::next() {
         QueryRectangle totalInfo(temp_total, overlapRect, Resolution(qrect.res_x, qrect.res_y), Order::TemporalSpatial);
         Resolution tileResolution = input1->tileResolution;
         int tileIndex = input1->tileIndex;
+        int nodata = input1->nodata;
 
-        SpatialReference tileCoords = input1->calculateCoordinatesOfTile();
+        SpatialReference tileCoords = input1->calcCoordinatesOfTile();
 
         while(!tileCoords.overlapsWithSpatial(overlapRect)) {
             input1 = input_operators[0]->next();
             input2 = input_operators[1]->next();
             if(input1->rasterInfo.t1 > input1_temp.t1) //new raster
                 continue;
-            tileCoords = input1->calculateCoordinatesOfTile();
+            tileCoords = input1->calcCoordinatesOfTile();
         }
         if(input1->rasterInfo.t1 > input1_temp.t1) //new raster
             continue;
@@ -62,7 +63,7 @@ OptionalDescriptor SpatialOverlap::next() {
             return out_raster;
         };
 
-        return std::make_optional<Descriptor>(std::move(getter), totalInfo, tileResolution, Order::TemporalSpatial, tileIndex);
+        return std::make_optional<Descriptor>(std::move(getter), totalInfo, tileResolution, Order::TemporalSpatial, tileIndex, nodata);
     }
 }
 

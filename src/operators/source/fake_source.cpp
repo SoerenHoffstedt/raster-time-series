@@ -94,7 +94,7 @@ OptionalDescriptor FakeSource::next() {
     rasterInfo.t2 = tempInfo.t2;
 
     // qrect_total, qrect_tile
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_res, qrect.order, tileIndexNow);
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_res, qrect.order, tileIndexNow, nodata);
 }
 
 bool FakeSource::supportsOrder(Order o) {

@@ -18,10 +18,10 @@ namespace rts {
      */
     class Descriptor {
     public:
-        Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter, SpatialTemporalReference &totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex);
-        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex);
-        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex);
-        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex);
+        Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter, SpatialTemporalReference &totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex, int nodata);
+        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex, int nodata);
+        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex, int nodata);
+        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex, int nodata);
 
         std::unique_ptr<Raster> getRaster() const;
 
@@ -48,6 +48,10 @@ namespace rts {
 
         /**
          *
+         */
+        int nodata;
+
+        /**
          * @return The total number of tiles of the raster / tile-time-series the current tile belongs to
          */
         uint64_t tilesOfRaster() const;
