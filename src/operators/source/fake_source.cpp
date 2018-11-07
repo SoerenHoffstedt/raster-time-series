@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include <filesystem>
 #include <datatypes/descriptor.h>
 #include "operators/source/fake_source.h"
 #include "fake_source.h"
@@ -31,10 +32,9 @@ FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params) : GenericOperat
 }
 
 Json::Value FakeSource::loadDatasetJson(std::string name) {
-    std::string path = "../../test/data/";
-    path += name;
-    path += ".json";
-    std::ifstream file_in(path);
+    std::filesystem::path p("../../test/data/");
+    p /= std::filesystem::path(name + ".json");
+    std::ifstream file_in(p.string());
     Json::Value dataset_json;
     file_in >> dataset_json;
     return dataset_json;
