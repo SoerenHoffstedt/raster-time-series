@@ -18,10 +18,8 @@ namespace rts {
      */
     class Descriptor {
     public:
-        Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter, SpatialTemporalReference &totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex, int nodata);
-        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex, int nodata);
-        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &totalInfo, Resolution &&tileResolution, Order order, uint32_t tileIndex, int nodata);
-        Descriptor(std::function<UniqueRaster (const Descriptor&)> &&getter, SpatialTemporalReference &&totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex, int nodata);
+        Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter, const SpatialTemporalReference &totalInfo, const Resolution &tileResolution, Order order, uint32_t tileIndex, int nodata);
+        static std::optional<Descriptor> createNodataDescriptor(SpatialTemporalReference &totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex, int nodata);
 
         std::unique_ptr<Raster> getRaster() const;
 
@@ -52,6 +50,11 @@ namespace rts {
         int nodata;
 
         /**
+         * @return If all the data in this tile is nodata.
+         */
+        bool isOnlyNodata() const;
+
+        /**
          * @return The total number of tiles of the raster / tile-time-series the current tile belongs to
          */
         uint64_t tilesOfRaster() const;
@@ -62,15 +65,19 @@ namespace rts {
          */
         SpatialReference calcCoordinatesOfTile() const;
     private:
+        bool _isOnlyNodata;
         std::function<UniqueRaster(const Descriptor&)> getter;
 
         /**
         * @return The pixel positions where the current tile starts in the raster.
         */
-        Resolution calcStartOfTile() const;
+        Resolution calcStartPixelOfTile() const;
+
+        Resolution calcWorldResolution() const;
     };
 
     using OptionalDescriptor = std::optional<Descriptor>;
+    using OptionalDescriptorVector = std::vector<std::optional<Descriptor>>;
 }
 
 #endif //RASTER_TIME_SERIES_DESCRIPTOR_H
