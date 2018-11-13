@@ -5,7 +5,8 @@ add_library(rts_base_lib
         datatypes/descriptor.cpp
         datatypes/raster.cpp
         util/parameters.cpp
-        datatypes/timeseries_iterator.cpp)
+        datatypes/timeseries_iterator.cpp
+        datatypes/spatial_temporal_reference.cpp)
 target_include_directories(rts_base_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries_internal(rts_util rts_base_lib)
 
