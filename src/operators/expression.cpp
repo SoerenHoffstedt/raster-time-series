@@ -17,7 +17,9 @@ OptionalDescriptor Expression::next() {
 
     Resolution tileRes(in->tileResolution);
     SpatialTemporalReference rasterInfo = in->rasterInfo;
+    auto tileSpatialInfo = in->tileSpatialInfo;
     int tileIndex = in->tileIndex;
+    int tileCount = in->rasterTileCount;
     int nodata = in->nodata;
 
     auto getter = [in_desc = std::move(in)](const Descriptor &self) -> std::unique_ptr<Raster> {
@@ -32,7 +34,7 @@ OptionalDescriptor Expression::next() {
         return test;
     };
 
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileRes, qrect.order, tileIndex, nodata);
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileSpatialInfo, tileRes, qrect.order, tileIndex, tileCount, nodata);
 }
 
 bool Expression::supportsOrder(Order order) {

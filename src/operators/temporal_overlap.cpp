@@ -90,25 +90,27 @@ OptionalDescriptor TemporalOverlap::next() {
     const bool input2NeedsCaching = input2Time.t2 > input1Time.t2;
     if(input1NeedsCaching){ //so tiles of input1 must be cached, because potentially another input2 overlaps with input1
         if(descriptorCache1.capacity() == 0)
-            descriptorCache1.reserve(input1->tilesOfRaster());
+            descriptorCache1.reserve(input1->rasterTileCount);
         descriptorCache1.push_back(*input1);
     }
     if(input2NeedsCaching){
         if(descriptorCache2.capacity() == 0)
-            descriptorCache2.reserve(input2->tilesOfRaster());
+            descriptorCache2.reserve(input2->rasterTileCount);
         descriptorCache2.push_back(*input2);
     }
 
     //if a raster is cached and its the last tile of the raster, next time the raster has to be loaded from cache
-    if(input1NeedsCaching && descriptorCache1.size() == input1->tilesOfRaster())
+    if(input1NeedsCaching && descriptorCache1.size() == input1->rasterTileCount)
         loadRasterFromCache1 = true;
-    if(input2NeedsCaching && descriptorCache2.size() == input2->tilesOfRaster())
+    if(input2NeedsCaching && descriptorCache2.size() == input2->rasterTileCount)
         loadRasterFromCache2 = true;
 
     TemporalReference raster_result_time = input1Time.getOverlapTemporal(input2Time);
     SpatialTemporalReference rasterInfo(raster_result_time, input1->rasterInfo, input1->rasterInfo);
     Resolution tileResolution = input1->tileResolution;
+    SpatialReference tileSpatialInfo = input1->tileSpatialInfo;
     int tileIndex = input1->tileIndex;
+    int tileCount = input1->rasterTileCount;
     int nodata = input1->nodata;
 
     auto getter = [input1 = std::move(input1), input2 = std::move(input2)](const Descriptor &self) -> UniqueRaster {
@@ -126,7 +128,7 @@ OptionalDescriptor TemporalOverlap::next() {
         return out_raster;
     };
 
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileResolution, Order::TemporalSpatial, tileIndex, nodata);
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileSpatialInfo, tileResolution, Order::TemporalSpatial, tileIndex, tileCount, nodata);
 }
 
 bool TemporalOverlap::supportsOrder(Order order) {

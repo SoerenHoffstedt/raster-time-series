@@ -15,7 +15,7 @@ void Print::consume() {
     for(auto &desc : *input_operators[0]){
         auto raster = desc.getRaster();
 
-        SpatialReference tileCoords = desc.calcCoordinatesOfTile();
+        SpatialReference tileCoords = desc.tileSpatialInfo;
         std::cout << desc.tileIndex << ": (" << desc.tileResolution.res_x << "," << desc.tileResolution.res_y << "), ("
                   << tileCoords.x1 << "," << tileCoords.x2 << "," << tileCoords.y1 << "," << tileCoords.y2
                   << "), (" << desc.rasterInfo.t1 << "," << desc.rasterInfo.t2 << ")" << std::endl;

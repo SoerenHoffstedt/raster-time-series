@@ -10,14 +10,14 @@ Projection::Projection() : code(4326), authority("EPSG") { }
 
 Projection::Projection(std::string authority, uint32_t code) : authority(std::move(authority)), code(code) { }
 
-SpatialReference Projection::getExtent() {
+SpatialReference Projection::getExtent() const {
     //copied from mapping
     if (authority == "EPSG" && code == 3857)
-        return SpatialReference(-20037508.34,-20037508.34,20037508.34,20037508.34);
+        return SpatialReference(-20037508.34, 20037508.34, -20037508.34, 20037508.34);
     else if (authority == "EPSG" && code == 4326)
-        return SpatialReference(-180, -90, 180, 90);
+        return SpatialReference(-180, 180, -90, 90);
     else if (authority == "SR-ORG" && code == 81 )
-        return SpatialReference(-5568748.276, -5568748.276, 5568748.276, 5568748.276);
+        return SpatialReference(-5568748.276, 5568748.276, -5568748.276, 5568748.276);
     else
         return SpatialReference(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
 }
@@ -43,7 +43,13 @@ bool TemporalReference::overlapsWithTemporal(const TemporalReference &other) con
 
 SpatialReference::SpatialReference(double x1, double x2, double y1, double y2) : x1(x1), x2(x2), y1(y1), y2(y2), projection() { }
 
-SpatialReference::SpatialReference() : x1(-180), x2(180), y1(-90), y2(90), projection() { }
+SpatialReference::SpatialReference() : projection() {
+    auto extent = projection.getExtent();
+    x1 = extent.x1;
+    x2 = extent.x2;
+    y1 = extent.y1;
+    y2 = extent.y2;
+}
 
 SpatialReference::SpatialReference(const Json::Value &spat) : projection() {
     x1 = spat["x1"].asDouble();
@@ -85,6 +91,10 @@ Resolution::Resolution(const Json::Value &res){
 
 bool Resolution::equalsResolution(const Resolution &other) const {
     return res_x == other.res_x && res_y == other.res_y;
+}
+
+Resolution Resolution::operator+(const Resolution &other) const {
+    return Resolution(this->res_x + other.res_x, this->res_y + other.res_y);
 }
 
 // Spatial Temporal Reference definitions:

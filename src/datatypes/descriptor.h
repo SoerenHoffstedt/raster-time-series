@@ -18,18 +18,31 @@ namespace rts {
      */
     class Descriptor {
     public:
-        Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter, const SpatialTemporalReference &totalInfo, const Resolution &tileResolution, Order order, uint32_t tileIndex, int nodata);
-        static std::optional<Descriptor> createNodataDescriptor(SpatialTemporalReference &totalInfo, Resolution &tileResolution, Order order, uint32_t tileIndex, int nodata);
+        Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter,
+                   const SpatialTemporalReference &totalInfo,
+                   const SpatialReference &tileSpatialInfo,
+                   const Resolution &tileResolution,
+                   Order order,
+                   uint32_t tileIndex,
+                   uint32_t tileCount,
+                   int nodata);
+        static std::optional<Descriptor> createNodataDescriptor(SpatialTemporalReference &totalInfo,
+                                                                SpatialReference &tileSpatialInfo,
+                                                                Resolution &tileResolution,
+                                                                Order order,
+                                                                uint32_t tileIndex,
+                                                                uint32_t tileCount,
+                                                                int nodata);
 
         std::unique_ptr<Raster> getRaster() const;
 
         /**
-         *
+         * The order in which the tiles are ordered.
          */
         Order order;
 
         /**
-         *
+         * Spatial, temporal, and resolution information about the raster this tile is part of.
          */
         SpatialTemporalReference rasterInfo;
 
@@ -40,12 +53,23 @@ namespace rts {
         uint32_t tileIndex;
 
         /**
-         *
+         * The number of tiles of this raster.
+         */
+        uint32_t rasterTileCount;
+
+        /**
+         * The spatial coordinates and projection of the described tile. This are the real coordinates of the tile, not
+         * just for the valid data of it.
+         */
+         SpatialReference tileSpatialInfo;
+
+        /**
+         * The resolution of the described tile.
          */
         Resolution tileResolution;
 
         /**
-         *
+         * The nodata value.
          */
         int nodata;
 
@@ -53,27 +77,10 @@ namespace rts {
          * @return If all the data in this tile is nodata.
          */
         bool isOnlyNodata() const;
-
-        /**
-         * @return The total number of tiles of the raster / tile-time-series the current tile belongs to
-         */
-        uint64_t tilesOfRaster() const;
-
-        /**
-         *
-         * @return The coordinates of the described tile.
-         */
-        SpatialReference calcCoordinatesOfTile() const;
+        
     private:
         bool _isOnlyNodata;
         std::function<UniqueRaster(const Descriptor&)> getter;
-
-        /**
-        * @return The pixel positions where the current tile starts in the raster.
-        */
-        Resolution calcStartPixelOfTile() const;
-
-        Resolution calcWorldResolution() const;
     };
 
     using OptionalDescriptor = std::optional<Descriptor>;

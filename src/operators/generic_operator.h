@@ -37,6 +37,8 @@ namespace rts {
         void checkInputCount(int expected);
     };
 
+    using UniqueOperatorVector = std::vector<std::unique_ptr<GenericOperator>>;
+
     class OperatorUtil {
     public:
         /**

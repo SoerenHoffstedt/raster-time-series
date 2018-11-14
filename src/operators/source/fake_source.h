@@ -28,6 +28,8 @@ namespace rts {
         Resolution tile_res;
         int state_x;
         int state_y;
+        Resolution rasterWorldPixelStart;
+        uint32_t tileCount;
 
         ///
         /// \return returns true if end of temporal iteration is reached.

@@ -22,7 +22,7 @@ namespace rts {
         /**
          * @return The coordinates maximum extent of this projection.
          */
-        SpatialReference getExtent();
+        SpatialReference getExtent() const;
     };
 
     class TemporalReference {
@@ -59,6 +59,7 @@ namespace rts {
         Resolution();
         explicit Resolution(const Json::Value &res);
         bool equalsResolution(const Resolution &other) const;
+        Resolution operator+(const Resolution &other) const;
         uint32_t res_x;
         uint32_t res_y;
     };

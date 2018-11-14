@@ -23,8 +23,10 @@ OptionalDescriptor CumulativeSum::next() {
 
     lastTileIndex = input->tileIndex;
     int tileIndex = input->tileIndex;
+    int tileCount = input->rasterTileCount;
     int nodata = input->nodata;
     auto totalRect = input->rasterInfo;
+    auto tileSpatialInfo = input->tileSpatialInfo;
     auto tileRes = input->tileResolution;
     //TODO: temporal validity of the accumulated tile? is it from the first tile to the current? I would guess so.
     totalRect.t1 = lastTileTemp.t1;
@@ -43,7 +45,7 @@ OptionalDescriptor CumulativeSum::next() {
         return raster_in;
     };
 
-    return std::make_optional<Descriptor>(std::move(getter), totalRect, tileRes, qrect.order, tileIndex, nodata);
+    return std::make_optional<Descriptor>(std::move(getter), totalRect, tileSpatialInfo, tileRes, qrect.order, tileIndex, tileCount, nodata);
 }
 
 bool CumulativeSum::supportsOrder(Order order) {

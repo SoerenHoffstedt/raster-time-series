@@ -31,19 +31,22 @@ OptionalDescriptor SpatialOverlap::next() {
             temp_total.t2 = input2->rasterInfo.t2;
 
         QueryRectangle totalInfo(temp_total, overlapRect, Resolution(qrect.res_x, qrect.res_y), Order::TemporalSpatial);
+        auto tileSpatialInfo = input1->tileSpatialInfo;
         Resolution tileResolution = input1->tileResolution;
         int tileIndex = input1->tileIndex;
+        int tileCount = input1->rasterTileCount;
         int nodata = input1->nodata;
 
-        SpatialReference tileCoords = input1->calcCoordinatesOfTile();
+        SpatialReference tileCoords = input1->tileSpatialInfo;
 
         while(!tileCoords.overlapsWithSpatial(overlapRect)) {
             input1 = input_operators[0]->next();
             input2 = input_operators[1]->next();
             if(input1->rasterInfo.t1 > input1_temp.t1) //new raster
                 continue;
-            tileCoords = input1->calcCoordinatesOfTile();
+            tileCoords = input1->tileSpatialInfo;
         }
+        //TODO: a way to restructure this double check to continue both whiles? And maybe ditch the while(true) above?
         if(input1->rasterInfo.t1 > input1_temp.t1) //new raster
             continue;
 
@@ -63,7 +66,7 @@ OptionalDescriptor SpatialOverlap::next() {
             return out_raster;
         };
 
-        return std::make_optional<Descriptor>(std::move(getter), totalInfo, tileResolution, Order::TemporalSpatial, tileIndex, nodata);
+        return std::make_optional<Descriptor>(std::move(getter), totalInfo, tileSpatialInfo, tileResolution, Order::TemporalSpatial, tileIndex, tileCount, nodata);
     }
 }
 

@@ -23,7 +23,9 @@ OptionalDescriptor Aggregator::next() {
     //out raster size, right now just take the tile size.
     uint32_t size_x = descriptors[0]->tileResolution.res_x;
     uint32_t size_y = descriptors[0]->tileResolution.res_y;
+    SpatialReference tileSpatialInfo = descriptors[0]->tileSpatialInfo;
     int tileIndex = descriptors[0]->tileIndex;
+    int tileCount = descriptors[0]->rasterTileCount;
     int nodata = descriptors[0]->nodata;
 
     auto getter = [descriptors = std::move(descriptors), size_x = size_x, size_y = size_y](const Descriptor &self) -> UniqueRaster {
@@ -49,7 +51,7 @@ OptionalDescriptor Aggregator::next() {
     };
 
 
-    return std::make_optional<Descriptor>(std::move(getter), qrect, Resolution(size_x, size_y), qrect.order, tileIndex, nodata);
+    return std::make_optional<Descriptor>(std::move(getter), qrect, tileSpatialInfo, Resolution(size_x, size_y), qrect.order, tileIndex, tileCount, nodata);
 }
 
 bool Aggregator::supportsOrder(Order order) {

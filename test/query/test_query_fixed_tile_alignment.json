@@ -1,0 +1,39 @@
+
+{
+	"query_rectangle" : {
+		"resolution" : {
+			"x" : 20,
+			"y" : 15
+		},
+		"temporal_reference" : {
+			"type" : "UNIX",
+        	"start" : 1519862400,
+        	"end": 1543622400
+		},
+		"spatial_reference" : {
+			"projection": "EPSG:4326",
+	        "x1": -80,
+	        "x2": 120,
+	        "y1": -60,
+	        "y2": 90
+		},
+		"order" : "TemporalSpatial"
+	},
+	"operator" : "print",
+	"params" : {
+
+	},
+	"sources" : [		
+		{
+			"operator" : "fake_source",
+			"params" : {
+				"dataset" : "first_dataset",
+				"tile_size_x" : 9,
+				"tile_size_y" : 9
+			},
+			"sources" : [
+
+			]
+		}	
+	]
+}

@@ -35,7 +35,7 @@ TimeSeriesIterator GenericOperator::end() {
 OptionalDescriptor OperatorUtil::skipCurrentDimension(GenericOperator &op, OptionalDescriptor &currentDesc) {
     if(currentDesc->order == Order::SpatialTemporal)
         return skipCurrentSpatial(op, currentDesc);
-    else if(currentDesc->order == Order::TemporalSpatial)
+    if(currentDesc->order == Order::TemporalSpatial)
         return skipCurrentTemporal(op, currentDesc);
 }
 
