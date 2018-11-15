@@ -8,11 +8,16 @@
 #include "operators/source/fake_source.h"
 
 
-int main() {
+int main(int argc, char** argv) {
 
     using namespace rts;
 
-    std::ifstream file_in("../../test/query/test_query_temporal_overlap.json");
+    if(argc < 2) {
+        std::cout << "no query file provided in program arguments." << std::endl;
+        return 0;
+    }
+
+    std::ifstream file_in(argv[1]);
 
     Json::Value json_query;
     file_in >> json_query;
