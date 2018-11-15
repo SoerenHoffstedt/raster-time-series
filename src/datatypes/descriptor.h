@@ -13,28 +13,30 @@
 
 namespace rts {
 
-    /**
-     * Base class for descriptors, containing spatial temporal reference and virtual getRaster method.
-     */
-    class Descriptor {
-    public:
-        Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter,
-                   const SpatialTemporalReference &totalInfo,
-                   const SpatialReference &tileSpatialInfo,
-                   const Resolution &tileResolution,
-                   Order order,
-                   uint32_t tileIndex,
-                   uint32_t tileCount,
-                   int nodata);
-        static std::optional<Descriptor> createNodataDescriptor(SpatialTemporalReference &totalInfo,
-                                                                SpatialReference &tileSpatialInfo,
-                                                                Resolution &tileResolution,
-                                                                Order order,
-                                                                uint32_t tileIndex,
-                                                                uint32_t tileCount,
-                                                                int nodata);
+    class Descriptor;
 
-        std::unique_ptr<Raster> getRaster() const;
+    /**
+    * A class to clean up the passing of arguments from an input descriptor to an output descriptor in operators.
+    * Because many arguments of an input descriptor will be the same in the output, the operator has to create
+    * fields to save all of them before moving the input descriptor into the closure.
+    * This class is contains all the meta information of a tile for the Descriptor, excluding the getter
+    * (that will be different in the output).
+    * The actual Descriptor class inherits this class, so the data fields are actually the same.
+    * The Descriptor provides a constructor that takes the getter function and a DescriptorArguments object.
+    */
+    class DescriptorInfo {
+    public:
+        DescriptorInfo(const SpatialTemporalReference &totalInfo,
+                            const SpatialReference &tileSpatialInfo,
+                            const Resolution &tileResolution,
+                            Order order,
+                            uint32_t tileIndex,
+                            uint32_t tileCount,
+                            int nodata);
+        DescriptorInfo(const std::optional<Descriptor> &desc);
+        DescriptorInfo& operator=(const std::optional<Descriptor> &desc);
+        DescriptorInfo(const DescriptorInfo &desc) = default;
+        DescriptorInfo& operator=(const DescriptorInfo &desc) = default;
 
         /**
          * The order in which the tiles are ordered.
@@ -61,7 +63,7 @@ namespace rts {
          * The spatial coordinates and projection of the described tile. This are the real coordinates of the tile, not
          * just for the valid data of it.
          */
-         SpatialReference tileSpatialInfo;
+        SpatialReference tileSpatialInfo;
 
         /**
          * The resolution of the described tile.
@@ -78,8 +80,39 @@ namespace rts {
          */
         bool isOnlyNodata() const;
 
-    private:
+    protected:
         bool _isOnlyNodata;
+    };
+
+    /**
+     * Core class for descriptors, containing meta data about a tile (see DescriptorArguments) and
+     * an std::function that is used to load the raster in getRaster().
+     */
+    class Descriptor : public DescriptorInfo {
+    public:
+        Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter,
+                   const SpatialTemporalReference &totalInfo,
+                   const SpatialReference &tileSpatialInfo,
+                   const Resolution &tileResolution,
+                   Order order,
+                   uint32_t tileIndex,
+                   uint32_t tileCount,
+                   int nodata);
+
+        Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter,
+                   const DescriptorInfo &args);
+
+        static std::optional<Descriptor> createNodataDescriptor(SpatialTemporalReference &totalInfo,
+                                                                SpatialReference &tileSpatialInfo,
+                                                                Resolution &tileResolution,
+                                                                Order order,
+                                                                uint32_t tileIndex,
+                                                                uint32_t tileCount,
+                                                                int nodata);
+
+        std::unique_ptr<Raster> getRaster() const;
+
+    private:
         std::function<UniqueRaster(const Descriptor&)> getter;
     };
 

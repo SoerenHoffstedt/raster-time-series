@@ -106,12 +106,8 @@ OptionalDescriptor TemporalOverlap::next() {
         loadRasterFromCache2 = true;
 
     TemporalReference raster_result_time = input1Time.getOverlapTemporal(input2Time);
-    SpatialTemporalReference rasterInfo(raster_result_time, input1->rasterInfo, input1->rasterInfo);
-    Resolution tileResolution = input1->tileResolution;
-    SpatialReference tileSpatialInfo = input1->tileSpatialInfo;
-    int tileIndex = input1->tileIndex;
-    int tileCount = input1->rasterTileCount;
-    int nodata = input1->nodata;
+    DescriptorInfo descInfo(input1);
+    descInfo.rasterInfo = SpatialTemporalReference(raster_result_time, input1->rasterInfo, input1->rasterInfo);
 
     auto getter = [input1 = std::move(input1), input2 = std::move(input2)](const Descriptor &self) -> UniqueRaster {
         UniqueRaster raster_in1 = input1->getRaster();
@@ -128,7 +124,7 @@ OptionalDescriptor TemporalOverlap::next() {
         return out_raster;
     };
 
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileSpatialInfo, tileResolution, Order::Temporal, tileIndex, tileCount, nodata);
+    return std::make_optional<Descriptor>(std::move(getter), descInfo);
 }
 
 bool TemporalOverlap::supportsOrder(Order order) {

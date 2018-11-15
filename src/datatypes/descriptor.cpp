@@ -8,6 +8,41 @@
 
 using namespace rts;
 
+// DescriptorInfo:
+
+DescriptorInfo::DescriptorInfo(const SpatialTemporalReference &totalInfo,
+                               const SpatialReference &tileSpatialInfo,
+                               const Resolution &tileResolution,
+                               Order order,
+                               uint32_t tileIndex,
+                               uint32_t tileCount,
+                               int nodata)
+        : rasterInfo(totalInfo),
+          tileSpatialInfo(tileSpatialInfo),
+          tileResolution(tileResolution),
+          order(order),
+          tileIndex(tileIndex),
+          rasterTileCount(tileCount),
+          nodata(nodata)
+{
+
+}
+
+DescriptorInfo::DescriptorInfo(const OptionalDescriptor &desc)
+        : rasterInfo(desc->rasterInfo),
+          order(desc->order),
+          tileSpatialInfo(desc->tileSpatialInfo),
+          tileResolution(desc->tileResolution),
+          tileIndex(desc->tileIndex),
+          rasterTileCount(desc->rasterTileCount),
+          nodata(desc->nodata),
+          _isOnlyNodata(desc->_isOnlyNodata)
+{
+
+}
+
+// Descriptor:
+
 Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter,
                        const SpatialTemporalReference &totalInfo,
                        const SpatialReference &tileSpatialInfo,
@@ -17,21 +52,13 @@ Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter,
                        uint32_t tileCount,
                        int nodata)
         : getter(std::move(getter)),
-          rasterInfo(totalInfo),
-          order(order),
-          tileSpatialInfo(tileSpatialInfo),
-          tileResolution(tileResolution),
-          tileIndex(tileIndex),
-          rasterTileCount(tileCount),
-          nodata(nodata),
-          _isOnlyNodata(false) { }
+          DescriptorInfo(totalInfo, tileSpatialInfo, tileResolution, order, tileIndex, tileCount, nodata)
+{
+
+}
 
 std::unique_ptr<Raster> Descriptor::getRaster() const {
     return getter(*this);
-}
-
-bool Descriptor::isOnlyNodata() const {
-    return _isOnlyNodata;
 }
 
 std::optional<Descriptor> Descriptor::createNodataDescriptor(SpatialTemporalReference &totalInfo,
@@ -54,4 +81,10 @@ std::optional<Descriptor> Descriptor::createNodataDescriptor(SpatialTemporalRefe
     auto ret = std::make_optional<Descriptor>(std::move(getter), totalInfo, tileSpatialInfo, tileResolution, order, tileIndex, tileCount, nodata);
     ret->_isOnlyNodata = true;
     return ret;
+}
+
+Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor &)> &&getter, const DescriptorInfo &args)
+        : getter(std::move(getter)), DescriptorInfo(args)
+{
+
 }
