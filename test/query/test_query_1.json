@@ -16,7 +16,7 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "SpatialTemporal"
+		"order" : "Temporal"
 	},
 	"operator" : "print",
 	"params" : {
@@ -39,8 +39,8 @@
 							"operator" : "fake_source",
 							"params" : {
 								"dataset" : "first_dataset",
-								"tile_size_x" : 9,
-								"tile_size_y" : 9
+								"tile_size_x" : 18,
+								"tile_size_y" : 18
 							},
 							"sources" : [
 

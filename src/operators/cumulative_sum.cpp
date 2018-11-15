@@ -49,7 +49,7 @@ OptionalDescriptor CumulativeSum::next() {
 }
 
 bool CumulativeSum::supportsOrder(Order order) {
-    return order == Order::SpatialTemporal;
+    return order == Order::Spatial;
 }
 
 void CumulativeSum::setSumRasterZero(const Resolution &res) {

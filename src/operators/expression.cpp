@@ -38,5 +38,5 @@ OptionalDescriptor Expression::next() {
 }
 
 bool Expression::supportsOrder(Order order) {
-    return order == Order::TemporalSpatial || order == Order::SpatialTemporal;
+    return order == Order::Temporal || order == Order::Spatial;
 }

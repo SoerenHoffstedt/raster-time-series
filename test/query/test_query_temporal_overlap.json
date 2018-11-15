@@ -7,7 +7,7 @@
 		"temporal_reference" : {
 			"type" : "UNIX",
         	"start" : 12000,
-        	"end": 20000
+        	"end": 14000
 		},
 		"spatial_reference" : {
 			"projection": "EPSG:4326",
@@ -16,7 +16,7 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "TemporalSpatial"
+		"order" : "Temporal"
 	},
 	"operator" : "print",
 	"params" : {

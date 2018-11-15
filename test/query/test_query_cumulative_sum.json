@@ -16,7 +16,7 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "SpatialTemporal"
+		"order" : "Spatial"
 	},
 	"operator" : "print",
 	"params" : {

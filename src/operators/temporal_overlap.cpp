@@ -128,9 +128,9 @@ OptionalDescriptor TemporalOverlap::next() {
         return out_raster;
     };
 
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileSpatialInfo, tileResolution, Order::TemporalSpatial, tileIndex, tileCount, nodata);
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileSpatialInfo, tileResolution, Order::Temporal, tileIndex, tileCount, nodata);
 }
 
 bool TemporalOverlap::supportsOrder(Order order) {
-    return order == Order::TemporalSpatial;
+    return order == Order::Temporal;
 }

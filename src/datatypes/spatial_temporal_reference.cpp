@@ -120,10 +120,10 @@ QueryRectangle::QueryRectangle(const Json::Value &qrect)
         : SpatialTemporalReference(qrect)
 {
     std::string order_str = qrect["order"].asString();
-    if(order_str == "SpatialTemporal")
-        order = Order::SpatialTemporal;
-    else if(order_str == "TemporalSpatial")
-        order = Order::TemporalSpatial;
+    if(order_str == "Spatial")
+        order = Order::Spatial;
+    else if(order_str == "Temporal")
+        order = Order::Temporal;
     else
         throw std::runtime_error("Invalid value for order enum: " + order_str);
 }

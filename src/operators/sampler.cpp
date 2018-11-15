@@ -21,9 +21,9 @@ OptionalDescriptor Sampler::next() {
     //TODO: how to handle the ordering?
     // what is skipped? single tile descriptors?
     // or a whole first order dimension, meaning skipping all tiles
-    // from one raster if the order is TemporalSpatial? -> this seems logical to me.
+    // from one raster if the order is Temporal? -> this seems logical to me.
 
-    if(qrect.order == Order::TemporalSpatial){
+    if(qrect.order == Order::Temporal){
         //send all tiles that have same time as the last send time.
         //TODO: check start and end time?
         if(lastSendT1 != -1 && lastSendT1 == currInput->rasterInfo.t1){
@@ -35,7 +35,7 @@ OptionalDescriptor Sampler::next() {
             currInput = OperatorUtil::skipCurrentTemporal(*input_operators[0], currInput);
         }
 
-    } else if(qrect.order == Order::SpatialTemporal){
+    } else if(qrect.order == Order::Spatial){
 
         //TODO: actually has to check if coords of tile are same as before, but coords are not provided rightly by FakeSource atm.
         if(lastSendT1 != -1 && currInput->rasterInfo.t1 > lastSendT1){
@@ -57,5 +57,5 @@ OptionalDescriptor Sampler::next() {
 }
 
 bool Sampler::supportsOrder(Order order) {
-    return order == Order::TemporalSpatial || order == Order::SpatialTemporal;
+    return order == Order::Temporal || order == Order::Spatial;
 }

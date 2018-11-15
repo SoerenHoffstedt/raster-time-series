@@ -55,5 +55,5 @@ OptionalDescriptor Aggregator::next() {
 }
 
 bool Aggregator::supportsOrder(Order order) {
-    return order == Order::SpatialTemporal;
+    return order == Order::Spatial;
 }

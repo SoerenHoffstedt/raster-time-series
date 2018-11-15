@@ -30,7 +30,7 @@ OptionalDescriptor SpatialOverlap::next() {
         if(input2->rasterInfo.t2 > input1->rasterInfo.t2)
             temp_total.t2 = input2->rasterInfo.t2;
 
-        QueryRectangle totalInfo(temp_total, overlapRect, Resolution(qrect.res_x, qrect.res_y), Order::TemporalSpatial);
+        QueryRectangle totalInfo(temp_total, overlapRect, Resolution(qrect.res_x, qrect.res_y), Order::Temporal);
         auto tileSpatialInfo = input1->tileSpatialInfo;
         Resolution tileResolution = input1->tileResolution;
         int tileIndex = input1->tileIndex;
@@ -66,10 +66,10 @@ OptionalDescriptor SpatialOverlap::next() {
             return out_raster;
         };
 
-        return std::make_optional<Descriptor>(std::move(getter), totalInfo, tileSpatialInfo, tileResolution, Order::TemporalSpatial, tileIndex, tileCount, nodata);
+        return std::make_optional<Descriptor>(std::move(getter), totalInfo, tileSpatialInfo, tileResolution, Order::Temporal, tileIndex, tileCount, nodata);
     }
 }
 
 bool rts::SpatialOverlap::supportsOrder(Order order) {
-    return order == Order::TemporalSpatial;
+    return order == Order::Temporal;
 }

@@ -77,7 +77,7 @@ namespace rts {
          * @return If all the data in this tile is nodata.
          */
         bool isOnlyNodata() const;
-        
+
     private:
         bool _isOnlyNodata;
         std::function<UniqueRaster(const Descriptor&)> getter;

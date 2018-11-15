@@ -111,11 +111,11 @@ OptionalDescriptor FakeSource::next() {
     TemporalReference tempInfo(time_curr, time_curr + time_duration);
     int tileIndexNow = tileIndex;
 
-    if(qrect.order == Order::TemporalSpatial){
+    if(qrect.order == Order::Temporal){
         if(increaseSpatial()){
             increaseTemporal();
         }
-    } else if(qrect.order == Order::SpatialTemporal){
+    } else if(qrect.order == Order::Spatial){
         if(increaseTemporal()){
             increaseSpatial();
         }
@@ -130,14 +130,14 @@ OptionalDescriptor FakeSource::next() {
 }
 
 bool FakeSource::supportsOrder(Order o) {
-    return o == Order::SpatialTemporal || o == Order::TemporalSpatial;
+    return o == Order::Spatial || o == Order::Temporal;
 }
 
 bool FakeSource::increaseTemporal() {
     rasterIndex += 1;
     time_curr += time_duration;
     if(time_curr >= qrect.t2){
-        if(qrect.order == Order::SpatialTemporal){
+        if(qrect.order == Order::Spatial){
             //reset only if temporal is the outer dimension, else keep time_curr above t2 as end condition at top of next() method
             rasterIndex = 0;
             time_curr = time_start;
@@ -154,7 +154,7 @@ bool FakeSource::increaseSpatial() {
         state_x = 0;
         state_y += tile_res.res_y;
         if(state_y >= static_cast<int>(qrect.res_y)){
-            if(qrect.order == Order::TemporalSpatial){
+            if(qrect.order == Order::Temporal){
                 //reset only if spatial is the outer dimension, else keep state_y as end condition at start of next() method.
                 tileIndex = 0;
                 state_y = 0;

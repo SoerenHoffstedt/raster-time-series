@@ -24,5 +24,5 @@ void Print::consume() {
 }
 
 bool Print::supportsOrder(Order o) {
-    return o == Order::TemporalSpatial;
+    return o == Order::Temporal;
 }

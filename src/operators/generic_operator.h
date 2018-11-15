@@ -57,8 +57,8 @@ namespace rts {
         static OptionalDescriptor skipCurrentSpatial(GenericOperator &op, OptionalDescriptor &currentDesc);
         /**
          * Skips all tiles that are of the same first dimension as the passed Descriptor.
-         * If the order of the passed Descriptor is TemporalSpatial skipCurrentTemporal is called
-         * and if the order is SpatialTemporal skipCurrentSpatial is called.
+         * If the order of the passed Descriptor is Temporal skipCurrentTemporal is called
+         * and if the order is Spatial skipCurrentSpatial is called.
          * @param op The operator that provides the Descriptors.
          * @param currentDesc The descriptor whose current dimension should be skipped.
          * @return The first Descriptor that does not belong to the skipped dimension.
