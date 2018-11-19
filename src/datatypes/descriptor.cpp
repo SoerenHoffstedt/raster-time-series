@@ -41,6 +41,10 @@ DescriptorInfo::DescriptorInfo(const OptionalDescriptor &desc)
 
 }
 
+bool DescriptorInfo::isOnlyNodata() const {
+    return _isOnlyNodata;
+}
+
 // Descriptor:
 
 Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter,
