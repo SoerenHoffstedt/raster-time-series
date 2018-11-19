@@ -32,4 +32,8 @@ target_link_libraries_internal(rts_base_lib rts_query_lib)
 target_link_libraries(rts_base_lib jsoncpp_lib_static)
 target_include_directories(rts_base_lib PRIVATE ${JSONCPP_INCLUDE_DIRS})
 
+find_package(GDAL REQUIRED)
+target_link_libraries(rts_base_lib ${GDAL_LIBRARY})
+target_include_directories(rts_base_lib PUBLIC ${GDAL_INCLUDE_DIR})
+
 target_link_libraries(rts_base_lib stdc++fs) #compiler option needed for using std::filesystem from C++17 with g++ 8
