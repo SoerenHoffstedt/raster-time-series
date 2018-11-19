@@ -16,7 +16,8 @@ FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params) : GenericOperat
     time_start = dataset_json["time_start"].asDouble();
     time_curr = time_start;
     time_duration = dataset_json["time_duration"].asDouble();
-    nodata = dataset_json["nodata"].asInt();
+    nodata = dataset_json["nodata"].asDouble();
+    dataType = GDT_Int32;
     state_x = 0;
     state_y = 0;
     tile_res.res_x = params["tile_size_x"].asUInt();
@@ -126,7 +127,7 @@ OptionalDescriptor FakeSource::next() {
     rasterInfo.t2 = tempInfo.t2;
 
     // qrect_total, qrect_tile
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_spat, tile_res, qrect.order, tileIndexNow, tileCount, nodata);
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_spat, tile_res, qrect.order, tileIndexNow, tileCount, nodata, dataType);
 }
 
 bool FakeSource::supportsOrder(Order o) {

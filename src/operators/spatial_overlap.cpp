@@ -35,7 +35,8 @@ OptionalDescriptor SpatialOverlap::next() {
         Resolution tileResolution = input1->tileResolution;
         int tileIndex = input1->tileIndex;
         int tileCount = input1->rasterTileCount;
-        int nodata = input1->nodata;
+        double nodata = input1->nodata;
+        auto dataType = input1->dataType;
 
         SpatialReference tileCoords = input1->tileSpatialInfo;
 
@@ -66,7 +67,7 @@ OptionalDescriptor SpatialOverlap::next() {
             return out_raster;
         };
 
-        return std::make_optional<Descriptor>(std::move(getter), totalInfo, tileSpatialInfo, tileResolution, Order::Temporal, tileIndex, tileCount, nodata);
+        return std::make_optional<Descriptor>(std::move(getter), totalInfo, tileSpatialInfo, tileResolution, Order::Temporal, tileIndex, tileCount, nodata, dataType);
     }
 }
 

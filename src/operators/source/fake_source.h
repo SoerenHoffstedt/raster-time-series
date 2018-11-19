@@ -21,7 +21,8 @@ namespace rts {
         int rasterIndex;
         int tileIndex;
         int raster_count;
-        int nodata;
+        double nodata;
+        GDALDataType dataType;
         double time_start;
         double time_curr;
         double time_duration;

@@ -26,7 +26,8 @@ OptionalDescriptor Aggregator::next() {
     SpatialReference tileSpatialInfo = descriptors[0]->tileSpatialInfo;
     int tileIndex = descriptors[0]->tileIndex;
     int tileCount = descriptors[0]->rasterTileCount;
-    int nodata = descriptors[0]->nodata;
+    double nodata = descriptors[0]->nodata;
+    auto dataType = descriptors[0]->dataType;
 
     auto getter = [descriptors = std::move(descriptors), size_x = size_x, size_y = size_y](const Descriptor &self) -> UniqueRaster {
         UniqueRaster out_raster = std::make_unique<Raster>(descriptors[0]->tileResolution);
@@ -51,7 +52,7 @@ OptionalDescriptor Aggregator::next() {
     };
 
 
-    return std::make_optional<Descriptor>(std::move(getter), qrect, tileSpatialInfo, Resolution(size_x, size_y), qrect.order, tileIndex, tileCount, nodata);
+    return std::make_optional<Descriptor>(std::move(getter), qrect, tileSpatialInfo, Resolution(size_x, size_y), qrect.order, tileIndex, tileCount, nodata, dataType);
 }
 
 bool Aggregator::supportsOrder(Order order) {

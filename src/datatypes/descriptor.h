@@ -32,7 +32,8 @@ namespace rts {
                             Order order,
                             uint32_t tileIndex,
                             uint32_t tileCount,
-                            int nodata);
+                            double nodata,
+                            GDALDataType dataType);
         DescriptorInfo(const std::optional<Descriptor> &desc);
         DescriptorInfo& operator=(const std::optional<Descriptor> &desc);
         DescriptorInfo(const DescriptorInfo &desc) = default;
@@ -71,9 +72,14 @@ namespace rts {
         Resolution tileResolution;
 
         /**
-         * The nodata value.
+         * The nodata value. A double can contain values for all different dataTypes.
          */
-        int nodata;
+        double nodata;
+
+        /**
+         * The data type of the tile.
+         */
+        GDALDataType dataType;
 
         /**
          * @return If all the data in this tile is nodata.
@@ -97,7 +103,8 @@ namespace rts {
                    Order order,
                    uint32_t tileIndex,
                    uint32_t tileCount,
-                   int nodata);
+                   double nodata,
+                   GDALDataType dataType);
 
         Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter,
                    const DescriptorInfo &args);
@@ -108,7 +115,8 @@ namespace rts {
                                                                 Order order,
                                                                 uint32_t tileIndex,
                                                                 uint32_t tileCount,
-                                                                int nodata);
+                                                                double nodata,
+                                                                GDALDataType dataType);
 
         std::unique_ptr<Raster> getRaster() const;
 

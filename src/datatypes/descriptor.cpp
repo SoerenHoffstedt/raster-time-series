@@ -16,14 +16,16 @@ DescriptorInfo::DescriptorInfo(const SpatialTemporalReference &totalInfo,
                                Order order,
                                uint32_t tileIndex,
                                uint32_t tileCount,
-                               int nodata)
+                               double nodata,
+                               GDALDataType dataType)
         : rasterInfo(totalInfo),
           tileSpatialInfo(tileSpatialInfo),
           tileResolution(tileResolution),
           order(order),
           tileIndex(tileIndex),
           rasterTileCount(tileCount),
-          nodata(nodata)
+          nodata(nodata),
+          dataType(dataType)
 {
 
 }
@@ -36,7 +38,8 @@ DescriptorInfo::DescriptorInfo(const OptionalDescriptor &desc)
           tileIndex(desc->tileIndex),
           rasterTileCount(desc->rasterTileCount),
           nodata(desc->nodata),
-          _isOnlyNodata(desc->_isOnlyNodata)
+          _isOnlyNodata(desc->_isOnlyNodata),
+          dataType(desc->dataType)
 {
 
 }
@@ -54,9 +57,10 @@ Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter,
                        Order order,
                        uint32_t tileIndex,
                        uint32_t tileCount,
-                       int nodata)
+                       double nodata,
+                       GDALDataType dataType)
         : getter(std::move(getter)),
-          DescriptorInfo(totalInfo, tileSpatialInfo, tileResolution, order, tileIndex, tileCount, nodata)
+          DescriptorInfo(totalInfo, tileSpatialInfo, tileResolution, order, tileIndex, tileCount, nodata, dataType)
 {
 
 }
@@ -71,7 +75,8 @@ std::optional<Descriptor> Descriptor::createNodataDescriptor(SpatialTemporalRefe
                                                              Order order,
                                                              uint32_t tileIndex,
                                                              uint32_t tileCount,
-                                                             int nodata)
+                                                             double nodata,
+                                                             GDALDataType dataType)
 {
     auto getter = [tileResolution = tileResolution](const Descriptor &self) -> UniqueRaster {
         UniqueRaster raster = std::make_unique<Raster>(tileResolution);
@@ -82,7 +87,7 @@ std::optional<Descriptor> Descriptor::createNodataDescriptor(SpatialTemporalRefe
         }
         return raster;
     };
-    auto ret = std::make_optional<Descriptor>(std::move(getter), totalInfo, tileSpatialInfo, tileResolution, order, tileIndex, tileCount, nodata);
+    auto ret = std::make_optional<Descriptor>(std::move(getter), totalInfo, tileSpatialInfo, tileResolution, order, tileIndex, tileCount, nodata, dataType);
     ret->_isOnlyNodata = true;
     return ret;
 }
