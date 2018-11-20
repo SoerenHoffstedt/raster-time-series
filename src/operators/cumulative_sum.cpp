@@ -9,8 +9,8 @@ CumulativeSum::CumulativeSum(QueryRectangle qrect, Json::Value &params, std::vec
     checkInputCount(1);
 }
 
-OptionalDescriptor CumulativeSum::next() {
-    auto input = input_operators[0]->next();
+OptionalDescriptor CumulativeSum::nextDescriptor() {
+    auto input = input_operators[0]->nextDescriptor();
 
     if(!input)
         return std::nullopt;

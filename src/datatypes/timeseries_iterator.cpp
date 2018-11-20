@@ -4,7 +4,7 @@
 using namespace rts;
 
 TimeSeriesIterator::TimeSeriesIterator(GenericOperator *op) : op(op) {
-    next_descriptor = op == nullptr ? std::nullopt : op->next();
+    next_descriptor = op == nullptr ? std::nullopt : op->nextDescriptor();
 }
 
 TimeSeriesIterator TimeSeriesIterator::createEndIterator() {
@@ -20,7 +20,7 @@ Descriptor* TimeSeriesIterator::operator->() {
 }
 
 TimeSeriesIterator &TimeSeriesIterator::operator++() {
-    next_descriptor = op != nullptr ? op->next() : std::nullopt;
+    next_descriptor = op != nullptr ? op->nextDescriptor() : std::nullopt;
     return *this;
 }
 

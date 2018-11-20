@@ -7,7 +7,7 @@ Print::Print(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_
 
 }
 
-OptionalDescriptor Print::next() {
+OptionalDescriptor Print::nextDescriptor() {
     return std::nullopt;
 }
 

@@ -55,7 +55,7 @@ Json::Value FakeSource::loadDatasetJson(std::string name) {
     return dataset_json;
 }
 
-OptionalDescriptor FakeSource::next() {
+OptionalDescriptor FakeSource::nextDescriptor() {
 
     if(rasterIndex >= raster_count)
         return std::nullopt;
@@ -139,7 +139,7 @@ bool FakeSource::increaseTemporal() {
     time_curr += time_duration;
     if(time_curr >= qrect.t2){
         if(qrect.order == Order::Spatial){
-            //reset only if temporal is the outer dimension, else keep time_curr above t2 as end condition at top of next() method
+            //reset only if temporal is the outer dimension, else keep time_curr above t2 as end condition at top of nextDescriptor() method
             rasterIndex = 0;
             time_curr = time_start;
             return true;
@@ -156,7 +156,7 @@ bool FakeSource::increaseSpatial() {
         state_y += tile_res.res_y;
         if(state_y >= static_cast<int>(qrect.res_y)){
             if(qrect.order == Order::Temporal){
-                //reset only if spatial is the outer dimension, else keep state_y as end condition at start of next() method.
+                //reset only if spatial is the outer dimension, else keep state_y as end condition at start of nextDescriptor() method.
                 tileIndex = 0;
                 state_y = 0;
                 return true;

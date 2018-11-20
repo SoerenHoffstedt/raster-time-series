@@ -9,10 +9,10 @@ Aggregator::Aggregator(QueryRectangle qrect, Json::Value &params, std::vector<st
     checkInputCount(1);
 }
 
-OptionalDescriptor Aggregator::next() {
+OptionalDescriptor Aggregator::nextDescriptor() {
     //TODO: make it work tile based, right now it takes simply all tiles.
     std::vector<OptionalDescriptor> descriptors;
-    for(OptionalDescriptor input = input_operators[0]->next(); input.has_value(); input = input_operators[0]->next()){
+    for(OptionalDescriptor input = input_operators[0]->nextDescriptor(); input.has_value(); input = input_operators[0]->nextDescriptor()){
         descriptors.push_back(input);
     }
 

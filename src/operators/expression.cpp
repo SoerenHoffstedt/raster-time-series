@@ -8,8 +8,8 @@ Expression::Expression(QueryRectangle qrect, Json::Value &params, std::vector<st
     checkInputCount(1);
 }
 
-OptionalDescriptor Expression::next() {
-    OptionalDescriptor in = input_operators[0]->next();
+OptionalDescriptor Expression::nextDescriptor() {
+    OptionalDescriptor in = input_operators[0]->nextDescriptor();
 
     if(!in) {
         return std::nullopt;

@@ -9,10 +9,10 @@ rts::SpatialOverlap::SpatialOverlap(rts::QueryRectangle qrect, Json::Value &para
     checkInputCount(2);
 }
 
-OptionalDescriptor SpatialOverlap::next() {
+OptionalDescriptor SpatialOverlap::nextDescriptor() {
 
-    auto input1 = input_operators[0]->next();
-    auto input2 = input_operators[1]->next();
+    auto input1 = input_operators[0]->nextDescriptor();
+    auto input2 = input_operators[1]->nextDescriptor();
 
     while(true){
 
@@ -41,8 +41,8 @@ OptionalDescriptor SpatialOverlap::next() {
         SpatialReference tileCoords = input1->tileSpatialInfo;
 
         while(!tileCoords.overlapsWithSpatial(overlapRect)) {
-            input1 = input_operators[0]->next();
-            input2 = input_operators[1]->next();
+            input1 = input_operators[0]->nextDescriptor();
+            input2 = input_operators[1]->nextDescriptor();
             if(input1->rasterInfo.t1 > input1_temp.t1) //new raster
                 continue;
             tileCoords = input1->tileSpatialInfo;

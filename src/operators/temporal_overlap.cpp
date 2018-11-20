@@ -9,7 +9,7 @@ TemporalOverlap::TemporalOverlap(QueryRectangle qrect, Json::Value &params, std:
     checkInputCount(2);
 }
 
-OptionalDescriptor TemporalOverlap::next() {
+OptionalDescriptor TemporalOverlap::nextDescriptor() {
     OptionalDescriptor input1 = std::nullopt;
     OptionalDescriptor input2 = std::nullopt;
     //if last tile was last of its rasters and caching was needed, the raster has to be loaded from cache
@@ -19,7 +19,7 @@ OptionalDescriptor TemporalOverlap::next() {
         if(descriptorCache1.empty())
             loadRasterFromCache1 = false;
     } else {
-        input1 = input_operators[0]->next();
+        input1 = input_operators[0]->nextDescriptor();
         if(!input1.has_value())
             return std::nullopt;
     }
@@ -30,7 +30,7 @@ OptionalDescriptor TemporalOverlap::next() {
         if(descriptorCache2.empty())
             loadRasterFromCache2 = false;
     } else {
-        input2 = input_operators[1]->next();
+        input2 = input_operators[1]->nextDescriptor();
         if(!input2.has_value())
             return std::nullopt;
     }

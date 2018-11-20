@@ -21,7 +21,7 @@ namespace rts {
         explicit GenericOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         explicit GenericOperator(QueryRectangle qrect, Json::Value &params);
         virtual ~GenericOperator() = default;
-        virtual OptionalDescriptor next() = 0;
+        virtual OptionalDescriptor nextDescriptor() = 0;
         virtual bool supportsOrder(Order order) = 0;
         TimeSeriesIterator begin();
         TimeSeriesIterator end();

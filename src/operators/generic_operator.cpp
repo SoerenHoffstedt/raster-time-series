@@ -48,7 +48,7 @@ OptionalDescriptor OperatorUtil::skipCurrentTemporal(GenericOperator &op, Option
     double time2_to_skip = currentDesc->rasterInfo.t2;
 
     while(true){
-        returnDesc = op.next();
+        returnDesc = op.nextDescriptor();
         if(!returnDesc || (returnDesc->rasterInfo.t1 != time1_to_skip || returnDesc->rasterInfo.t2 != time2_to_skip))
             break;
     }
@@ -57,10 +57,10 @@ OptionalDescriptor OperatorUtil::skipCurrentTemporal(GenericOperator &op, Option
 }
 
 OptionalDescriptor OperatorUtil::skipCurrentSpatial(GenericOperator &op, OptionalDescriptor &currentDesc) {
-    OptionalDescriptor returnDesc = op.next();
+    OptionalDescriptor returnDesc = op.nextDescriptor();
     const int tileIndex = currentDesc->tileIndex;
     while(returnDesc.has_value() && currentDesc->tileIndex == tileIndex){
-        returnDesc = op.next();
+        returnDesc = op.nextDescriptor();
     }
     return returnDesc;
 }
