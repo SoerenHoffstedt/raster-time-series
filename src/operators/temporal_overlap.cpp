@@ -1,7 +1,21 @@
 
 #include "temporal_overlap.h"
+#include "datatypes/raster_operations.h"
 
 using namespace rts;
+
+template<class T1, class T2, class T3>
+struct TempOverlapCalc {
+    static void rasterOperation(TypedRaster<T1> *in1, TypedRaster<T2> *in2, TypedRaster<T3> *out){
+        Resolution res = out->getResolution();
+        for (int x = 0; x < res.res_x; ++x) {
+            for (int y = 0; y < res.res_y; ++y) {
+                T1 val = in1->getCell(x,y) * 1000 + in2->getCell(x,y);
+                out->setCell(x, y, (T3)val);
+            }
+        }
+    }
+};
 
 TemporalOverlap::TemporalOverlap(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
         : GenericOperator(qrect, params, std::move(in)), input1Time(), input2Time(), lastTileOfRaster1(false), loadRasterFromCache1(false), loadRasterFromCache2(false)
@@ -112,12 +126,11 @@ OptionalDescriptor TemporalOverlap::nextDescriptor() {
     auto getter = [input1 = std::move(input1), input2 = std::move(input2)](const Descriptor &self) -> UniqueRaster {
         UniqueRaster raster_in1 = input1->getRaster();
         UniqueRaster raster_in2 = input2->getRaster();
-        UniqueRaster out_raster = std::make_unique<Raster>(self.tileResolution.res_x, self.tileResolution.res_y);
+        UniqueRaster out_raster = Raster::createRaster(self.dataType, self.tileResolution);
 
         for (int x = 0; x < self.tileResolution.res_x; ++x) {
             for (int y = 0; y < self.tileResolution.res_y; ++y) {
-                int val = raster_in1->getCell(x,y) * 1000 + raster_in2->getCell(x,y);
-                out_raster->setCell(x, y, val);
+                RasterOperations::callTernary<TempOverlapCalc>(raster_in1.get(), raster_in2.get(), out_raster.get());
             }
         }
 

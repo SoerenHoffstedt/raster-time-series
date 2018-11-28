@@ -1,4 +1,5 @@
 
+#include "datatypes/raster_operations.h"
 #include "expression.h"
 
 using namespace rts;
@@ -19,13 +20,7 @@ OptionalDescriptor Expression::nextDescriptor() {
 
     auto getter = [in_desc = std::move(in)](const Descriptor &self) -> std::unique_ptr<Raster> {
         UniqueRaster test = in_desc->getRaster();
-        for (int x = 0; x < self.tileResolution.res_x; ++x) {
-            for (int y = 0; y < self.tileResolution.res_y; ++y) {
-                int val = test->getCell(x,y);
-                if(val != in_desc->nodata)
-                    test->setCell(x, y, val * val);
-            }
-        }
+        RasterOperations::callUnary<RasterOperations::Squarer>(test.get(), self);
         return test;
     };
 

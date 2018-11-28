@@ -4,6 +4,7 @@
 #include "descriptor.h"
 #include <cmath>
 #include "util/raster_calculations.h"
+#include "datatypes/raster_operations.h"
 
 
 using namespace rts;
@@ -78,13 +79,10 @@ std::optional<Descriptor> Descriptor::createNodataDescriptor(SpatialTemporalRefe
                                                              double nodata,
                                                              GDALDataType dataType)
 {
-    auto getter = [tileResolution = tileResolution](const Descriptor &self) -> UniqueRaster {
-        UniqueRaster raster = std::make_unique<Raster>(tileResolution);
-        for (int x = 0; x < tileResolution.res_x; ++x) {
-            for (int y = 0; y < tileResolution.res_y; ++y) {
-                raster->setCell(x, y, self.nodata);
-            }
-        }
+    auto getter = [](const Descriptor &self) -> UniqueRaster {
+        UniqueRaster raster = Raster::createRaster(self.dataType, self.tileResolution);
+        //set all values to nodata with the AllValuesSetter
+        RasterOperations::callUnary<RasterOperations::AllValuesSetter>(raster.get(), self.nodata);
         return raster;
     };
     auto ret = std::make_optional<Descriptor>(std::move(getter), totalInfo, tileSpatialInfo, tileResolution, order, tileIndex, tileCount, nodata, dataType);

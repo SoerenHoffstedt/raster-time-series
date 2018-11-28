@@ -4,11 +4,28 @@
 #include <string>
 #include <functional>
 #include <filesystem>
+#include "datatypes/raster_operations.h"
 #include "datatypes/descriptor.h"
 #include "util/raster_calculations.h"
 #include "operators/source/fake_source.h"
 
 using namespace rts;
+
+template<class T>
+struct FakeSourceWriter {
+    static void rasterOperation(TypedRaster<T> *raster, Resolution fill_from, Resolution res_left_to_fill, int index, double nodata){
+        Resolution res = raster->getResolution();
+        for (int x = 0; x < res.res_x; ++x) {
+            for (int y = 0; y < res.res_y; ++y) {
+
+                if(x >= fill_from.res_x && y >= fill_from.res_y && x < res_left_to_fill.res_x && y < res_left_to_fill.res_y)
+                    raster->setCell(x, y, index);
+                else
+                    raster->setCell(x,y, nodata);
+            }
+        }
+    }
+};
 
 FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params) : GenericOperator(qrect, params), rasterIndex(0), tileIndex(0) {
     dataset_json = loadDatasetJson(params["dataset"].asString());
@@ -94,18 +111,9 @@ OptionalDescriptor FakeSource::nextDescriptor() {
     Resolution tile_start_world_res(rasterWorldPixelStart.res_x + state_x, rasterWorldPixelStart.res_y + state_y);
     SpatialReference tile_spat = RasterCalculations::calcSpatialInfoFromTilePixel(qrect, tile_start_world_res, tile_start_world_res + tile_res);
 
-    auto getter = [index = rasterIndex, tile_res = tile_res, res_left_to_fill = res_left_to_fill, fill_from = fill_from, nodata = nodata](const Descriptor &self) -> std::unique_ptr<Raster> {
-        std::unique_ptr<Raster> out = std::make_unique<Raster>(tile_res);
-
-        for (int x = 0; x < tile_res.res_x; ++x) {
-            for (int y = 0; y < tile_res.res_y; ++y) {
-
-                if(x >= fill_from.res_x && y >= fill_from.res_y && x < res_left_to_fill.res_x && y < res_left_to_fill.res_y)
-                    out->setCell(x, y, index);
-                else
-                    out->setCell(x,y, nodata);
-            }
-        }
+    auto getter = [index = rasterIndex, res_left_to_fill = res_left_to_fill, fill_from = fill_from](const Descriptor &self) -> std::unique_ptr<Raster> {
+        std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);
+        RasterOperations::callUnary<FakeSourceWriter>(out.get(), fill_from, res_left_to_fill, index, self.nodata);
         return out;
     };
 
@@ -126,7 +134,6 @@ OptionalDescriptor FakeSource::nextDescriptor() {
     rasterInfo.t1 = tempInfo.t1;
     rasterInfo.t2 = tempInfo.t2;
 
-    // qrect_total, qrect_tile
     return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_spat, tile_res, qrect.order, tileIndexNow, tileCount, nodata, dataType);
 }
 

@@ -12,7 +12,7 @@ namespace rts {
         OptionalDescriptor nextDescriptor() override;
         bool supportsOrder(Order order) override;
     private:
-        Raster sum;
+        UniqueRaster sum;
         int lastTileIndex;
         TemporalReference lastTileTemp;
         void setSumRasterZero(const Resolution &res);

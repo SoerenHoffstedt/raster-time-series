@@ -7,18 +7,14 @@
 
 using namespace rts;
 
-Raster::Raster(int res_x, int res_y) : res_x(res_x), res_y(res_y), data_length(res_x * res_y) {
-    data = new int[data_length];
-}
+Raster::Raster(GDALDataType dataType, int res_x, int res_y)
+        : dataType(dataType), res_x(res_x), res_y(res_y), data_length(res_x * res_y) { }
 
 
-Raster::Raster(Resolution res) : data_length(res.res_x * res.res_y) {
-    res_x = res.res_x;
-    res_y = res.res_y;
-    data = new int[data_length];
-}
+Raster::Raster(GDALDataType dataType, Resolution res)
+        : dataType(dataType), res_x(res.res_x), res_y(res.res_y), data_length(res.res_x * res.res_y) { }
 
-Raster::Raster(const Raster &other)
+/*Raster::Raster(const Raster &other)
         : data_length(other.data_length),
           res_x(other.res_x),
           res_y(other.res_y),
@@ -62,44 +58,53 @@ Raster &Raster::operator=(Raster &&other) noexcept {
 
     return *this;
 }
-
-Raster::~Raster()
-{
-    if(data != nullptr){
-        delete[] data;
-        data = nullptr;
-    }
-}
-
-int* Raster::getDataPointer()
-{
-    return data;
-}
-
-int Raster::getCell(int x, int y) const {
-    if(data == nullptr)
-        throw std::runtime_error("Data of raster is not allocated");
-    return data[x + y * res_x];
-}
-
-void Raster::setCell(int x, int y, int value){
-    if(data == nullptr)
-        throw std::runtime_error("Data of raster is not allocated");
-    data[x + y * res_x] = value;
-}
-
-void Raster::print() const {
-
-    for(int y = 0; y < res_y; y++){
-        for(int x = 0; x < res_x; x++){
-            int val = data[x + y * res_x];
-            std::cout << val << " ";
-        }
-        std::cout << "\n";
-    }
-    std::cout << "\n";
-}
+ */
 
 int Raster::getDataLength() const {
     return data_length;
+}
+
+std::unique_ptr<Raster> Raster::createRaster(GDALDataType dataType, int res_x, int res_y) {
+    Raster *ptr = nullptr;
+
+    switch(dataType){
+        case GDT_Byte:
+            ptr = static_cast<Raster*>(new TypedRaster<uint8_t>(dataType, res_x, res_y));
+            break;
+        case GDT_UInt16:
+            ptr = static_cast<Raster*>(new TypedRaster<uint16_t>(dataType, res_x, res_y));
+            break;
+        case GDT_Int16:
+            ptr = static_cast<Raster*>(new TypedRaster<int16_t>(dataType, res_x, res_y));
+            break;
+        case GDT_UInt32:
+            ptr = static_cast<Raster*>(new TypedRaster<uint32_t>(dataType, res_x, res_y));
+            break;
+        case GDT_Int32:
+            ptr = static_cast<Raster*>(new TypedRaster<int32_t>(dataType, res_x, res_y));
+            break;
+        case GDT_Float32:
+            ptr = static_cast<Raster*>(new TypedRaster<float>(dataType, res_x, res_y));
+            break;
+        case GDT_Float64:
+            ptr = static_cast<Raster*>(new TypedRaster<double>(dataType, res_x, res_y));
+            break;
+
+        default:
+            throw std::runtime_error("Unsupported data type for raster creation.");
+    }
+
+    return std::unique_ptr<Raster>(ptr);
+}
+
+std::unique_ptr<Raster> Raster::createRaster(GDALDataType dataType, Resolution res) {
+    return createRaster(dataType, res.res_x, res.res_y);
+}
+
+GDALDataType Raster::getDataType() const {
+    return dataType;
+}
+
+Resolution Raster::getResolution() const {
+    return Resolution(res_x, res_y);
 }
