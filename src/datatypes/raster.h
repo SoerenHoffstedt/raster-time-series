@@ -137,8 +137,7 @@ namespace rts {
     void TypedRaster<T>::print() const {
         for(int y = 0; y < res_y; y++){
             for(int x = 0; x < res_x; x++){
-                int val = data[x + y * res_x];
-                std::cout << val << " ";
+                std::cout << data[x + y * res_x] << " ";
             }
             std::cout << "\n";
         }

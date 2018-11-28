@@ -237,7 +237,7 @@ namespace rts {
                 for (int x = 0; x < res.res_x; ++x) {
                     for (int y = 0; y < res.res_y; ++y) {
                         T val = raster->getCell(x, y);
-                        if (val != desc.nodata)
+                        if (val != static_cast<T>(desc.nodata))
                             raster->setCell(x, y, val * val);
                     }
                 }

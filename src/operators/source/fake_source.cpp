@@ -19,9 +19,9 @@ struct FakeSourceWriter {
             for (int y = 0; y < res.res_y; ++y) {
 
                 if(x >= fill_from.res_x && y >= fill_from.res_y && x < res_left_to_fill.res_x && y < res_left_to_fill.res_y)
-                    raster->setCell(x, y, index);
+                    raster->setCell(x, y, (T)index);
                 else
-                    raster->setCell(x,y, nodata);
+                    raster->setCell(x, y, (T)nodata);
             }
         }
     }
