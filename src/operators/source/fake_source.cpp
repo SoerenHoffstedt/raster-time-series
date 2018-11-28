@@ -34,7 +34,7 @@ FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params) : GenericOperat
     time_curr = time_start;
     time_duration = dataset_json["time_duration"].asDouble();
     nodata = dataset_json["nodata"].asDouble();
-    dataType = GDT_Int32;
+    dataType = parseDataType(dataset_json["data_type"].asString());
     state_x = 0;
     state_y = 0;
     tile_res.res_x = params["tile_size_x"].asUInt();
@@ -171,4 +171,23 @@ bool FakeSource::increaseSpatial() {
         }
     }
     return false;
+}
+
+GDALDataType FakeSource::parseDataType(const std::string &str) {
+    if(str == "Byte")
+        return GDT_Byte;
+    else if(str == "UInt16")
+        return GDT_UInt16;
+    else if(str == "Int16")
+        return GDT_Int16;
+    else if(str == "UInt32")
+        return GDT_UInt32;
+    else if(str == "Int32")
+        return GDT_Int32;
+    else if(str == "Float32")
+        return GDT_Float32;
+    else if(str == "Float64")
+        return GDT_Float64;
+    else
+        throw std::runtime_error("Can not parse data type from string: " + str);
 }

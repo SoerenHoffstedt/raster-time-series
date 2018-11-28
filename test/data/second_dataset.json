@@ -3,5 +3,6 @@
 	"time_start" : 1530403200,
 	"time_duration" : 3888000,	
 	"raster_count" : 15,
-	"nodata" : -1
+	"nodata" : -1,
+	"data_type" : "Int32"
 }

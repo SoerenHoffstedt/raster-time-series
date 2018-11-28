@@ -32,6 +32,8 @@ namespace rts {
         Resolution rasterWorldPixelStart;
         uint32_t tileCount;
 
+        GDALDataType parseDataType(const std::string &str);
+
         ///
         /// \return returns true if end of temporal iteration is reached.
         bool increaseTemporal();
