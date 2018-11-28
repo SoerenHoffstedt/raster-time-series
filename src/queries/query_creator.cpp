@@ -1,5 +1,4 @@
 
-#include "operators/spatial_overlap.h"
 #include "operators/temporal_overlap.h"
 #include "operators/cumulative_sum.h"
 #include "operators/print.h"
@@ -69,8 +68,6 @@ QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, J
         return std::make_unique<CumulativeSum>(qrect, params, std::move(in));
     else if(op_name == "temporal_overlap")
         return std::make_unique<TemporalOverlap>(qrect, params, std::move(in));
-    else if(op_name == "spatial_overlap")
-        return std::make_unique<SpatialOverlap>(qrect, params, std::move(in));
     else
         throw std::runtime_error("Unknown operator: " + op_name);
 }
