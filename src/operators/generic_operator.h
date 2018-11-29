@@ -19,7 +19,6 @@ namespace rts {
     class GenericOperator {
     public:
         explicit GenericOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
-        explicit GenericOperator(QueryRectangle qrect, Json::Value &params);
         virtual ~GenericOperator() = default;
         virtual OptionalDescriptor nextDescriptor() = 0;
         virtual bool supportsOrder(Order order) = 0;

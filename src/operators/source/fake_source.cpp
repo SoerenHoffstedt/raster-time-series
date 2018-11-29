@@ -27,7 +27,8 @@ struct FakeSourceWriter {
     }
 };
 
-FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params) : GenericOperator(qrect, params), rasterIndex(0), tileIndex(0) {
+FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params, UniqueOperatorVector &&in)
+        : GenericOperator(qrect, params, std::move(in)), rasterIndex(0), tileIndex(0) {
     dataset_json = loadDatasetJson(params["dataset"].asString());
     raster_count = dataset_json["raster_count"].asInt();
     time_start = dataset_json["time_start"].asDouble();

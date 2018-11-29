@@ -12,7 +12,7 @@ namespace rts {
      */
     class FakeSource : public GenericOperator {
     public:
-        explicit FakeSource(QueryRectangle qrect, Json::Value &params);
+        explicit FakeSource(QueryRectangle qrect, Json::Value &params, UniqueOperatorVector &&in);
         OptionalDescriptor nextDescriptor() override;
         bool supportsOrder(Order o) override;
     private:

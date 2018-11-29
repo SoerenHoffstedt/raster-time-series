@@ -59,7 +59,7 @@ QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, J
     if(op_name == "expression")
         return std::make_unique<Expression>(qrect, params, std::move(in));
     else if(op_name == "fake_source")
-        return std::make_unique<FakeSource>(qrect, params);
+        return std::make_unique<FakeSource>(qrect, params, std::move(in));
     else if(op_name == "sampler")
         return std::make_unique<Sampler>(qrect, params, std::move(in));
     else if(op_name == "aggregator")
@@ -70,13 +70,4 @@ QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, J
         return std::make_unique<TemporalOverlap>(qrect, params, std::move(in));
     else
         throw std::runtime_error("Unknown operator: " + op_name);
-}
-
-std::unique_ptr<GenericOperator>
-QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, Json::Value &params)
-{
-    if(op_name == "fake_source")
-        return std::make_unique<FakeSource>(qrect, params);
-    else
-        throw std::runtime_error("Unknown operator or needs input operators: " + op_name);
 }

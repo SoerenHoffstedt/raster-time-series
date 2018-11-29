@@ -8,8 +8,8 @@ namespace rts {
 
     class ConsumingOperator : public GenericOperator {
     public:
-        ConsumingOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in) : GenericOperator(qrect, params, std::move(in)) { }
-        ConsumingOperator(QueryRectangle qrect, Json::Value &params) : GenericOperator(qrect, params) { }
+        ConsumingOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+                : GenericOperator(qrect, params, std::move(in)) { }
         virtual void consume() = 0;
     };
 

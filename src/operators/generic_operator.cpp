@@ -15,10 +15,6 @@ GenericOperator::GenericOperator(QueryRectangle qrect, Json::Value &params, std:
 
 }
 
-GenericOperator::GenericOperator(QueryRectangle qrect, Json::Value &params) : qrect(qrect), params(params) {
-
-}
-
 void GenericOperator::checkInputCount(int expected) {
     if(input_operators.size() != expected)
         throw std::runtime_error("Operator has unexpected amount of input operators.");
