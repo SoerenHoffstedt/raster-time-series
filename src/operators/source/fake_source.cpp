@@ -64,7 +64,7 @@ FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params) : GenericOperat
 }
 
 Json::Value FakeSource::loadDatasetJson(std::string name) {
-    std::filesystem::path p("../../test/data/");
+    std::filesystem::path p("../../test/data/fake_source");
     p /= std::filesystem::path(name + ".json");
     std::ifstream file_in(p.string());
     Json::Value dataset_json;
