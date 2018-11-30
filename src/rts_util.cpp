@@ -3,7 +3,7 @@
 #include <fstream>
 #include <json/json.h>
 #include "queries/query_creator.h"
-#include "operators/print.h"
+#include "operators/consuming/print.h"
 #include "operators/expression.h"
 #include "operators/source/fake_source.h"
 

@@ -1,7 +1,7 @@
 
 #include "operators/temporal_overlap.h"
 #include "operators/cumulative_sum.h"
-#include "operators/print.h"
+#include "operators/consuming/print.h"
 #include "operators/expression.h"
 #include "operators/source/fake_source.h"
 #include "operators/source/gdal_source.h"

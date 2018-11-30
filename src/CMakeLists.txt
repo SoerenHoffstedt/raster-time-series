@@ -14,9 +14,10 @@ target_link_libraries_internal(rts_util rts_base_lib)
 
 add_library(rts_operators_lib
         operators/generic_operator.cpp
+        operators/consuming/consuming_operator.cpp
         operators/source/fake_source.cpp
         operators/source/gdal_source.cpp
-        operators/print.cpp
+        operators/consuming/print.cpp
         operators/expression.cpp
         operators/sampler.cpp
         operators/aggregator.cpp

@@ -2,7 +2,7 @@
 #ifndef RASTER_TIME_SERIES_QUERY_CREATOR_H
 #define RASTER_TIME_SERIES_QUERY_CREATOR_H
 
-#include "operators/consuming_operator.h"
+#include "operators/consuming/consuming_operator.h"
 
 namespace rts {
 

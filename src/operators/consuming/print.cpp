@@ -1,14 +1,10 @@
 
-#include "print.h"
+#include "operators/consuming/print.h"
 
 using namespace rts;
 
 Print::Print(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in) : ConsumingOperator(qrect, params, std::move(in)) {
 
-}
-
-OptionalDescriptor Print::nextDescriptor() {
-    return std::nullopt;
 }
 
 void Print::consume() {

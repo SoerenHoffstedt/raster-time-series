@@ -11,6 +11,7 @@ namespace rts {
         ConsumingOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
                 : GenericOperator(qrect, params, std::move(in)) { }
         virtual void consume() = 0;
+        OptionalDescriptor nextDescriptor() override;
     };
 
 }

@@ -3,7 +3,7 @@
 #define RASTER_TIME_SERIES_PRINT_H
 
 #include "operators/generic_operator.h"
-#include "operators/consuming_operator.h"
+#include "operators/consuming/consuming_operator.h"
 
 namespace rts {
 
@@ -13,7 +13,6 @@ namespace rts {
     class Print : public ConsumingOperator {
     public:
         explicit Print(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
-        OptionalDescriptor nextDescriptor() override;
         void consume() override;
         bool supportsOrder(Order o) override;
     };

@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <iostream>
 #include "operators/generic_operator.h"
-#include "operators/print.h"
+#include "operators/consuming/print.h"
 #include "operators/source/fake_source.h"
 #include "generic_operator.h"
 
