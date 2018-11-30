@@ -11,7 +11,7 @@ using namespace boost::posix_time;
 
 template<class T>
 struct GdalSourceWriter {
-    static void rasterOperation(TypedRaster<T> *raster, GDALDataset *rasterDataset, GDALRasterBand *rasterBand, const Descriptor &self) {
+    static void rasterOperation(TypedRaster<T> *raster, std::shared_ptr<GDALDataset> rasterDataset, GDALRasterBand *rasterBand, const Descriptor &self) {
         Resolution tileRes = raster->getResolution();
         void *buffer = static_cast<void*>(raster->getDataPointer());
 
@@ -19,7 +19,6 @@ struct GdalSourceWriter {
 
         double adfGeoTransform[6];
         if(rasterDataset->GetGeoTransform( adfGeoTransform ) != CE_None ) {
-            GDALClose(rasterDataset);
             throw std::runtime_error("GDAL Source: No GeoTransform information in raster");
         }
 
@@ -180,15 +179,11 @@ bool GDALSource::increaseTemporal() {
             while(to_time_t(curr_time) < qrect.t1){
                 increaseCurrentTime();
             }
-            //loadCurrentGdalDataset();
-            currDataset = nullptr;
-            currRasterband = nullptr;
+            loadCurrentGdalDataset();
             return true;
         }
     }
-    currDataset = nullptr;
-    currRasterband = nullptr;
-    //loadCurrentGdalDataset();
+    loadCurrentGdalDataset();
     return false;
 }
 
@@ -286,13 +281,7 @@ constexpr int MAX_FILE_NAME_LENGTH = 255;
 void GDALSource::loadCurrentGdalDataset() {
 
     GDALUtil::initGdal();
-
-    if(currDataset != nullptr){
-        //GDALClose(currDataset);
-        //currDataset = nullptr;
-        //currRasterband = nullptr; //rasterband is owned by the dataset, so not closing it manually.
-    }
-
+    
     char date[MAX_FILE_NAME_LENGTH] = {0};
     time_t curr_time_t = to_time_t(curr_time);
     tm curr_time_tm = *gmtime(&curr_time_t);
@@ -308,10 +297,15 @@ void GDALSource::loadCurrentGdalDataset() {
     std::filesystem::path file_path(path.c_str());
     file_path /= fileName + ""; //i dont get how you can not append a std::filesystem::path with a std::string ?!?!
 
-    currDataset = (GDALDataset *)GDALOpen(file_path.c_str(), GA_ReadOnly);
-    if(currDataset == nullptr){
+    GDALDataset *dataset = (GDALDataset *)GDALOpen(file_path.c_str(), GA_ReadOnly);
+    if(dataset == nullptr){
         throw std::runtime_error("GDAL dataset could not be opened: " + file_path.string());
     }
-    currRasterband = currDataset->GetRasterBand(channel);
+    currRasterband = dataset->GetRasterBand(channel);
+
+    currDataset = std::shared_ptr<GDALDataset>(dataset, [](GDALDataset *d){
+        GDALClose(d);
+        d = nullptr;
+    });
 
 }

@@ -16,8 +16,8 @@ namespace rts {
         OptionalDescriptor nextDescriptor() override;
         bool supportsOrder(Order o) override;
     private:
-        GDALDataset *currDataset;
-        GDALRasterBand *currRasterband;
+        std::shared_ptr<GDALDataset> currDataset;
+        GDALRasterBand *currRasterband; //this can stay a normal ptr, because it is handled by the dataset. The dataset now always has to live as long as the rasterband. maybe put them in one structure?
 
         Resolution tileRes;
         int currRasterIndex;
