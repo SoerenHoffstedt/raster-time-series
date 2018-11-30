@@ -1,0 +1,17 @@
+{
+	"name" : "temp_month",
+	"path" : "../../test/data/gdal_source/temp_month",
+	"filename" : "MOD_LSTD_CLIM_M_%%%TIME_STRING%%%_rgb_3600x1800.TIFF",
+
+	"time_format" : "%Y-%m-%d",
+	"time_start" : "2001-01-01 00:00:00",
+	"time_end" : "2001-12-01 00:00:00",
+	
+	"time_interval" : {
+		"unit" : "Month",
+		"value" : 1	
+	},
+
+	"channel" : 1,
+	"description" : "Temperature at day for a month."
+}
