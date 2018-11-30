@@ -7,13 +7,15 @@ add_library(rts_base_lib
         util/parameters.cpp
         datatypes/timeseries_iterator.cpp
         datatypes/spatial_temporal_reference.cpp
-        util/raster_calculations.cpp)
+        util/raster_calculations.cpp
+        util/gdal_util.cpp)
 target_include_directories(rts_base_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries_internal(rts_util rts_base_lib)
 
 add_library(rts_operators_lib
         operators/generic_operator.cpp
         operators/source/fake_source.cpp
+        operators/source/gdal_source.cpp
         operators/print.cpp
         operators/expression.cpp
         operators/sampler.cpp
@@ -34,5 +36,9 @@ target_include_directories(rts_base_lib PRIVATE ${JSONCPP_INCLUDE_DIRS})
 find_package(GDAL REQUIRED)
 target_link_libraries(rts_base_lib ${GDAL_LIBRARY})
 target_include_directories(rts_base_lib PUBLIC ${GDAL_INCLUDE_DIR})
+
+find_package(Boost COMPONENTS date_time REQUIRED)
+target_link_libraries(rts_base_lib Boost::date_time)
+target_include_directories(rts_base_lib PRIVATE ${Boost_INCLUDE_DIRS})
 
 target_link_libraries(rts_base_lib stdc++fs) #compiler option needed for using std::filesystem from C++17 with g++ 8

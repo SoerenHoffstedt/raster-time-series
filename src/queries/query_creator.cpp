@@ -4,6 +4,7 @@
 #include "operators/print.h"
 #include "operators/expression.h"
 #include "operators/source/fake_source.h"
+#include "operators/source/gdal_source.h"
 #include "operators/sampler.h"
 #include "operators/aggregator.h"
 #include "queries/query_creator.h"
@@ -60,6 +61,8 @@ QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, J
         return std::make_unique<Expression>(qrect, params, std::move(in));
     else if(op_name == "fake_source")
         return std::make_unique<FakeSource>(qrect, params, std::move(in));
+    else if(op_name == "gdal_source")
+        return std::make_unique<GDALSource>(qrect, params, std::move(in));
     else if(op_name == "sampler")
         return std::make_unique<Sampler>(qrect, params, std::move(in));
     else if(op_name == "aggregator")
