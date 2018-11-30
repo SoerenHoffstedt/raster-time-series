@@ -39,6 +39,20 @@ bool TemporalReference::overlapsWithTemporal(const TemporalReference &other) con
     return t1 <= other.t2 && t2 >= other.t1;
 }
 
+double TemporalReference::beginningOfTime() const {
+    // copies from mapping, atm this only has unix as timetype.
+    // A test in unittests/temporal/timeparser.cpp verifies that the constant matches the given date
+    // ISO 8601: 0001-01-01T00:00:00
+    return -62135596800;
+}
+
+double TemporalReference::endOfTime() const {
+    // copies from mapping, atm this only has unix as timetype.
+    // A test in unittests/temporal/timeparser.cpp verifies that the constant matches the given date
+    // ISO 8601: 9999-12-31T23:59:59
+    return 253402300799;
+}
+
 // Spatial Reference definitions:
 
 SpatialReference::SpatialReference(double x1, double x2, double y1, double y2) : x1(x1), x2(x2), y1(y1), y2(y2), projection() { }

@@ -33,6 +33,9 @@ namespace rts {
         TemporalReference getOverlapTemporal(const TemporalReference &o) const;
         bool overlapsWithTemporal(const TemporalReference &other) const;
 
+        double beginningOfTime() const;
+        double endOfTime() const;
+
         double t1;
         double t2;
     };
