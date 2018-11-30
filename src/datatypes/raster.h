@@ -59,6 +59,7 @@ namespace rts {
         int res_x;
         int res_y;
         int data_length;
+        static constexpr int MAX_PRINT_SIZE = 32;
     };
     using UniqueRaster = std::unique_ptr<Raster>;
 
@@ -133,17 +134,19 @@ namespace rts {
         }
     }
 
+    template<>
+    void TypedRaster<unsigned char>::print() const;
+
     template<class T>
     void TypedRaster<T>::print() const {
-        for(int y = 0; y < res_y; y++){
-            for(int x = 0; x < res_x; x++){
+        for(int y = 0; y < res_y && y < MAX_PRINT_SIZE; y++){
+            for(int x = 0; x < res_x && x < MAX_PRINT_SIZE; x++){
                 std::cout << data[x + y * res_x] << " ";
             }
             std::cout << "\n";
         }
         std::cout << "\n";
     }
-
 
 }
 

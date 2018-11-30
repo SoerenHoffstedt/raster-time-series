@@ -108,3 +108,14 @@ GDALDataType Raster::getDataType() const {
 Resolution Raster::getResolution() const {
     return Resolution(res_x, res_y);
 }
+
+template<>
+void TypedRaster<unsigned char>::print() const {
+    for(int y = 0; y < res_y && y < MAX_PRINT_SIZE; y++){
+        for(int x = 0; x < res_x && x < MAX_PRINT_SIZE; x++){
+            std::cout << static_cast<int>(data[x + y * res_x]) << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "\n";
+}
