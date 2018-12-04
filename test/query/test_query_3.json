@@ -1,8 +1,8 @@
 {
 	"query_rectangle" : {
 		"resolution" : {
-			"x" : 36,
-			"y" : 18
+			"x" : 3600,
+			"y" : 1800
 		},
 		"temporal_reference" : {
 			"type" : "UNIX",
@@ -27,7 +27,7 @@
 		{
 			"operator" : "aggregator",
 			"params" : {
-			
+				"custom_data_type" : "Float32"
 			},
 			"sources" : [
 				{									
@@ -40,8 +40,8 @@
 							"operator" : "fake_source",
 							"params" : {
 								"dataset" : "first_dataset",
-								"tile_size_x" : 9,
-								"tile_size_y" : 9
+								"tile_size_x" : 360,
+								"tile_size_y" : 360
 							},
 							"sources" : [
 

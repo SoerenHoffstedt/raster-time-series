@@ -1,6 +1,7 @@
 
-#include "aggregator.h"
+#include "operators/aggregator.h"
 #include "datatypes/raster_operations.h"
+#include "util/parsing.h"
 
 using namespace rts;
 
@@ -25,9 +26,10 @@ struct Aggregating {
 };
 
 Aggregator::Aggregator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(qrect, params, std::move(in)), nextDesc(std::nullopt)
+        : GenericOperator(qrect, params, std::move(in)), nextDesc(std::nullopt), hasTimeInterval(false)
 {
     checkInputCount(1);
+    customDataType = params.isMember("custom_data_type") ? Parsing::parseDataType(params["custom_data_type"].asString()) : GDT_Unknown;
 }
 
 OptionalDescriptor Aggregator::nextDescriptor() {
@@ -59,6 +61,8 @@ OptionalDescriptor Aggregator::nextDescriptor() {
     }
 
     DescriptorInfo info = descriptors[0].value();
+    if(customDataType != GDT_Unknown)
+        info.dataType = customDataType;
     info.rasterInfo.t1 = descriptors[0]->rasterInfo.t1;
     info.rasterInfo.t2 = descriptors[descriptors.size() - 1]->rasterInfo.t2;
 
