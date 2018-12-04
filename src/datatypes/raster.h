@@ -17,16 +17,17 @@ namespace rts {
         /**
          * Creates a TypedRaster based on the passed dataType. The TypedRater<T> will be cast to a generic UniqueRaster.
          * @param dataType Data type for the allocated raster.
-         * @param res Resolution of the allocated raster.
-         * @return
+         * @param v Other parameters for TypedRaster constructors.
+         * @return unique ptr of the base class.
          */
-        static std::unique_ptr<Raster> createRaster(GDALDataType dataType, Resolution res);
-        static std::unique_ptr<Raster> createRaster(GDALDataType dataType, int res_x, int res_y);
+        template<typename... V>
+        static std::unique_ptr<Raster> createRaster(GDALDataType dataType, V... v);
+
 
         Raster(GDALDataType dataType, int res_x, int res_y);
         Raster(GDALDataType dataType, Resolution res);
         virtual ~Raster() = default;
-        //TODO: delete them for now, and check later what is needed. Would prob. need clone/copy functions.
+        //TODO: delete them for now, and check later what is needed. Would prob. need clone/copy functions instead.
         Raster(const Raster &other) = delete;
         Raster& operator=(const Raster &other) = delete;
         Raster(Raster &&other) = delete;
@@ -73,6 +74,8 @@ namespace rts {
     public:
         TypedRaster(GDALDataType dataType, int res_x, int res_y);
         TypedRaster(GDALDataType dataType, Resolution res);
+        TypedRaster(GDALDataType dataType, int res_x, int res_y, void *data_pre);
+        TypedRaster(GDALDataType dataType, Resolution res, void *data_pre);
         ~TypedRaster() override;
         void *getVoidDataPointer() override;
         T *getDataPointer();
@@ -83,16 +86,63 @@ namespace rts {
         void print() const override;
     private:
         T* data;
+        const bool owns_data;
     };
 
+    template<typename... V>
+    std::unique_ptr<Raster> Raster::createRaster(GDALDataType dataType, V... v) {
+        Raster *ptr = nullptr;
+
+        switch(dataType){
+            case GDT_Byte:
+                ptr = static_cast<Raster*>(new TypedRaster<uint8_t>(dataType, v...));
+                break;
+            case GDT_UInt16:
+                ptr = static_cast<Raster*>(new TypedRaster<uint16_t>(dataType, v...));
+                break;
+            case GDT_Int16:
+                ptr = static_cast<Raster*>(new TypedRaster<int16_t>(dataType, v...));
+                break;
+            case GDT_UInt32:
+                ptr = static_cast<Raster*>(new TypedRaster<uint32_t>(dataType, v...));
+                break;
+            case GDT_Int32:
+                ptr = static_cast<Raster*>(new TypedRaster<int32_t>(dataType, v...));
+                break;
+            case GDT_Float32:
+                ptr = static_cast<Raster*>(new TypedRaster<float>(dataType, v...));
+                break;
+            case GDT_Float64:
+                ptr = static_cast<Raster*>(new TypedRaster<double>(dataType, v...));
+                break;
+
+            default:
+                throw std::runtime_error("Unsupported data type for raster creation.");
+        }
+
+        return std::unique_ptr<Raster>(ptr);
+    }
+
     template<class T>
-    TypedRaster<T>::TypedRaster(GDALDataType dataType, Resolution res) : Raster(dataType, res) {
+    TypedRaster<T>::TypedRaster(GDALDataType dataType, Resolution res) : Raster(dataType, res), owns_data(true) {
         data = new T[data_length];
     }
 
     template<class T>
-    TypedRaster<T>::TypedRaster(GDALDataType dataType, int res_x, int res_y) : Raster(dataType, res_x, res_y) {
+    TypedRaster<T>::TypedRaster(GDALDataType dataType, int res_x, int res_y) : Raster(dataType, res_x, res_y), owns_data(true) {
         data = new T[data_length];
+    }
+
+    template<class T>
+    TypedRaster<T>::TypedRaster(GDALDataType dataType, int res_x, int res_y, void *data_pre)
+            : Raster(dataType, res_x, res_y), owns_data(false) {
+        data = (T*)data_pre;
+    }
+
+    template<class T>
+    TypedRaster<T>::TypedRaster(GDALDataType dataType, Resolution res, void *data_pre)
+            : Raster(dataType, res), owns_data(false) {
+        data = (T*)data_pre;
     }
 
     template<class T>
@@ -131,7 +181,8 @@ namespace rts {
     template<class T>
     TypedRaster<T>::~TypedRaster() {
         if(data != nullptr){
-            delete[] data;
+            if(owns_data)
+                delete[] data;
             data = nullptr;
         }
     }

@@ -64,43 +64,6 @@ int Raster::getDataLength() const {
     return data_length;
 }
 
-std::unique_ptr<Raster> Raster::createRaster(GDALDataType dataType, int res_x, int res_y) {
-    Raster *ptr = nullptr;
-
-    switch(dataType){
-        case GDT_Byte:
-            ptr = static_cast<Raster*>(new TypedRaster<uint8_t>(dataType, res_x, res_y));
-            break;
-        case GDT_UInt16:
-            ptr = static_cast<Raster*>(new TypedRaster<uint16_t>(dataType, res_x, res_y));
-            break;
-        case GDT_Int16:
-            ptr = static_cast<Raster*>(new TypedRaster<int16_t>(dataType, res_x, res_y));
-            break;
-        case GDT_UInt32:
-            ptr = static_cast<Raster*>(new TypedRaster<uint32_t>(dataType, res_x, res_y));
-            break;
-        case GDT_Int32:
-            ptr = static_cast<Raster*>(new TypedRaster<int32_t>(dataType, res_x, res_y));
-            break;
-        case GDT_Float32:
-            ptr = static_cast<Raster*>(new TypedRaster<float>(dataType, res_x, res_y));
-            break;
-        case GDT_Float64:
-            ptr = static_cast<Raster*>(new TypedRaster<double>(dataType, res_x, res_y));
-            break;
-
-        default:
-            throw std::runtime_error("Unsupported data type for raster creation.");
-    }
-
-    return std::unique_ptr<Raster>(ptr);
-}
-
-std::unique_ptr<Raster> Raster::createRaster(GDALDataType dataType, Resolution res) {
-    return createRaster(dataType, res.res_x, res.res_y);
-}
-
 GDALDataType Raster::getDataType() const {
     return dataType;
 }
