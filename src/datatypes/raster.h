@@ -51,6 +51,7 @@ namespace rts {
         virtual void setCellDouble(int x, int y, double value) = 0;
         virtual void print() const = 0;
         int getDataLength() const;
+        virtual void *getVoidDataPointer() = 0;
         GDALDataType getDataType() const;
         Resolution getResolution() const;
 
@@ -73,7 +74,8 @@ namespace rts {
         TypedRaster(GDALDataType dataType, int res_x, int res_y);
         TypedRaster(GDALDataType dataType, Resolution res);
         ~TypedRaster() override;
-        T* getDataPointer();
+        void *getVoidDataPointer() override;
+        T *getDataPointer();
         T getCell(int x, int y) const;
         void setCell(int x, int y, T value);
         double getCellDouble(int x, int y) override;
@@ -146,6 +148,11 @@ namespace rts {
             std::cout << "\n";
         }
         std::cout << "\n";
+    }
+
+    template<class T>
+    void *TypedRaster<T>::getVoidDataPointer() {
+        return static_cast<void *>(data);
     }
 
 }

@@ -27,8 +27,8 @@
 			"operator" : "gdal_source",
 			"params" : {
 				"dataset" : "temp_month",
-				"tile_size_x" : 32,
-				"tile_size_y" : 32
+				"tile_size_x" : 36,
+				"tile_size_y" : 36
 			},
 			"sources" : [
 

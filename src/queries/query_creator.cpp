@@ -2,6 +2,7 @@
 #include "operators/temporal_overlap.h"
 #include "operators/cumulative_sum.h"
 #include "operators/consuming/print.h"
+#include "operators/consuming/geotiff_export.h"
 #include "operators/expression.h"
 #include "operators/source/fake_source.h"
 #include "operators/source/gdal_source.h"
@@ -49,6 +50,8 @@ QueryCreator::createConsumingOperator(const std::string &op_name, QueryRectangle
 {
     if(op_name == "print")
         return std::make_unique<Print>(qrect, params, std::move(in));
+    else if(op_name == "geotiff_export")
+        return std::make_unique<GeotiffExport>(qrect, params, std::move(in));
     else
         throw std::runtime_error("Unknown operator: " + op_name);
 }
