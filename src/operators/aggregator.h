@@ -11,6 +11,8 @@ namespace rts {
         Aggregator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
         bool supportsOrder(Order order) override;
+    private:
+        OptionalDescriptor nextDesc;
     };
 
 }

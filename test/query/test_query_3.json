@@ -16,7 +16,7 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "Temporal"
+		"order" : "Spatial"
 	},
 	"operator" : "print",
 	"params" : {
@@ -27,36 +27,27 @@
 		{
 			"operator" : "aggregator",
 			"params" : {
-
+			
 			},
 			"sources" : [
-				{
+				{									
 					"operator" : "expression",
 					"params" : {
-
+						
 					},
 					"sources" : [
-						{
-							"operator" : "sampler",
+						{									
+							"operator" : "fake_source",
 							"params" : {
-								"to_skip" : 2
+								"dataset" : "first_dataset",
+								"tile_size_x" : 9,
+								"tile_size_y" : 9
 							},
 							"sources" : [
-								{
-									"operator" : "fake_source",
-									"params" : {
-										"dataset" : "first_dataset",
-										"tile_size_x" : 36,
-										"tile_size_y" : 9
-									},
-									"sources" : [
 
-									]
-								}
-							]
+							]																											
 						}
-					]
-					
+					]																											
 				}
 			]
 		}	

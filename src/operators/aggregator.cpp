@@ -6,59 +6,75 @@ using namespace rts;
 
 template<class T1, class T2>
 struct Aggregating {
-    static void rasterOperation(TypedRaster<T1> *addingTo, TypedRaster<T2> *added, int rasterCount){
+    static void rasterOperation(TypedRaster<T1> *addingTo, TypedRaster<T2> *added, int rasterCount, double nodata){
         Resolution tileResolution = addingTo->getResolution();
         for(int x = 0; x < tileResolution.res_x; ++x){
             for(int y = 0; y < tileResolution.res_y; ++y){
-                T1 curr_avg = addingTo->getCell(x, y);
                 T2 val = added->getCell(x,y);
-                // A is current avg value after I values, than is the avg with the next value x: (A * I + x) / (I+1)
-                T1 newVal = (curr_avg * (rasterCount) + val) / (rasterCount+1);
-                addingTo->setCell(x,y, newVal);
+                if(val == (T2)nodata)
+                    addingTo->setCell(x, y, (T2)nodata);
+                else {
+                    T1 curr_avg = addingTo->getCell(x, y);
+                    // A is current avg value after I values, than is the avg with the next value x: (A * I + x) / (I+1)
+                    T1 newVal = (curr_avg * (rasterCount) + val) / (rasterCount+1);
+                    addingTo->setCell(x,y, newVal);
+                }
             }
         }
     }
 };
 
 Aggregator::Aggregator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(qrect, params, std::move(in))
+        : GenericOperator(qrect, params, std::move(in)), nextDesc(std::nullopt)
 {
     checkInputCount(1);
 }
 
 OptionalDescriptor Aggregator::nextDescriptor() {
-    //TODO: make it work tile based, right now it takes simply all tiles.
-    std::vector<OptionalDescriptor> descriptors;
-    for(OptionalDescriptor input = input_operators[0]->nextDescriptor(); input.has_value(); input = input_operators[0]->nextDescriptor()){
-        descriptors.push_back(input);
-    }
+    //first descriptor could already be loaded and stored in nextDesc
+    OptionalDescriptor input = nextDesc != std::nullopt ? nextDesc : input_operators[0]->nextDescriptor();
 
-    if(descriptors.empty()){
+    if(input == std::nullopt){
         return std::nullopt;
     }
 
-    //out raster size, right now just take the tile size.
-    uint32_t size_x = descriptors[0]->tileResolution.res_x;
-    uint32_t size_y = descriptors[0]->tileResolution.res_y;
-    SpatialReference tileSpatialInfo = descriptors[0]->tileSpatialInfo;
-    int tileIndex = descriptors[0]->tileIndex;
-    int tileCount = descriptors[0]->rasterTileCount;
-    double nodata = descriptors[0]->nodata;
-    auto dataType = descriptors[0]->dataType;
+    int index = input->tileIndex;
+    std::vector<OptionalDescriptor> descriptors;
+    descriptors.push_back(std::move(input));
+
+    //save all same tile descriptors into the vector. when desc is the next tile, save it into member variable nextDesc
+    while(true){
+        OptionalDescriptor desc = input_operators[0]->nextDescriptor();
+
+        if(desc == std::nullopt){
+            nextDesc = std::nullopt;
+            break;
+        }
+        else if(desc->tileIndex != index){
+            nextDesc = std::move(desc);
+            break;
+        } else {
+            descriptors.push_back(std::move(desc));
+        }
+    }
+
+    DescriptorInfo info = descriptors[0].value();
+    info.rasterInfo.t1 = descriptors[0]->rasterInfo.t1;
+    info.rasterInfo.t2 = descriptors[descriptors.size() - 1]->rasterInfo.t2;
 
     auto getter = [descriptors = std::move(descriptors)](const Descriptor &self) -> UniqueRaster {
         UniqueRaster out_raster = Raster::createRaster(self.dataType, self.tileResolution);
+        RasterOperations::callUnary<RasterOperations::AllValuesSetter>(out_raster.get(), 0);
 
         for(int i = 0; i < descriptors.size(); i++){
             UniqueRaster r = descriptors[i]->getRaster();
-            RasterOperations::callBinary<Aggregating>(out_raster.get(), r.get(), i);
+            RasterOperations::callBinary<Aggregating>(out_raster.get(), r.get(), i, self.nodata);
         }
 
         return out_raster;
     };
 
-
-    return std::make_optional<Descriptor>(std::move(getter), qrect, tileSpatialInfo, Resolution(size_x, size_y), qrect.order, tileIndex, tileCount, nodata, dataType);
+    return std::make_optional<Descriptor>(std::move(getter), info);
 }
 
 bool Aggregator::supportsOrder(Order order) {
