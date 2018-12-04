@@ -8,7 +8,8 @@ add_library(rts_base_lib
         datatypes/timeseries_iterator.cpp
         datatypes/spatial_temporal_reference.cpp
         util/raster_calculations.cpp
-        util/gdal_util.cpp)
+        util/gdal_util.cpp
+        util/parsing.cpp)
 target_include_directories(rts_base_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries_internal(rts_util rts_base_lib)
 
