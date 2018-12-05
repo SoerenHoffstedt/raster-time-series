@@ -4,6 +4,7 @@
 #include "util/parsing.h"
 
 using namespace rts;
+using namespace boost::posix_time;
 
 template<class T1, class T2>
 struct Aggregating {
@@ -26,10 +27,17 @@ struct Aggregating {
 };
 
 Aggregator::Aggregator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(qrect, params, std::move(in)), nextDesc(std::nullopt), hasTimeInterval(false)
+        : GenericOperator(qrect, params, std::move(in)), nextDesc(std::nullopt), hasTimeInterval(false), lastTileIndex(-1)
 {
     checkInputCount(1);
     customDataType = params.isMember("custom_data_type") ? Parsing::parseDataType(params["custom_data_type"].asString()) : GDT_Unknown;
+
+    hasTimeInterval = params.isMember("time_interval");
+    if(hasTimeInterval){
+        interval = TimeInterval(params["time_interval"]);
+        currTime = from_time_t(static_cast<time_t>(qrect.t1));
+    }
+
 }
 
 OptionalDescriptor Aggregator::nextDescriptor() {
@@ -41,18 +49,21 @@ OptionalDescriptor Aggregator::nextDescriptor() {
     }
 
     int index = input->tileIndex;
+    if(lastTileIndex < index){
+        currTime = from_time_t(static_cast<time_t>(qrect.t1));
+    }
+    lastTileIndex = index;
+
     std::vector<OptionalDescriptor> descriptors;
     descriptors.push_back(std::move(input));
+
+    double aggregate_until = getNextTimeBorder();
 
     //save all same tile descriptors into the vector. when desc is the next tile, save it into member variable nextDesc
     while(true){
         OptionalDescriptor desc = input_operators[0]->nextDescriptor();
 
-        if(desc == std::nullopt){
-            nextDesc = std::nullopt;
-            break;
-        }
-        else if(desc->tileIndex != index){
+        if(desc == std::nullopt || desc->tileIndex != index || desc->rasterInfo.t2 >= aggregate_until){
             nextDesc = std::move(desc);
             break;
         } else {
@@ -83,4 +94,13 @@ OptionalDescriptor Aggregator::nextDescriptor() {
 
 bool Aggregator::supportsOrder(Order order) {
     return order == Order::Spatial;
+}
+
+double Aggregator::getNextTimeBorder() {
+    if(!hasTimeInterval)
+        return std::numeric_limits<double>::max();
+    else{
+        interval.increase(currTime);
+        return (double)to_time_t(currTime);
+    }
 }

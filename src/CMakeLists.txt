@@ -9,7 +9,8 @@ add_library(rts_base_lib
         datatypes/spatial_temporal_reference.cpp
         util/raster_calculations.cpp
         util/gdal_util.cpp
-        util/parsing.cpp)
+        util/parsing.cpp
+        util/time_interval.cpp)
 target_include_directories(rts_base_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries_internal(rts_util rts_base_lib)
 
@@ -24,7 +25,9 @@ add_library(rts_operators_lib
         operators/sampler.cpp
         operators/aggregator.cpp
         operators/cumulative_sum.cpp
-        operators/temporal_overlap.cpp)
+        operators/temporal_overlap.cpp
+        operators/convolution.cpp
+        operators/order_changer.cpp)
 target_link_libraries_internal(rts_operators_lib rts_base_lib)
 target_link_libraries_internal(rts_base_lib rts_operators_lib)
 
