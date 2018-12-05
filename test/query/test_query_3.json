@@ -1,8 +1,8 @@
 {
 	"query_rectangle" : {
 		"resolution" : {
-			"x" : 3600,
-			"y" : 1800
+			"x" : 360,
+			"y" : 180
 		},
 		"temporal_reference" : {
 			"type" : "UNIX",
@@ -27,7 +27,11 @@
 		{
 			"operator" : "aggregator",
 			"params" : {
-				"custom_data_type" : "Float32"
+				"custom_data_type" : "Float32",
+				"time_interval" : {
+					"unit" : "Month",
+					"length" : 4
+				}
 			},
 			"sources" : [
 				{									
@@ -40,8 +44,8 @@
 							"operator" : "fake_source",
 							"params" : {
 								"dataset" : "first_dataset",
-								"tile_size_x" : 360,
-								"tile_size_y" : 360
+								"tile_size_x" : 180,
+								"tile_size_y" : 180
 							},
 							"sources" : [
 

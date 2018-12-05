@@ -9,7 +9,7 @@
 	
 	"time_interval" : {
 		"unit" : "Month",
-		"value" : 1	
+		"length" : 1	
 	},
 
 	"channel" : 1,

@@ -24,14 +24,22 @@
 	},
 	"sources" : [				
 		{
-			"operator" : "gdal_source",
+			"operator" : "expression",
 			"params" : {
-				"dataset" : "temp_month",
-				"tile_size_x" : 360,
-				"tile_size_y" : 360
+				
 			},
 			"sources" : [
+				{
+					"operator" : "gdal_source",
+					"params" : {
+						"dataset" : "temp_month",
+						"tile_size_x" : 600,
+						"tile_size_y" : 600
+					},
+					"sources" : [
 
+					]
+				}	
 			]
 		}					
 	]

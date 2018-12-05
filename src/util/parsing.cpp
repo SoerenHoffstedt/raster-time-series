@@ -22,3 +22,20 @@ GDALDataType Parsing::parseDataType(const std::string &input) {
     else
         throw std::runtime_error("Can not parse data type from string: " + input);
 }
+
+TimeUnit Parsing::parseTimeUnit(const std::string &input) {
+    if(input == "Year")
+        return TimeUnit::Year;
+    else if(input == "Month")
+        return TimeUnit::Month;
+    else if(input == "Day")
+        return TimeUnit::Day;
+    else if(input == "Hour")
+        return TimeUnit::Hour;
+    else if(input == "Minute")
+        return TimeUnit::Minute;
+    else if(input == "Second")
+        return TimeUnit::Second;
+    else
+        throw std::runtime_error("Could not parse TimeUnit: " + input);
+}

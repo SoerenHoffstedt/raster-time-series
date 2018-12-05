@@ -2,6 +2,7 @@
 #include "datatypes/raster_operations.h"
 #include "operators/source/gdal_source.h"
 #include "util/raster_calculations.h"
+#include "util/parsing.h"
 #include <filesystem>
 #include <fstream>
 #include <ctime>
@@ -86,9 +87,8 @@ GDALSource::GDALSource(const QueryRectangle &qrect, Json::Value &params, UniqueO
     path                        = dataset_json["path"].asString();
     time_format                 = dataset_json["time_format"].asString();
 
-    Json::Value time_interval   = dataset_json["time_interval"];
-    time_interval_unit          = parseTimeIntervalUnit(time_interval["unit"].asString());
-    time_interval_value         = time_interval["value"].asUInt();
+    Json::Value time_interval_json   = dataset_json["time_interval"];
+    time_interval = TimeInterval(time_interval_json);
 
     dataset_time_start          = time_from_string(dataset_json["time_start"].asString());
     dataset_time_end            = time_from_string(dataset_json["time_end"].asString());
@@ -210,23 +210,6 @@ bool GDALSource::supportsOrder(Order o) {
     return o == Order::Temporal || o == Order::Spatial;
 }
 
-TimeUnit GDALSource::parseTimeIntervalUnit(const std::string &str) {
-    if(str == "Year")
-        return TimeUnit::Year;
-    else if(str == "Month")
-        return TimeUnit::Month;
-    else if(str == "Day")
-        return TimeUnit::Day;
-    else if(str == "Hour")
-        return TimeUnit::Hour;
-    else if(str == "Minute")
-        return TimeUnit::Minute;
-    else if(str == "Second")
-        return TimeUnit::Second;
-    else
-        throw std::runtime_error("Could not parse TimeUnit: " + str);
-}
-
 Json::Value GDALSource::loadDatasetJson(const std::string &name) {
     std::filesystem::path p("../../test/data/gdal_source");
     p /= std::filesystem::path(name + ".json");
@@ -245,35 +228,13 @@ double GDALSource::parseIsoTime(const std::string &str) const {
 }
 
 void GDALSource::increaseCurrentTime() {
-    curr_time = increasePTimeByInterval(curr_time);
+    time_interval.increase(curr_time);
 }
 
 double GDALSource::getCurrentTimeEnd() const {
-    return static_cast<double>(to_time_t(increasePTimeByInterval(curr_time)));
-}
-
-boost::posix_time::ptime GDALSource::increasePTimeByInterval(boost::posix_time::ptime to_increase) const {
-    switch(time_interval_unit){
-        case TimeUnit::Year:
-            to_increase += boost::gregorian::years(time_interval_value);
-            break;
-        case TimeUnit::Month:
-            to_increase += boost::gregorian::months(time_interval_value);
-            break;
-        case TimeUnit::Day:
-            to_increase += boost::gregorian::days(time_interval_value);
-            break;
-        case TimeUnit::Hour:
-            to_increase += boost::posix_time::hours(time_interval_value);
-            break;
-        case TimeUnit::Minute:
-            to_increase += boost::posix_time::minutes(time_interval_value);
-            break;
-        case TimeUnit::Second:
-            to_increase += boost::posix_time::seconds(time_interval_value);
-            break;
-    }
-    return to_increase;
+    ptime curr = curr_time;
+    time_interval.increase(curr);
+    return static_cast<double>(to_time_t(curr));
 }
 
 constexpr int MAX_FILE_NAME_LENGTH = 255;
