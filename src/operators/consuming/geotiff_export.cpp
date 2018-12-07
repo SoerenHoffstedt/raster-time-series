@@ -1,6 +1,7 @@
 
 #include <gdal_priv.h>
 #include <string>
+#include <filesystem>
 #include "geotiff_export.h"
 #include "util/gdal_util.h"
 
@@ -31,13 +32,18 @@ void GeotiffExport::consume() {
     driver = GetGDALDriverManager()->GetDriverByName(driverName.c_str());
 
     if(driver == nullptr){
-        std::runtime_error("Driver could not be found: "s + driverName);
+        throw std::runtime_error("Driver could not be found: "s + driverName);
     }
 
     char **papszOptions = nullptr;
 
     if (strcmp(driverName.c_str(), "GTiff") == 0) {
         papszOptions = CSLSetNameValue(papszOptions, "COMPRESS", "DEFLATE");
+    }
+
+    std::filesystem::path p(path.c_str());
+    if(!std::filesystem::exists(p)){
+        std::filesystem::create_directory(p);
     }
 
     GenericOperator *in_op = input_operators[0].get();
@@ -74,7 +80,7 @@ void GeotiffExport::consume() {
 
         out_rasterBand->SetNoDataValue(in_desc.nodata);
         int w = in_desc.tileResolution.res_x, h = in_desc.tileResolution.res_y;
-        //TODO: what happens, when the tile has more data than to write? Its not easily handable, i think...
+        //TODO: what happens, when the tile has more data than to write? Its not easily handleable, i think...
 
         auto res = out_rasterBand->RasterIO(GF_Write, x, y, w, h, data, w, h, in_desc.dataType, 0, 0, nullptr);
 
