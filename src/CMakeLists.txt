@@ -1,4 +1,5 @@
 add_executable(rts_util rts_util.cpp)
+add_executable(rts_test_all rts_test_all.cpp)
 
 include(LinkLibrariesInternal)
 add_library(rts_base_lib
@@ -13,6 +14,7 @@ add_library(rts_base_lib
         util/time_interval.cpp)
 target_include_directories(rts_base_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries_internal(rts_util rts_base_lib)
+target_link_libraries_internal(rts_test_all rts_base_lib)
 
 add_library(rts_operators_lib
         operators/generic_operator.cpp
