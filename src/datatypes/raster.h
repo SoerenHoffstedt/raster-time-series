@@ -53,8 +53,18 @@ namespace rts {
         virtual void print() const = 0;
         int getDataLength() const;
         virtual void *getVoidDataPointer() = 0;
+        /**
+         * Returns the data pointer, but offsets it by offsetX pixel and offsetY lines.
+         * This is important for reading and writing to the data, but not from (0,0) but
+         * from where the data actually starts. The actual data pointer is not affected.
+         * @param offsetX how many pixel to offset.
+         * @param offsetY how many lines of the tile to offset.
+         * @return Pointer to the raster data but offset.
+         */
+        virtual void *getVoidDataPointerOffset(int x, int y) = 0;
         GDALDataType getDataType() const;
         Resolution getResolution() const;
+        virtual int32_t sizeOfDataType() const = 0;
 
     protected:
         GDALDataType dataType;
@@ -78,12 +88,14 @@ namespace rts {
         TypedRaster(GDALDataType dataType, Resolution res, void *data_pre);
         ~TypedRaster() override;
         void *getVoidDataPointer() override;
+        void *getVoidDataPointerOffset(int offsetX, int offsetY) override;
         T *getDataPointer();
         T getCell(int x, int y) const;
         void setCell(int x, int y, T value);
         double getCellDouble(int x, int y) override;
         void setCellDouble(int x, int y, double value) override;
         void print() const override;
+        int32_t sizeOfDataType() const override;
     private:
         T* data;
         const bool owns_data;
@@ -204,6 +216,19 @@ namespace rts {
     template<class T>
     void *TypedRaster<T>::getVoidDataPointer() {
         return static_cast<void *>(data);
+    }
+
+    template<class T>
+    int32_t TypedRaster<T>::sizeOfDataType() const {
+        return sizeof(T);
+    }
+
+    template<class T>
+    void *TypedRaster<T>::getVoidDataPointerOffset(int offsetX, int offsetY) {
+        T* offset_ptr = data;
+        offset_ptr += offsetY * res_x * sizeof(T);
+        offset_ptr += offsetX * sizeof(T);
+        return static_cast<void*>(offset_ptr);
     }
 
 }
