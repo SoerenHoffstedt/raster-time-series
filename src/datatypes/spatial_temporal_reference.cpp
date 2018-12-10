@@ -111,6 +111,10 @@ Resolution Resolution::operator+(const Resolution &other) const {
     return Resolution(this->res_x + other.res_x, this->res_y + other.res_y);
 }
 
+Resolution Resolution::operator-(const Resolution &other) const {
+    return Resolution(this->res_x - other.res_x, this->res_y - other.res_y);
+}
+
 // Spatial Temporal Reference definitions:
 
 SpatialTemporalReference::SpatialTemporalReference(double t1, double t2, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y)

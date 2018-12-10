@@ -1,0 +1,8 @@
+{
+	"name" : "fakeymcfake",
+	"time_start" : 1514764800,
+	"time_duration" : 2592000,	
+	"raster_count" : 50,
+	"nodata" : 255,
+	"data_type" : "Byte"
+}

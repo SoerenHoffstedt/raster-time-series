@@ -49,6 +49,16 @@ bool DescriptorInfo::isOnlyNodata() const {
     return _isOnlyNodata;
 }
 
+Resolution DescriptorInfo::getDimensionalTileCount() const {
+    uint32_t num_x = rasterInfo.res_x / tileResolution.res_x;
+    uint32_t num_y = rasterInfo.res_y / tileResolution.res_y;
+    if(rasterInfo.res_x % tileResolution.res_x > 0)
+        num_x += 1;
+    if(rasterInfo.res_y % tileResolution.res_y > 0)
+        num_y += 1;
+    return Resolution(num_x, num_y);
+}
+
 // Descriptor:
 
 Descriptor::Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter,

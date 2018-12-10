@@ -27,11 +27,12 @@ namespace rts {
         /**
          *
          * @param rasterInfo
-         * @param tileStart
-         * @param tileEnd
+         * @param pixelStart
+         * @param pixelEnd
          * @return
          */
-        static SpatialReference calcSpatialInfoFromTilePixel(const SpatialTemporalReference &rasterInfo, Resolution tileStart, Resolution tileEnd);
+        static SpatialReference calcSpatialInfoFromPixel(const SpatialTemporalReference &rasterInfo,
+                                                         Resolution pixelStart, Resolution pixelEnd);
     };
 
 }

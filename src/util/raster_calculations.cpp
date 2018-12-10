@@ -31,14 +31,14 @@ Resolution RasterCalculations::calcWorldResolution(const SpatialTemporalReferenc
     double stretch_y = total_y / (rasterInfo.y2 - rasterInfo.y1);
 
     Resolution world;
-    world.res_x = (uint32_t)ceil(rasterInfo.res_x * stretch_x); //ceil or round? ceil to def. get all the data?
-    world.res_y = (uint32_t)ceil(rasterInfo.res_y * stretch_y);
+    world.res_x = (uint32_t)round(rasterInfo.res_x * stretch_x); //ceil or round? ceil to def. get all the data?
+    world.res_y = (uint32_t)round(rasterInfo.res_y * stretch_y);
     return world;
 }
 
-SpatialReference RasterCalculations::calcSpatialInfoFromTilePixel(const SpatialTemporalReference &rasterInfo,
-                                                                  Resolution tileStart,
-                                                                  Resolution tileEnd) {
+SpatialReference RasterCalculations::calcSpatialInfoFromPixel(const SpatialTemporalReference &rasterInfo,
+                                                              Resolution pixelStart,
+                                                              Resolution pixelEnd) {
     SpatialReference extent = rasterInfo.projection.getExtent();
     Resolution worldRes = calcWorldResolution(rasterInfo);
     SpatialReference result;
@@ -46,11 +46,11 @@ SpatialReference RasterCalculations::calcSpatialInfoFromTilePixel(const SpatialT
     double total_x = extent.x2 - extent.x1;
     double total_y = extent.y2 - extent.y1;
 
-    result.x1 = ((double)tileStart.res_x / worldRes.res_x) * total_x + extent.x1;
-    result.y1 = ((double)tileStart.res_y / worldRes.res_y) * total_y + extent.y1;
+    result.x1 = ((double)pixelStart.res_x / worldRes.res_x) * total_x + extent.x1;
+    result.y1 = ((double)pixelStart.res_y / worldRes.res_y) * total_y + extent.y1;
 
-    result.x2 = ((double)tileEnd.res_x / worldRes.res_x)   * total_x + extent.x1;
-    result.y2 = ((double)tileEnd.res_y / worldRes.res_y)   * total_y + extent.y1;
+    result.x2 = ((double)pixelEnd.res_x / worldRes.res_x)   * total_x + extent.x1;
+    result.y2 = ((double)pixelEnd.res_y / worldRes.res_y)   * total_y + extent.y1;
 
     return result;
 }

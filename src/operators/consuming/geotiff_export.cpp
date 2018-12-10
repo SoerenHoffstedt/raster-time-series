@@ -4,6 +4,7 @@
 #include <filesystem>
 #include "geotiff_export.h"
 #include "util/gdal_util.h"
+#include "util/raster_calculations.h"
 
 using namespace std::string_literals;
 using namespace rts;
@@ -13,6 +14,7 @@ GeotiffExport::GeotiffExport(QueryRectangle qrect, Json::Value &params, UniqueOp
 {
     driverName = "GTiff"s;
     path = "results/"s;
+    extent = qrect.projection.getExtent();
 }
 
 bool GeotiffExport::supportsOrder(Order o) {
@@ -71,7 +73,9 @@ void GeotiffExport::consume() {
 
             out_rasterBand = out_dataset->GetRasterBand(1);
             x = 0;
-            y = in_desc.rasterInfo.res_y - in_desc.tileResolution.res_y; //y pixel are flipped between rts and gdal, so don't start with y = 0;
+            y = 0; //in_desc.rasterInfo.res_y - in_desc.tileResolution.res_y; //y pixel are flipped between rts and gdal, so don't start with y = 0;
+            if(y < 0)
+                y = 0;
             count++;
         }
 
@@ -80,9 +84,21 @@ void GeotiffExport::consume() {
 
         out_rasterBand->SetNoDataValue(in_desc.nodata);
         int w = in_desc.tileResolution.res_x, h = in_desc.tileResolution.res_y;
-        //TODO: what happens, when the tile has more data than to write? Its not easily handleable, i think...
+        int offsetX = 0, offsetY = 0;
 
-        auto res = out_rasterBand->RasterIO(GF_Write, x, y, w, h, data, w, h, in_desc.dataType, 0, 0, nullptr);
+        calcTilePosAndSize(in_desc, x, y, w, h, offsetX, offsetY);
+
+        int dataSize = raster->sizeOfDataType();
+
+        if(offsetX != 0 || offsetY != 0){
+            data = raster->getVoidDataPointerOffset(offsetX, offsetY);
+        }
+
+        auto res = out_rasterBand->RasterIO(
+                GF_Write, x, y, w, h,
+                data, w, h, raster->getDataType(),
+                0, dataSize * in_desc.tileResolution.res_x,
+                nullptr);
 
         if(res != CE_None){
             throw std::runtime_error("GeoTiff Export: Writing into raster failed.");
@@ -91,7 +107,7 @@ void GeotiffExport::consume() {
         x += w;
         if(x >= in_desc.rasterInfo.res_x){
             x = 0;
-            y -= h;
+            y += h;
         }
 
         if(in_desc.tileIndex == in_desc.rasterTileCount - 1){
@@ -100,5 +116,43 @@ void GeotiffExport::consume() {
             out_rasterBand = nullptr;
         }
     }
+
+}
+
+void GeotiffExport::calcTilePosAndSize(const Descriptor &in_desc, int &x, int &y, int &w, int &h, int &offsetX, int &offsetY) const {
+
+    //The spatial extent of a tile can be more that the query rectangles. Here only the really requested data
+    //should be written, so make the tile spatial info smaller if needed.
+    SpatialReference spatInfo = in_desc.tileSpatialInfo;
+    if(spatInfo.x1 < qrect.x1)
+        spatInfo.x1 = qrect.x1;
+    if(spatInfo.x2 > qrect.x2)
+        spatInfo.x2 = qrect.x2;
+    if(spatInfo.y1 < qrect.y1)
+        spatInfo.y1 = qrect.y1;
+    if(spatInfo.y2 > qrect.y2)
+        spatInfo.y2 = qrect.y2;
+
+    Resolution start = RasterCalculations::coordinateToWorldPixel(in_desc.rasterInfo, spatInfo.x1, spatInfo.y1);
+    Resolution end   = RasterCalculations::coordinateToWorldPixel(in_desc.rasterInfo, spatInfo.x2, spatInfo.y2);
+
+    int modXStart   = start.res_x % in_desc.tileResolution.res_x;
+    int modYStart   = start.res_y % in_desc.tileResolution.res_y;
+    int modXEnd     = end.res_x % in_desc.tileResolution.res_x;
+    int modYEnd     = end.res_y % in_desc.tileResolution.res_y;
+
+    //if start pixel are not aligned to the tile resolution, an offset for the data pointer is needed:
+    offsetX = modXStart;
+    offsetY = modYStart;
+
+    if(modXStart != 0)
+        w -= modXStart;
+    if(modYStart != 0)
+        h -= modYStart;
+
+    if(modXEnd  != 0)
+        w -= in_desc.tileResolution.res_x - modXEnd;
+    if(modYEnd != 0)
+        h -= in_desc.tileResolution.res_y - modYEnd;
 
 }

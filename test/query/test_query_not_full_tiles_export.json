@@ -1,9 +1,8 @@
-
 {
 	"query_rectangle" : {
 		"resolution" : {
-			"x" : 20,
-			"y" : 15
+			"x" : 280,
+			"y" : 90
 		},
 		"temporal_reference" : {
 			"type" : "UNIX",
@@ -12,36 +11,29 @@
 		},
 		"spatial_reference" : {
 			"projection": "EPSG:4326",
-	        "x1": -80,
-	        "x2": 120,
+	        "x1": -140,
+	        "x2": 140,
 	        "y1": -60,
-	        "y2": 90
+	        "y2": 30
 		},
 		"order" : "Temporal"
 	},
-	"operator" : "print",
+	"operator" : "geotiff_export",
 	"params" : {
 
 	},
 	"sources" : [		
-		{
-			"operator" : "expression",
+		{				
+			"operator" : "fake_source",
 			"params" : {
-
+				"dataset" : "byte_dataset",
+				"tile_size_x" : 90,
+				"tile_size_y" : 90,
+				"fill_index" : false
 			},
 			"sources" : [
-				{
-					"operator" : "fake_source",
-					"params" : {
-						"dataset" : "first_dataset",
-						"tile_size_x" : 9,
-						"tile_size_y" : 9
-					},
-					"sources" : [
 
-					]
-				}
-			]
+			]				
 		}	
 	]
 }

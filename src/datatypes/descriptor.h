@@ -35,7 +35,7 @@ namespace rts {
                             uint32_t tileCount,
                             double nodata,
                             GDALDataType dataType);
-        DescriptorInfo(const std::optional<Descriptor> &desc);
+        explicit DescriptorInfo(const std::optional<Descriptor> &desc);
         DescriptorInfo& operator=(const std::optional<Descriptor> &desc);
         DescriptorInfo(const DescriptorInfo &desc) = default;
         DescriptorInfo& operator=(const DescriptorInfo &desc) = default;
@@ -63,7 +63,8 @@ namespace rts {
 
         /**
          * The spatial coordinates and projection of the described tile. This are the real coordinates of the tile, not
-         * just for the valid data of it.
+         * just for the valid data of it. So it can exceed the spatial reference of the whole raster and
+         * the projections extent.
          */
         SpatialReference tileSpatialInfo;
 
@@ -87,6 +88,8 @@ namespace rts {
          */
         bool isOnlyNodata() const;
 
+        Resolution getDimensionalTileCount() const;
+
     protected:
         bool _isOnlyNodata;
     };
@@ -109,6 +112,9 @@ namespace rts {
 
         Descriptor(std::function<UniqueRaster(const Descriptor&)> &&getter,
                    const DescriptorInfo &args);
+
+        Descriptor(const Descriptor &other) = default;
+        Descriptor& operator=(const Descriptor &other) = default;
 
         static std::optional<Descriptor> createNodataDescriptor(SpatialTemporalReference &totalInfo,
                                                                 SpatialReference &tileSpatialInfo,

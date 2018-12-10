@@ -17,6 +17,9 @@ namespace rts {
     private:
         std::string driverName;
         std::string path;
+        SpatialReference extent;
+        void calcTilePosAndSize(const Descriptor &desc, int &x, int &y, int &w, int &h, int &offsetX, int &offsetY) const;
+
     };
 
 }

@@ -1,39 +1,38 @@
 {
 	"query_rectangle" : {
 		"resolution" : {
-			"x" : 3600,
-			"y" : 1800
+			"x" : 345,
+			"y" : 175
 		},
 		"temporal_reference" : {
 			"type" : "UNIX",
-        	"start" : 983404800,
-        	"end": 994291200
+        	"start" : 1409529600,
+        	"end": 1409788800
 		},
 		"spatial_reference" : {
 			"projection": "EPSG:4326",
-	        "x1": -180,
-	        "x2": 180,
-	        "y1": -90,
+	        "x1": -170,
+	        "x2": 175,
+	        "y1": -85,
 	        "y2": 90
 		},
 		"order" : "Temporal"
 	},
-	"operator" : "geotiff_export",
+	"operator" : "print",
 	"params" : {
 
 	},
 	"sources" : [				
-		{		
+		{			
 			"operator" : "gdal_source",
 			"params" : {
-				"dataset" : "temp_month",
-				"tile_size_x" : 900,
-				"tile_size_y" : 900
+				"dataset" : "gdal_first",
+				"tile_size_x" : 90,
+				"tile_size_y" : 90
 			},
 			"sources" : [
 
-			]
-	
+			]		
 		}					
 	]
 }
