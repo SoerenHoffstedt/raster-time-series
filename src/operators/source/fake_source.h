@@ -31,6 +31,12 @@ namespace rts {
         int state_y;
         Resolution rasterWorldPixelStart;
         uint32_t tileCount;
+        SpatialReference extent;
+
+        /***
+         * if true the data thats written into the tile is the raster index, if false the pixel will be sum of its index (x+y)
+         */
+        bool fill_index;
 
         ///
         /// \return returns true if end of temporal iteration is reached.

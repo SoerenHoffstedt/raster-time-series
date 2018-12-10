@@ -14,13 +14,13 @@ using namespace rts;
 
 template<class T>
 struct FakeSourceWriter {
-    static void rasterOperation(TypedRaster<T> *raster, Resolution fill_from, Resolution res_left_to_fill, int index, double nodata){
+    static void rasterOperation(TypedRaster<T> *raster, Resolution fill_from, Resolution res_left_to_fill, int index, double nodata, bool fillIndex){
         Resolution res = raster->getResolution();
         for (int x = 0; x < res.res_x; ++x) {
             for (int y = 0; y < res.res_y; ++y) {
-
+                int val = fillIndex ? index : x + y;
                 if(x >= fill_from.res_x && y >= fill_from.res_y && x < res_left_to_fill.res_x && y < res_left_to_fill.res_y)
-                    raster->setCell(x, y, (T)index);
+                    raster->setCell(x, y, (T)val);
                 else
                     raster->setCell(x, y, (T)nodata);
             }
@@ -48,9 +48,10 @@ FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params, UniqueOperatorV
         this->qrect.y1 = sref.y1;
         this->qrect.y2 = sref.y2;
     }
-    rasterWorldPixelStart = RasterCalculations::coordinateToWorldPixel(qrect, qrect.x1, qrect.y1);
 
     //calc number of tiles
+    rasterWorldPixelStart = RasterCalculations::coordinateToWorldPixel(qrect, qrect.x1, qrect.y1);
+
     Resolution rasterStep = rasterWorldPixelStart;
     rasterStep.res_x -= rasterWorldPixelStart.res_x % tile_res.res_x;
     rasterStep.res_y -= rasterWorldPixelStart.res_y % tile_res.res_y;
@@ -63,6 +64,9 @@ FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params, UniqueOperatorV
     if(size.res_y % tile_res.res_y > 0)
         num_y += 1;
     tileCount = num_x * num_y;
+
+    extent = qrect.projection.getExtent();
+    fill_index = params.get("fill_index", false).asBool();
 }
 
 Json::Value FakeSource::loadDatasetJson(std::string name) {
@@ -111,11 +115,12 @@ OptionalDescriptor FakeSource::nextDescriptor() {
     Resolution res_left_to_fill(qrect.res_x - state_x, qrect.res_y - state_y);
 
     Resolution tile_start_world_res(rasterWorldPixelStart.res_x + state_x, rasterWorldPixelStart.res_y + state_y);
-    SpatialReference tile_spat = RasterCalculations::calcSpatialInfoFromTilePixel(qrect, tile_start_world_res, tile_start_world_res + tile_res);
+    SpatialReference tile_spat = RasterCalculations::calcSpatialInfoFromPixel(qrect, tile_start_world_res,
+                                                                              tile_start_world_res + tile_res);
 
-    auto getter = [index = rasterIndex, res_left_to_fill = res_left_to_fill, fill_from = fill_from](const Descriptor &self) -> std::unique_ptr<Raster> {
+    auto getter = [index = rasterIndex, res_left_to_fill = res_left_to_fill, fill_from = fill_from, fill_index = fill_index](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);
-        RasterOperations::callUnary<FakeSourceWriter>(out.get(), fill_from, res_left_to_fill, index, self.nodata);
+        RasterOperations::callUnary<FakeSourceWriter>(out.get(), fill_from, res_left_to_fill, index, self.nodata, fill_index);
         return out;
     };
 
