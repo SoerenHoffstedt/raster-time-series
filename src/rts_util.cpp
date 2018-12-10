@@ -18,7 +18,9 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    std::ifstream file_in(argv[1]);
+    std::string filename("../../test/query/");
+    filename += argv[1];
+    std::ifstream file_in(filename);
 
     Json::Value json_query;
     file_in >> json_query;
