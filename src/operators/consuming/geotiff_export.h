@@ -13,7 +13,7 @@ namespace rts {
     public:
         explicit GeotiffExport(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         void consume() override;
-        bool supportsOrder(Order o) override;
+        bool supportsOrder(Order o) const override;
     private:
         std::string driverName;
         std::string path;

@@ -15,7 +15,7 @@ namespace rts {
     public:
         TemporalOverlap(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
-        bool supportsOrder(Order order) override;
+        bool supportsOrder(Order order) const override;
     private:
         TemporalReference input1Time;
         TemporalReference input2Time;

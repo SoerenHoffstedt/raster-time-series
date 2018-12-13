@@ -56,6 +56,6 @@ OptionalDescriptor Sampler::nextDescriptor() {
     return currInput;
 }
 
-bool Sampler::supportsOrder(Order order) {
+bool Sampler::supportsOrder(Order order) const {
     return order == Order::Temporal || order == Order::Spatial;
 }

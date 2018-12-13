@@ -11,7 +11,7 @@ namespace rts {
     public:
         Sampler(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
-        bool supportsOrder(Order order) override;
+        bool supportsOrder(Order order) const override;
     private:
         uint32_t toSkip;
         double lastSendT1;

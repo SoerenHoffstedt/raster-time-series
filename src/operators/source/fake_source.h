@@ -14,7 +14,7 @@ namespace rts {
     public:
         explicit FakeSource(QueryRectangle qrect, Json::Value &params, UniqueOperatorVector &&in);
         OptionalDescriptor nextDescriptor() override;
-        bool supportsOrder(Order o) override;
+        bool supportsOrder(Order o) const override;
     private:
         Json::Value loadDatasetJson(std::string name);
         Json::Value dataset_json;
@@ -36,7 +36,7 @@ namespace rts {
         /***
          * if true the data thats written into the tile is the raster index, if false the pixel will be sum of its index (x+y)
          */
-        bool fill_index;
+        bool fill_with_index;
 
         ///
         /// \return returns true if end of temporal iteration is reached.

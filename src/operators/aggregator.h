@@ -24,7 +24,7 @@ namespace rts {
     public:
         Aggregator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
-        bool supportsOrder(Order order) override;
+        bool supportsOrder(Order order) const override;
     private:
         OptionalDescriptor nextDesc;
         GDALDataType customDataType;

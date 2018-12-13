@@ -17,7 +17,7 @@ GeotiffExport::GeotiffExport(QueryRectangle qrect, Json::Value &params, UniqueOp
     extent = qrect.projection.getExtent();
 }
 
-bool GeotiffExport::supportsOrder(Order o) {
+bool GeotiffExport::supportsOrder(Order o) const {
     return o == Order::Temporal;
 }
 

@@ -92,7 +92,7 @@ OptionalDescriptor Aggregator::nextDescriptor() {
     return std::make_optional<Descriptor>(std::move(getter), info);
 }
 
-bool Aggregator::supportsOrder(Order order) {
+bool Aggregator::supportsOrder(Order order) const {
     return order == Order::Spatial;
 }
 

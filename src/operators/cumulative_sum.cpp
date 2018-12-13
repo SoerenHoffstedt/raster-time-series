@@ -53,7 +53,7 @@ OptionalDescriptor CumulativeSum::nextDescriptor() {
     return std::make_optional<Descriptor>(std::move(getter), descInfo);
 }
 
-bool CumulativeSum::supportsOrder(Order order) {
+bool CumulativeSum::supportsOrder(Order order) const {
     return order == Order::Spatial;
 }
 

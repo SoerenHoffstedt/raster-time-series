@@ -1,15 +1,17 @@
 
 #include "datatypes/raster_operations.h"
-#include "expression.h"
+#include "operators/expression_operator.h"
 
 using namespace rts;
 
-Expression::Expression(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in) : GenericOperator(qrect, params, std::move(in))
+ExpressionOperator::ExpressionOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+        : GenericOperator(qrect, params, std::move(in)), expression(params["expression"])
 {
     checkInputCount(1);
 }
 
-OptionalDescriptor Expression::nextDescriptor() {
+OptionalDescriptor ExpressionOperator::nextDescriptor() {
+
     OptionalDescriptor in = input_operators[0]->nextDescriptor();
 
     if(!in) {
@@ -17,6 +19,12 @@ OptionalDescriptor Expression::nextDescriptor() {
     }
 
     DescriptorInfo descInfo(in);
+
+    /*std::vector<OptionalDescriptor> inputs;
+    inputs.reserve(1);
+    inputs.push_back(std::move(in));
+
+    auto getter = expression.createGetter(std::move(inputs));*/
 
     auto getter = [in_desc = std::move(in)](const Descriptor &self) -> std::unique_ptr<Raster> {
         UniqueRaster test = in_desc->getRaster();
@@ -27,6 +35,6 @@ OptionalDescriptor Expression::nextDescriptor() {
     return std::make_optional<Descriptor>(std::move(getter), descInfo);
 }
 
-bool Expression::supportsOrder(Order order) {
+bool ExpressionOperator::supportsOrder(Order order) const {
     return order == Order::Temporal || order == Order::Spatial;
 }

@@ -14,7 +14,7 @@ namespace rts {
     public:
         explicit Print(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         void consume() override;
-        bool supportsOrder(Order o) override;
+        bool supportsOrder(Order o) const override;
     };
 
 }

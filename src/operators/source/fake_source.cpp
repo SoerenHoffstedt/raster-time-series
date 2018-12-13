@@ -66,7 +66,7 @@ FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params, UniqueOperatorV
     tileCount = num_x * num_y;
 
     extent = qrect.projection.getExtent();
-    fill_index = params.get("fill_index", false).asBool();
+    fill_with_index = params.get("fill_with_index", false).asBool();
 }
 
 Json::Value FakeSource::loadDatasetJson(std::string name) {
@@ -118,7 +118,7 @@ OptionalDescriptor FakeSource::nextDescriptor() {
     SpatialReference tile_spat = RasterCalculations::calcSpatialInfoFromPixel(qrect, tile_start_world_res,
                                                                               tile_start_world_res + tile_res);
 
-    auto getter = [index = rasterIndex, res_left_to_fill = res_left_to_fill, fill_from = fill_from, fill_index = fill_index](const Descriptor &self) -> std::unique_ptr<Raster> {
+    auto getter = [index = rasterIndex, res_left_to_fill = res_left_to_fill, fill_from = fill_from, fill_index = fill_with_index](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);
         RasterOperations::callUnary<FakeSourceWriter>(out.get(), fill_from, res_left_to_fill, index, self.nodata, fill_index);
         return out;
@@ -144,7 +144,7 @@ OptionalDescriptor FakeSource::nextDescriptor() {
     return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_spat, tile_res, qrect.order, tileIndexNow, tileCount, nodata, dataType);
 }
 
-bool FakeSource::supportsOrder(Order o) {
+bool FakeSource::supportsOrder(Order o) const {
     return o == Order::Spatial || o == Order::Temporal;
 }
 

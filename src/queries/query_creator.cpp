@@ -3,7 +3,7 @@
 #include "operators/cumulative_sum.h"
 #include "operators/consuming/print.h"
 #include "operators/consuming/geotiff_export.h"
-#include "operators/expression.h"
+#include "operators/expression_operator.h"
 #include "operators/source/fake_source.h"
 #include "operators/source/gdal_source.h"
 #include "operators/sampler.h"
@@ -61,7 +61,7 @@ QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, J
                              std::vector<std::unique_ptr<GenericOperator>> &&in)
 {
     if(op_name == "expression")
-        return std::make_unique<Expression>(qrect, params, std::move(in));
+        return std::make_unique<ExpressionOperator>(qrect, params, std::move(in));
     else if(op_name == "fake_source")
         return std::make_unique<FakeSource>(qrect, params, std::move(in));
     else if(op_name == "gdal_source")

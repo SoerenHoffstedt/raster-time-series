@@ -15,7 +15,7 @@ namespace rts {
         GDALSource(const QueryRectangle &qrect, Json::Value &params,
                    std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
-        bool supportsOrder(Order o) override;
+        bool supportsOrder(Order o) const override;
     private:
         std::shared_ptr<GDALDataset> currDataset;
         GDALRasterBand *currRasterband; //this can stay a normal ptr, because it is handled by the dataset. The dataset now always has to live as long as the rasterband. maybe put them in one structure?

@@ -19,6 +19,6 @@ void Print::consume() {
     }
 }
 
-bool Print::supportsOrder(Order o) {
+bool Print::supportsOrder(Order o) const {
     return o == Order::Temporal;
 }

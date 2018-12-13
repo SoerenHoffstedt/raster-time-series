@@ -267,7 +267,7 @@ bool GDALSource::increaseSpatial() {
     return false;
 }
 
-bool GDALSource::supportsOrder(Order o) {
+bool GDALSource::supportsOrder(Order o) const {
     return o == Order::Temporal || o == Order::Spatial;
 }
 

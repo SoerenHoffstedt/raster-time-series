@@ -140,6 +140,6 @@ OptionalDescriptor TemporalOverlap::nextDescriptor() {
     return std::make_optional<Descriptor>(std::move(getter), descInfo);
 }
 
-bool TemporalOverlap::supportsOrder(Order order) {
+bool TemporalOverlap::supportsOrder(Order order) const {
     return order == Order::Temporal;
 }
