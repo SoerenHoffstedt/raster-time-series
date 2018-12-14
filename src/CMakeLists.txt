@@ -11,6 +11,7 @@ add_library(rts_base_lib
         util/raster_calculations.cpp
         util/gdal_util.cpp
         util/parsing.cpp
+        util/expression.cpp
         util/time_interval.cpp)
 target_include_directories(rts_base_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries_internal(rts_util rts_base_lib)
@@ -23,7 +24,7 @@ add_library(rts_operators_lib
         operators/source/fake_source.cpp
         operators/source/gdal_source.cpp
         operators/consuming/print.cpp
-        operators/expression.cpp
+        operators/expression_operator.cpp
         operators/sampler.cpp
         operators/aggregator.cpp
         operators/cumulative_sum.cpp

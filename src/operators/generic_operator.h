@@ -33,7 +33,13 @@ namespace rts {
          * Throws an exception if the size of input_operators differs from expected.
          * @param expected the amount of expected input operators.
          */
-        void checkInputCount(int expected);
+        void checkInputCount(int expected) const;
+        /**
+         * Throws an exception if the size of input_operators is not between expectedMin and expectedMax.
+         * @param expectedMin inclusive minimum of expected input operators.
+         * @param expectedMax inclusive maximum of expected input operators.
+         */
+        void checkInputCount(int expectedMin, int expectedMax) const;
     };
 
     using UniqueOperatorVector = std::vector<std::unique_ptr<GenericOperator>>;

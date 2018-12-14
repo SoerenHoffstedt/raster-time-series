@@ -3,13 +3,17 @@
 #define RASTER_TIME_SERIES_TEMPORAL_OVERLAP_H
 
 #include "operators/generic_operator.h"
-#include <deque>
+#include "util/expression.h"
 
 namespace rts {
 
     /**
-     * Takes two time series as inputs and returns where rasters of both time series overlap temporally the mean of these rasters.
-     * TODO: for now only returns values of one the rasters, taking both into account needs the same tactics applied a second time.
+     * Takes two time series as inputs and returns rasters for times where rasters of both time series overlap.
+     * The returned raster is defined by an expression.
+     *
+     * Params:
+     *  - expression: String defining a valid expression for the Expression class.
+     *
      */
     class TemporalOverlap : public GenericOperator {
     public:
@@ -25,6 +29,7 @@ namespace rts {
         bool lastTileOfRaster2;
         bool loadRasterFromCache1;
         bool loadRasterFromCache2;
+        Expression expression;
     };
 
 }

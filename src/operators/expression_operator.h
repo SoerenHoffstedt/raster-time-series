@@ -7,6 +7,12 @@
 
 namespace rts {
 
+    /**
+     * Operator for calculating expressions with input rasters.
+     * How many input rasters are supported is defined by the Expression class (see util/expression.h/cpp).
+     * This operator simply calculates with the tiles that come as input. If calculations should be done
+     * based on their temporal overlap, use the TemporalOverlap operator.
+     */
     class ExpressionOperator : public GenericOperator {
     public:
         ExpressionOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);

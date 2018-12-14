@@ -7,30 +7,25 @@ using namespace rts;
 ExpressionOperator::ExpressionOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
         : GenericOperator(qrect, params, std::move(in)), expression(params["expression"])
 {
-    checkInputCount(1);
+    checkInputCount(1, 2);
 }
 
 OptionalDescriptor ExpressionOperator::nextDescriptor() {
 
-    OptionalDescriptor in = input_operators[0]->nextDescriptor();
-
-    if(!in) {
-        return std::nullopt;
+    std::vector<OptionalDescriptor> inputs;
+    inputs.reserve(input_operators.size());
+    for(int i = 0; i < input_operators.size(); ++i){
+        inputs.emplace_back(input_operators[i]->nextDescriptor());
+        //TODO: Can something be calculated when one of the inputs is nullopt?
+        if(inputs[i] == std::nullopt)
+            return std::nullopt;
     }
 
-    DescriptorInfo descInfo(in);
+    //TODO: what is spatial info, what is temporal info of result?
+    //TODO: check if one operator is only nodata? have it behave like a 0 for add and mul?
+    DescriptorInfo descInfo(inputs[0]);
 
-    /*std::vector<OptionalDescriptor> inputs;
-    inputs.reserve(1);
-    inputs.push_back(std::move(in));
-
-    auto getter = expression.createGetter(std::move(inputs));*/
-
-    auto getter = [in_desc = std::move(in)](const Descriptor &self) -> std::unique_ptr<Raster> {
-        UniqueRaster test = in_desc->getRaster();
-        RasterOperations::callUnary<RasterOperations::Squarer>(test.get(), self);
-        return test;
-    };
+    auto getter = expression.createGetter(std::move(inputs));
 
     return std::make_optional<Descriptor>(std::move(getter), descInfo);
 }

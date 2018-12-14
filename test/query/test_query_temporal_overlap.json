@@ -1,8 +1,8 @@
 {
 	"query_rectangle" : {
 		"resolution" : {
-			"x" : 6,
-			"y" : 6
+			"x" : 36,
+			"y" : 18
 		},
 		"temporal_reference" : {
 			"type" : "UNIX",
@@ -26,15 +26,16 @@
 		{
 			"operator" : "temporal_overlap",
 			"params" : {
-
+				"expression" : "A * B"
 			},
 			"sources" : [
 				{
 					"operator" : "fake_source",
 					"params" : {
 						"dataset" : "temp_overlap_1",
-						"tile_size_x" : 6,
-						"tile_size_y" : 3
+						"tile_size_x" : 18,
+						"tile_size_y" : 18,
+						"fill_with_index" : true
 					},
 					"sources" : [
 
@@ -44,8 +45,9 @@
 					"operator" : "fake_source",
 					"params" : {
 						"dataset" : "temp_overlap_2",
-						"tile_size_x" : 6,
-						"tile_size_y" : 3
+						"tile_size_x" : 18,
+						"tile_size_y" : 18,
+						"fill_with_index" : true
 					},
 					"sources" : [
 

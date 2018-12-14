@@ -1,8 +1,8 @@
 {
 	"query_rectangle" : {
 		"resolution" : {
-			"x" : 360,
-			"y" : 180
+			"x" : 36,
+			"y" : 18
 		},
 		"temporal_reference" : {
 			"type" : "UNIX",
@@ -16,14 +16,13 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "Spatial"
+		"order" : "Temporal"
 	},
 	"operator" : "print",
 	"params" : {
 
 	},
 	"sources" : [
-
 		{
 			"operator" : "aggregator",
 			"params" : {
@@ -44,8 +43,8 @@
 							"operator" : "fake_source",
 							"params" : {
 								"dataset" : "first_dataset",
-								"tile_size_x" : 180,
-								"tile_size_y" : 180
+								"tile_size_x" : 18,
+								"tile_size_y" : 18
 							},
 							"sources" : [
 
@@ -54,6 +53,7 @@
 					]																											
 				}
 			]
-		}	
+
+		}		
 	]
 }

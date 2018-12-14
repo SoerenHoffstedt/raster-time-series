@@ -15,11 +15,15 @@ GenericOperator::GenericOperator(QueryRectangle qrect, Json::Value &params, std:
 
 }
 
-void GenericOperator::checkInputCount(int expected) {
+void GenericOperator::checkInputCount(int expected) const {
     if(input_operators.size() != expected)
         throw std::runtime_error("Operator has unexpected amount of input operators.");
 }
 
+void GenericOperator::checkInputCount(int expectedMin, int expectedMax) const {
+    if(input_operators.size() < expectedMin || input_operators.size() > expectedMax)
+        throw std::runtime_error("Operator has unexpected amount of input operators.");
+}
 TimeSeriesIterator GenericOperator::begin() {
     return TimeSeriesIterator(dynamic_cast<GenericOperator *>(this));
 }

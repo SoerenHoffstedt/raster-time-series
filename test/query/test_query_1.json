@@ -26,28 +26,35 @@
 		{
 			"operator" : "expression",
 			"params" : {
-
+				"expression" : "B * A"
 			},
 			"sources" : [
+				
 				{
-					"operator" : "sampler",
+					"operator" : "fake_source",
 					"params" : {
-						"to_skip" : 1
+						"dataset" : "first_dataset",
+						"tile_size_x" : 18,
+						"tile_size_y" : 18,
+						"fill_with_index" : true
 					},
 					"sources" : [
-						{
-							"operator" : "fake_source",
-							"params" : {
-								"dataset" : "first_dataset",
-								"tile_size_x" : 18,
-								"tile_size_y" : 18
-							},
-							"sources" : [
 
-							]
-						}
+					]
+				},
+				{
+					"operator" : "fake_source",
+					"params" : {
+						"dataset" : "second_dataset",
+						"tile_size_x" : 18,
+						"tile_size_y" : 18,
+						"fill_with_index" : true
+					},
+					"sources" : [
+
 					]
 				}
+					
 			]
 			
 		}	

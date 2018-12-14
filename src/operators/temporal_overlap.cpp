@@ -18,7 +18,10 @@ struct TempOverlapCalc {
 };
 
 TemporalOverlap::TemporalOverlap(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(qrect, params, std::move(in)), input1Time(), input2Time(), lastTileOfRaster1(false), loadRasterFromCache1(false), loadRasterFromCache2(false)
+        : GenericOperator(qrect, params, std::move(in)),
+        input1Time(), input2Time(), lastTileOfRaster1(false),
+        loadRasterFromCache1(false), loadRasterFromCache2(false),
+        expression(params["expression"])
 {
     checkInputCount(2);
 }
@@ -123,19 +126,12 @@ OptionalDescriptor TemporalOverlap::nextDescriptor() {
     DescriptorInfo descInfo(input1);
     descInfo.rasterInfo = SpatialTemporalReference(raster_result_time, input1->rasterInfo, input1->rasterInfo);
 
-    auto getter = [input1 = std::move(input1), input2 = std::move(input2)](const Descriptor &self) -> UniqueRaster {
-        UniqueRaster raster_in1 = input1->getRaster();
-        UniqueRaster raster_in2 = input2->getRaster();
-        UniqueRaster out_raster = Raster::createRaster(self.dataType, self.tileResolution);
+    OptionalDescriptorVector inputs;
+    inputs.reserve(2);
+    inputs.emplace_back(std::move(input1));
+    inputs.emplace_back(std::move(input2));
 
-        for (int x = 0; x < self.tileResolution.res_x; ++x) {
-            for (int y = 0; y < self.tileResolution.res_y; ++y) {
-                RasterOperations::callTernary<TempOverlapCalc>(raster_in1.get(), raster_in2.get(), out_raster.get());
-            }
-        }
-
-        return out_raster;
-    };
+    auto getter = expression.createGetter(std::move(inputs));
 
     return std::make_optional<Descriptor>(std::move(getter), descInfo);
 }
