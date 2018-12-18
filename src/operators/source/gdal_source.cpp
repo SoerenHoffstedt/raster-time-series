@@ -131,7 +131,7 @@ GDALSource::GDALSource(const QueryRectangle &qrect, Json::Value &params, UniqueO
     curr_time                   = dataset_time_start;
 
     //advance start point for raster, until it is not smaller than t1.
-    while(to_time_t(curr_time) < qrect.t1){
+    while(to_time_t(curr_time) < qrect.t1 && getCurrentTimeEnd() < qrect.t1){
         increaseCurrentTime();
     }
 
