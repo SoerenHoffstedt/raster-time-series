@@ -10,6 +10,11 @@
 
 namespace rts {
 
+    /**
+     * Source operator loading rasters with the GDAL library. This supports any raster format supported by GDAL.
+     * A GDALSource dataset is defined by a start and end point, and a time interval (time unit and value).
+     * Therefore it represents rasters that are valid in regular time intervals.
+     */
     class GDALSource : public GenericOperator {
     public:
         GDALSource(const QueryRectangle &qrect, Json::Value &params,
@@ -37,6 +42,8 @@ namespace rts {
         std::string file_name_base;
         std::string path;
         int channel;
+
+        std::map<std::string, std::shared_ptr<GDALDataset>> openDatasets;
 
         Json::Value loadDatasetJson(const std::string &name);
         double parseIsoTime(const std::string &str) const;
