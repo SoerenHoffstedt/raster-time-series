@@ -9,26 +9,29 @@
 using namespace std::string_literals;
 using namespace rts;
 
+using UniqueGDALDataset = std::unique_ptr<GDALDataset, decltype(&GDALClose)>;
+
 GeotiffExport::GeotiffExport(QueryRectangle qrect, Json::Value &params, UniqueOperatorVector &&in)
         : ConsumingOperator(qrect, params, std::move(in))
 {
-    driverName = "GTiff"s;
-    path = "results/"s;
-    extent = qrect.projection.getExtent();
+    checkInputCount(1);
+    driverName      = "GTiff"s;
+    path            = "results/"s;
+    extent          = qrect.projection.getExtent();
+    timeFormat      = params["time_format"].asString();
+    baseFilename    = params["filename"].asString();
 }
 
 bool GeotiffExport::supportsOrder(Order o) const {
-    return o == Order::Temporal;
+    return o == Order::Temporal || o == Order::Spatial;
 }
 
 void GeotiffExport::consume() {
 
     GDALUtil::initGdal();
 
-    //todo: create directory.
-
     GDALDriver *driver = nullptr;
-    GDALDataset *out_dataset = nullptr;
+    UniqueGDALDataset out_dataset(nullptr, GDALClose);
     GDALRasterBand *out_rasterBand = nullptr;
 
     driver = GetGDALDriverManager()->GetDriverByName(driverName.c_str());
@@ -50,17 +53,29 @@ void GeotiffExport::consume() {
 
     GenericOperator *in_op = input_operators[0].get();
 
-    //create file with GTiff driver of gdal if order is Temporal.
-    //For spatial ordering could check if file already exists. If so, open that one with GA_Update and write into it?
-    //For now only implement for Spatial
-    int count = 0;
     int x = 0, y = 0;
     for(auto &in_desc : *in_op){
 
         if(out_dataset == nullptr){
             //new raster.
-            std::string filename = path + "Raster_"s + std::to_string(count) + ".TIFF"s;
-            out_dataset = driver->Create(filename.c_str(), in_desc.rasterInfo.res_x, in_desc.rasterInfo.res_y, 1, in_desc.dataType, papszOptions);
+            std::string timeString = GDALUtil::timeToString(static_cast<time_t>(in_desc.rasterInfo.t1), timeFormat);
+            std::string placeholder = "%%%TIME_STRING%%%";
+            size_t placeholderPos = baseFilename.find(placeholder);
+            std::string filename = baseFilename;
+            filename.replace(placeholderPos, placeholder.length(), timeString);
+            std::filesystem::path filePath = path;
+            filePath /= filename;
+
+            //GDALDatasets are not kept open at the moment for spatial order.
+            if(qrect.order == Order::Spatial && in_desc.tileIndex > 0){
+                out_dataset = UniqueGDALDataset((GDALDataset *)GDALOpen(filePath.c_str(), GA_Update), GDALClose);
+            } else {
+                out_dataset = UniqueGDALDataset(driver->Create(filePath.c_str(), in_desc.rasterInfo.res_x, in_desc.rasterInfo.res_y, 1, in_desc.dataType, papszOptions), GDALClose);
+            }
+
+            if(out_dataset == nullptr){
+                throw std::runtime_error("Dataset could not be opened or created.");
+            }
 
             double scale_x = 1, scale_y = -1;
             double origin_x = in_desc.rasterInfo.x1, origin_y = in_desc.rasterInfo.y1;
@@ -68,15 +83,11 @@ void GeotiffExport::consume() {
 
             //set dataset parameters
             out_dataset->SetGeoTransform(adfGeoTransform);
+            //TODO: set projection, this is how it's done in mapping. Projection has to be converted to WKT string.
             //std::string srs = GDAL::WKTFromCrsId(stref.crsId);
             //out_dataset->SetProjection(srs.c_str());
 
             out_rasterBand = out_dataset->GetRasterBand(1);
-            x = 0;
-            y = 0; //in_desc.rasterInfo.res_y - in_desc.tileResolution.res_y; //y pixel are flipped between rts and gdal, so don't start with y = 0;
-            if(y < 0)
-                y = 0;
-            count++;
         }
 
         auto raster = in_desc.getRaster();
@@ -104,19 +115,15 @@ void GeotiffExport::consume() {
             throw std::runtime_error("GeoTiff Export: Writing into raster failed.");
         }
 
-        x += w;
-        if(x >= in_desc.rasterInfo.res_x){
-            x = 0;
-            y += h;
+        if(qrect.order == Order::Temporal && in_desc.tileIndex == in_desc.rasterTileCount - 1){
+            out_dataset.reset(nullptr);
+            out_rasterBand = nullptr;
         }
-
-        if(in_desc.tileIndex == in_desc.rasterTileCount - 1){
-            GDALClose(out_dataset);
-            out_dataset = nullptr;
+        if(qrect.order == Order::Spatial){
+            out_dataset.reset(nullptr);
             out_rasterBand = nullptr;
         }
     }
-
 }
 
 void GeotiffExport::calcTilePosAndSize(const Descriptor &in_desc, int &x, int &y, int &w, int &h, int &offsetX, int &offsetY) const {
@@ -135,6 +142,9 @@ void GeotiffExport::calcTilePosAndSize(const Descriptor &in_desc, int &x, int &y
 
     Resolution start = RasterCalculations::coordinateToWorldPixel(in_desc.rasterInfo, spatInfo.x1, spatInfo.y1);
     Resolution end   = RasterCalculations::coordinateToWorldPixel(in_desc.rasterInfo, spatInfo.x2, spatInfo.y2);
+
+    x = start.res_x;
+    y = start.res_y;
 
     int modXStart   = start.res_x % in_desc.tileResolution.res_x;
     int modYStart   = start.res_y % in_desc.tileResolution.res_y;

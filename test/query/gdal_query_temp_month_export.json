@@ -16,11 +16,12 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "Temporal"
+		"order" : "Spatial"
 	},
 	"operator" : "geotiff_export",
 	"params" : {
-
+		"time_format" : "%Y-%m-%dT%H_%M_%S",
+		"filename" : "temp_month_%%%TIME_STRING%%%.tiff"
 	},
 	"sources" : [				
 		{		

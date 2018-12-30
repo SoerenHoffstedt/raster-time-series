@@ -20,7 +20,8 @@
 	},
 	"operator" : "geotiff_export",
 	"params" : {
-
+		"time_format" : "%Y-%m-%dT%H_%M_%S",
+		"filename" : "extra_data_test_%%%TIME_STRING%%%.tiff"
 	},
 	"sources" : [		
 		{					
