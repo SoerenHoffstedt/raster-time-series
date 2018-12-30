@@ -39,7 +39,7 @@ namespace rts {
 
         TimeInterval time_interval;
         std::string time_format;
-        std::string file_name_base;
+        std::string base_file_name;
         std::string path;
         int channel;
 
@@ -51,6 +51,7 @@ namespace rts {
         bool increaseTemporal();
         void loadCurrentGdalDataset();
         void increaseCurrentTime();
+        void setCurrTimeToFirstRaster();
         double getCurrentTimeEnd() const;
     };
 

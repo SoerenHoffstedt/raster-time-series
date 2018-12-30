@@ -9,6 +9,7 @@ namespace rts {
     class GDALUtil {
     public:
         static void initGdal();
+        static std::string timeToString(time_t time, const std::string &timeFormat);
     private:
         static std::once_flag gdal_init_once;
     };

@@ -119,7 +119,7 @@ GDALSource::GDALSource(const QueryRectangle &qrect, Json::Value &params, UniqueO
     tileRes                     = Resolution(params["tile_size_x"].asUInt(), params["tile_size_y"].asUInt());
     channel                     = dataset_json["channel"].asInt();
 
-    file_name_base              = dataset_json["filename"].asString();
+    base_file_name              = dataset_json["filename"].asString();
     path                        = dataset_json["path"].asString();
     time_format                 = dataset_json["time_format"].asString();
 
@@ -128,12 +128,7 @@ GDALSource::GDALSource(const QueryRectangle &qrect, Json::Value &params, UniqueO
 
     dataset_time_start          = time_from_string(dataset_json["time_start"].asString());
     dataset_time_end            = time_from_string(dataset_json["time_end"].asString());
-    curr_time                   = dataset_time_start;
-
-    //advance start point for raster, until it is not smaller than t1.
-    while(to_time_t(curr_time) < qrect.t1 && getCurrentTimeEnd() < qrect.t1){
-        increaseCurrentTime();
-    }
+    setCurrTimeToFirstRaster();
 
     //calc number of tiles
     rasterWorldPixelStart = RasterCalculations::coordinateToWorldPixel(qrect, qrect.x1, qrect.y1);
@@ -229,10 +224,7 @@ bool GDALSource::increaseTemporal() {
         if(qrect.order == Order::Spatial){
             //reset only if order is spatial, else keep time_curr above t2/dataset_end_time as end condition at top of nextDescriptor() method
             currRasterIndex = 0;
-            curr_time = dataset_time_start;
-            while(to_time_t(curr_time) < qrect.t1){
-                increaseCurrentTime();
-            }
+            setCurrTimeToFirstRaster();
             return true;
         }
     }
@@ -289,20 +281,23 @@ double GDALSource::getCurrentTimeEnd() const {
     return static_cast<double>(to_time_t(curr));
 }
 
+void GDALSource::setCurrTimeToFirstRaster() {
+    //advance start point for raster, until it is not smaller than t1.
+    curr_time = dataset_time_start;
+    while(to_time_t(curr_time) < qrect.t1 && getCurrentTimeEnd() < qrect.t1){
+        increaseCurrentTime();
+    }
+}
+
 constexpr int MAX_FILE_NAME_LENGTH = 255;
 
 void GDALSource::loadCurrentGdalDataset() {
-    
-    char date[MAX_FILE_NAME_LENGTH] = {0};
-    time_t curr_time_t = to_time_t(curr_time);
-    tm curr_time_tm = *gmtime(&curr_time_t);
-    strftime(date, sizeof(date), time_format.c_str(), &curr_time_tm);
-    std::string timeString(date);
+    std::string timeString = GDALUtil::timeToString(to_time_t(curr_time), time_format);
 
     std::string placeholder = "%%%TIME_STRING%%%";
-    size_t placeholderPos = file_name_base.find(placeholder);
+    size_t placeholderPos = base_file_name.find(placeholder);
 
-    std::string fileName = file_name_base;
+    std::string fileName = base_file_name;
     fileName.replace(placeholderPos, placeholder.length(), timeString);
 
     if(openDatasets.find(fileName) != openDatasets.end())
