@@ -32,6 +32,7 @@ namespace rts {
         explicit TemporalReference(const Json::Value &temp);
         TemporalReference getOverlapTemporal(const TemporalReference &o) const;
         bool overlapsWithTemporal(const TemporalReference &other) const;
+        bool containsTemporal(double t) const;
 
         double beginningOfTime() const;
         double endOfTime() const;
@@ -45,6 +46,7 @@ namespace rts {
         SpatialReference();
         SpatialReference(double x1, double x2, double y1, double y2);
         explicit SpatialReference(const Json::Value &spat);
+        bool containsSpatial(double x, double y) const;
         bool overlapsWithSpatial(const SpatialReference &other) const;
         bool equalsSpatial(const SpatialReference &other)  const;
         SpatialReference getOverlapSpatial(const SpatialReference &other) const;

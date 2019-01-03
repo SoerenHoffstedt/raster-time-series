@@ -1,0 +1,56 @@
+{
+	"query_rectangle" : {
+		"resolution" : {
+			"x" : 36,
+			"y" : 18
+		},
+		"temporal_reference" : {
+			"type" : "UNIX",
+        	"start" : 10000,
+        	"end": 18000
+		},
+		"spatial_reference" : {
+			"projection": "EPSG:4326",
+	        "x1": -180,
+	        "x2": 180,
+	        "y1": -90,
+	        "y2": 90
+		},
+		"order" : "Spatial"
+	},
+	"operator" : "raster_value_extraction",
+	"params" : {
+		"output" : "print",
+		"filename" : "extracted_values.txt",
+		"points" : [
+			{
+				"x" : 40, "y" : 80, "t" : 16300
+			},
+			{
+				"x" : -40, "y" : 10, "t" : 14000
+			},
+			{
+				"x" : -40, "y" : 80, "t" : 16000
+			},
+			{
+				"x" : -180, "y" : -90, "t" : 19000
+			},
+			{
+				"x" : -80, "y" : 10, "t" : 14000
+			}
+		]
+	},
+	"sources" : [		
+		{
+			"operator" : "fake_source",
+			"params" : {
+				"dataset" : "temp_overlap_1",
+				"tile_size_x" : 18,
+				"tile_size_y" : 18
+			},
+			"sources" : [
+
+			]			
+		}	
+	]
+}

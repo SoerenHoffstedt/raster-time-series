@@ -53,6 +53,10 @@ double TemporalReference::endOfTime() const {
     return 253402300799;
 }
 
+bool TemporalReference::containsTemporal(double t) const {
+    return t >= t1 && t <= t2;
+}
+
 // Spatial Reference definitions:
 
 SpatialReference::SpatialReference(double x1, double x2, double y1, double y2) : x1(x1), x2(x2), y1(y1), y2(y2), projection() { }
@@ -90,6 +94,10 @@ SpatialReference SpatialReference::getOverlapSpatial(const SpatialReference &oth
     double yy1 = y1 > other.y1 ? y1 : other.y1;
     double yy2 = y2 < other.y2 ? y2 : other.y2;
     return SpatialReference(xx1, xx2, yy1, yy2);
+}
+
+bool SpatialReference::containsSpatial(double x, double y) const {
+    return x >= x1 && x <= x2 && y >= y1 && y <= y2;
 }
 
 // Resolution definitions:
