@@ -8,6 +8,7 @@
 #include "operators/source/gdal_source.h"
 #include "operators/sampler.h"
 #include "operators/aggregator.h"
+#include "operators/convolution.h"
 #include "queries/query_creator.h"
 
 using namespace rts;
@@ -74,6 +75,8 @@ QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, J
         return std::make_unique<CumulativeSum>(qrect, params, std::move(in));
     else if(op_name == "temporal_overlap")
         return std::make_unique<TemporalOverlap>(qrect, params, std::move(in));
+    else if(op_name == "convolution")
+        return std::make_unique<Convolution>(qrect, params, std::move(in));
     else
         throw std::runtime_error("Unknown operator: " + op_name);
 }

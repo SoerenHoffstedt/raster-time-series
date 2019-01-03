@@ -1,0 +1,17 @@
+{
+	"name" : "temp_month",
+	"path" : "../../test/data/gdal_source/leaf_area_index",
+	"filename" : "MOD15A2_M_LAI_%%%TIME_STRING%%%_gs_3600x1800.TIFF",
+
+	"time_format" : "%Y-%m-%d",
+	"time_start" : "2017-01-01 00:00:00",
+	"time_end" : "2017-02-01 00:00:00",
+	
+	"time_interval" : {
+		"unit" : "Month",
+		"length" : 1	
+	},
+
+	"channel" : 1,
+	"description" : "Leaf area index."
+}

@@ -1,0 +1,9 @@
+From: https://neo.sci.gsfc.nasa.gov/view.php?datasetId=MOD15A2_M_LAI
+
+"Credits
+These NASA images were made by Reto Stockli, NASA's Earth Observatory Team, using data provided by the MODIS Land Science Team."
+
+About the license:
+from http://neo.sci.gsfc.nasa.gov/about/:
+"Image Use Policy
+The images available in NEO are freely available for public use without further permission. Please use the credit statement attached to each dataset, or at the very least credit NASA Earth Observations as the source."

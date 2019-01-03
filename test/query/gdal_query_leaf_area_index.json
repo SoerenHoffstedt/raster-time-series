@@ -1,0 +1,47 @@
+{
+	"query_rectangle" : {
+		"resolution" : {
+			"x" : 1800,
+			"y" : 900
+		},
+		"temporal_reference" : {
+			"type" : "UNIX",
+        	"start" : 1480550400,
+        	"end": 1514764800
+		},
+		"spatial_reference" : {
+			"projection": "EPSG:4326",
+	        "x1": -180,
+	        "x2": 180,
+	        "y1": -90,
+	        "y2": 90
+		},
+		"order" : "Temporal"
+	},
+	"operator" : "geotiff_export",
+	"params" : {
+		"time_format" : "%Y-%m-%dT%H_%M_%S",
+		"filename" : "convolution_leaf_area_%%%TIME_STRING%%%.tiff"
+	},
+	"sources" : [				
+		{
+			"operator" : "convolution",
+			"params" : {
+				
+			},
+			"sources" : [
+				{
+					"operator" : "gdal_source",
+					"params" : {
+						"dataset" : "leaf_area_index",
+						"tile_size_x" : 300,
+						"tile_size_y" : 300
+					},
+					"sources" : [
+
+					]
+				}	
+			]
+		}					
+	]
+}
