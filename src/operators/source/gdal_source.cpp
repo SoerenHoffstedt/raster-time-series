@@ -69,23 +69,23 @@ struct GdalSourceWriter {
         if (pixel_y1 > pixel_y2)
             std::swap(pixel_y1, pixel_y2);
 
-        pixel_width = pixel_x2 - pixel_x1; // + 1;
-        pixel_height = pixel_y2 - pixel_y1; // + 1;
+        pixel_width = pixel_x2 - pixel_x1;
+        pixel_height = pixel_y2 - pixel_y1;
 
-        int gdal_pixel_x1 = std::min(rasterSizeX - 1, std::max(0, pixel_x1));
-        int gdal_pixel_y1 = std::min(rasterSizeY - 1, std::max(0, pixel_y1));
+        int gdal_pixel_x1 = std::min(rasterSizeX, std::max(0, pixel_x1));
+        int gdal_pixel_y1 = std::min(rasterSizeY, std::max(0, pixel_y1));
 
-        int gdal_pixel_x2 = std::min(rasterSizeX - 1, std::max(0, pixel_x2));
-        int gdal_pixel_y2 = std::min(rasterSizeY - 1, std::max(0, pixel_y2));
+        int gdal_pixel_x2 = std::min(rasterSizeX, std::max(0, pixel_x2));
+        int gdal_pixel_y2 = std::min(rasterSizeY, std::max(0, pixel_y2));
 
-        int gdal_pixel_width = gdal_pixel_x2 - gdal_pixel_x1;// + 1;
-        int gdal_pixel_height = gdal_pixel_y2 - gdal_pixel_y1;// + 1;
+        int gdal_pixel_width = gdal_pixel_x2 - gdal_pixel_x1;
+        int gdal_pixel_height = gdal_pixel_y2 - gdal_pixel_y1;
 
         Resolution size = tileRes - fill_from;
         if(res_left_to_fill.res_x < size.res_x)
-            size.res_x -= res_left_to_fill.res_x;
+            size.res_x = res_left_to_fill.res_x;
         if(res_left_to_fill.res_y < size.res_y)
-            size.res_y -= res_left_to_fill.res_y;
+            size.res_y = res_left_to_fill.res_y;
 
         if(fill_from.res_x > 0 || fill_from.res_y > 0 || size.res_x < tileRes.res_x || size.res_y < tileRes.res_y){
             for (int x = 0; x < tileRes.res_x; ++x) {
