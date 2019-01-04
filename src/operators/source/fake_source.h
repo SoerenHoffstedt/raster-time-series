@@ -14,6 +14,7 @@ namespace rts {
     public:
         explicit FakeSource(QueryRectangle qrect, Json::Value &params, UniqueOperatorVector &&in);
         OptionalDescriptor nextDescriptor() override;
+        void initialize() override;
         bool supportsOrder(Order o) const override;
     private:
         Json::Value loadDatasetJson(std::string name);

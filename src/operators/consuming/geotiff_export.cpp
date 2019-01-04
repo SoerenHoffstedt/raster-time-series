@@ -22,6 +22,10 @@ GeotiffExport::GeotiffExport(QueryRectangle qrect, Json::Value &params, UniqueOp
     baseFilename    = params["filename"].asString();
 }
 
+void GeotiffExport::initialize() {
+
+}
+
 bool GeotiffExport::supportsOrder(Order o) const {
     return o == Order::Temporal || o == Order::Spatial;
 }

@@ -40,6 +40,10 @@ Aggregator::Aggregator(QueryRectangle qrect, Json::Value &params, std::vector<st
 
 }
 
+void Aggregator::initialize() {
+
+}
+
 OptionalDescriptor Aggregator::nextDescriptor() {
     //first descriptor could already be loaded and stored in nextDesc
     OptionalDescriptor input = nextDesc != std::nullopt ? nextDesc : input_operators[0]->nextDescriptor();

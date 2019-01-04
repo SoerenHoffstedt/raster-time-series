@@ -22,3 +22,7 @@ void Print::consume() {
 bool Print::supportsOrder(Order o) const {
     return o == Order::Temporal;
 }
+
+void Print::initialize() {
+
+}

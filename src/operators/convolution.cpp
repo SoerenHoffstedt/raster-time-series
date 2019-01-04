@@ -133,6 +133,10 @@ Convolution::Convolution(QueryRectangle qrect, Json::Value &params, UniqueOperat
     checkInputCount(1);
 }
 
+void Convolution::initialize() {
+
+}
+
 OptionalDescriptor Convolution::nextDescriptor() {
 
     //new raster, put all descriptors into cache
@@ -259,10 +263,6 @@ void Convolution::fillWithNeighbourTiles(OptionalDescriptorVector &neighbours, i
             neighbours.emplace_back(std::nullopt);
 
         }
-
     }
-
-
-
 
 }

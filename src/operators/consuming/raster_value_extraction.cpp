@@ -16,6 +16,10 @@ RasterValueExtraction::RasterValueExtraction(QueryRectangle qrect, Json::Value &
         output = Output::File;
 }
 
+void RasterValueExtraction::initialize() {
+
+}
+
 bool RasterValueExtraction::supportsOrder(Order order) const {
     return order == Order::Spatial || order == Order::Temporal;
 }

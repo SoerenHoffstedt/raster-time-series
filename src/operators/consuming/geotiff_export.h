@@ -17,6 +17,7 @@ namespace rts {
     public:
         explicit GeotiffExport(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         void consume() override;
+        void initialize() override;
         bool supportsOrder(Order o) const override;
     private:
         std::string timeFormat;

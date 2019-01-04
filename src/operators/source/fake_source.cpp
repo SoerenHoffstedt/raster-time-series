@@ -69,6 +69,10 @@ FakeSource::FakeSource(QueryRectangle qrect,Json::Value &params, UniqueOperatorV
     fill_with_index = params.get("fill_with_index", false).asBool();
 }
 
+void FakeSource::initialize() {
+
+}
+
 Json::Value FakeSource::loadDatasetJson(std::string name) {
     std::filesystem::path p("../../test/data/fake_source");
     p /= std::filesystem::path(name + ".json");

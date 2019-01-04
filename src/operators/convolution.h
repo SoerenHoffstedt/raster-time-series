@@ -19,6 +19,7 @@ namespace rts {
     public:
         Convolution(QueryRectangle qrect, Json::Value &params, UniqueOperatorVector &&in);
         OptionalDescriptor nextDescriptor() override;
+        void initialize() override;
         bool supportsOrder(Order order) const override;
     private:
         OptionalDescriptorVector descCache;

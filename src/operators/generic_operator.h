@@ -21,14 +21,15 @@ namespace rts {
         explicit GenericOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         virtual ~GenericOperator() = default;
         virtual OptionalDescriptor nextDescriptor() = 0;
+        virtual void initialize() = 0;
         virtual bool supportsOrder(Order order) const = 0;
         TimeSeriesIterator begin();
         TimeSeriesIterator end();
 
-    protected:
+        std::vector<std::unique_ptr<GenericOperator>> input_operators;
         QueryRectangle qrect;
         Json::Value params;
-        std::vector<std::unique_ptr<GenericOperator>> input_operators;
+    protected:
         /**
          * Throws an exception if the size of input_operators differs from expected.
          * @param expected the amount of expected input operators.

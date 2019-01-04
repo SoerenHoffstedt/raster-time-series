@@ -22,7 +22,9 @@ std::unique_ptr<ConsumingOperator> QueryCreator::createOperatorTree(const Json::
     std::vector<std::unique_ptr<GenericOperator>> sources = createSources(sources_json, qrect);
 
     Json::Value params = query["params"];
-    return createConsumingOperator(query["operator"].asString(), qrect, params, std::move(sources));
+    auto res = createConsumingOperator(query["operator"].asString(), qrect, params, std::move(sources));
+    callInitialize(res.get());
+    return res;
 }
 
 std::vector<std::unique_ptr<GenericOperator>> QueryCreator::createSources(Json::Value &sources, QueryRectangle &qrect) {
@@ -82,4 +84,14 @@ QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, J
         return std::make_unique<Convolution>(qrect, params, std::move(in));
     else
         throw std::runtime_error("Unknown operator: " + op_name);
+}
+
+#include <iostream>
+
+void QueryCreator::callInitialize(GenericOperator *op) {
+    op->initialize();
+    std::cout << (int)(op->qrect.order) << std::endl;
+    for(auto &child : op->input_operators){
+        callInitialize(child.get());
+    }
 }

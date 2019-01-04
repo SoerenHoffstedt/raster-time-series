@@ -11,6 +11,10 @@ Sampler::Sampler(QueryRectangle qrect, Json::Value &params, std::vector<std::uni
     toSkip = params["to_skip"].asUInt();
 }
 
+void Sampler::initialize() {
+
+}
+
 OptionalDescriptor Sampler::nextDescriptor() {
 
     auto currInput = input_operators[0]->nextDescriptor();

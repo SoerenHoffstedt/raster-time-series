@@ -20,6 +20,7 @@ namespace rts {
         GDALSource(const QueryRectangle &qrect, Json::Value &params,
                    std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
+        void initialize() override;
         bool supportsOrder(Order o) const override;
     private:
         std::shared_ptr<GDALDataset> currDataset;

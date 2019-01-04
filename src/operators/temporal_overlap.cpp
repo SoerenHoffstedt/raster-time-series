@@ -26,6 +26,10 @@ TemporalOverlap::TemporalOverlap(QueryRectangle qrect, Json::Value &params, std:
     checkInputCount(2);
 }
 
+void TemporalOverlap::initialize() {
+
+}
+
 OptionalDescriptor TemporalOverlap::nextDescriptor() {
     OptionalDescriptor input1 = std::nullopt;
     OptionalDescriptor input2 = std::nullopt;

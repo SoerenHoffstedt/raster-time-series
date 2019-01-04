@@ -48,6 +48,7 @@ namespace rts {
     public:
         RasterValueExtraction(QueryRectangle qrect, Json::Value &params, UniqueOperatorVector &&in);
         void consume() override;
+        void initialize() override;
         bool supportsOrder(Order order) const override;
     private:
         void printPixelAt(std::ostream &output, Raster *raster, int x, int y) const;

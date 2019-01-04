@@ -110,6 +110,10 @@ struct GdalSourceWriter {
     }
 };
 
+void GDALSource::initialize() {
+
+}
+
 GDALSource::GDALSource(const QueryRectangle &qrect, Json::Value &params, UniqueOperatorVector &&in)
         : GenericOperator(qrect, params, std::move(in)), currDataset(nullptr), currRasterband(nullptr), currTileIndex(0), currRasterIndex(0)
 {

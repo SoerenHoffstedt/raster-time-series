@@ -10,6 +10,10 @@ ExpressionOperator::ExpressionOperator(QueryRectangle qrect, Json::Value &params
     checkInputCount(1, 2);
 }
 
+void ExpressionOperator::initialize() {
+
+}
+
 OptionalDescriptor ExpressionOperator::nextDescriptor() {
 
     std::vector<OptionalDescriptor> inputs;
