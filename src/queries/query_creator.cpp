@@ -10,7 +10,9 @@
 #include "operators/sampler.h"
 #include "operators/aggregator.h"
 #include "operators/convolution.h"
+#include "operators/order_changer.h"
 #include "queries/query_creator.h"
+
 
 using namespace rts;
 
@@ -82,6 +84,8 @@ QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, J
         return std::make_unique<TemporalOverlap>(qrect, params, std::move(in));
     else if(op_name == "convolution")
         return std::make_unique<Convolution>(qrect, params, std::move(in));
+    else if(op_name == "order_changer")
+        return std::make_unique<OrderChanger>(qrect, params, std::move(in));
     else
         throw std::runtime_error("Unknown operator: " + op_name);
 }
