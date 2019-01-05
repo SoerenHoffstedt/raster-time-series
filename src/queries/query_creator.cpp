@@ -94,7 +94,6 @@ QueryCreator::createOperator(const std::string &op_name, QueryRectangle qrect, J
 
 void QueryCreator::callInitialize(GenericOperator *op) {
     op->initialize();
-    std::cout << (int)(op->qrect.order) << std::endl;
     for(auto &child : op->input_operators){
         callInitialize(child.get());
     }
