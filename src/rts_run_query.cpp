@@ -13,30 +13,35 @@ int main(int argc, char** argv) {
     using namespace rts;
 
     if(argc < 2) {
-        std::cout << "no query file provided in program arguments." << std::endl;
+        std::cout << "No query file provided in program arguments." << std::endl;
         return 0;
     }
 
-    std::string filename("../../test/query/");
-    filename += argv[1];
-    std::ifstream file_in(filename);
+    try {
+        std::string filename("../../test/query/");
+        filename += argv[1];
+        std::ifstream file_in(filename);
 
-    Json::Value json_query;
-    file_in >> json_query;
+        Json::Value json_query;
+        file_in >> json_query;
 
-    std::cout << "Query: " << argv[1] << std::endl;
+        std::cout << "Query: " << argv[1] << std::endl;
 
-    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+        std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
-    std::unique_ptr<OperatorTree> operatorTree = std::make_unique<OperatorTree>(json_query);
-    std::unique_ptr<ConsumingOperator> p = operatorTree->instantiateConsuming();
-    p->consume();
+        std::unique_ptr<OperatorTree> operatorTree = std::make_unique<OperatorTree>(json_query);
+        std::unique_ptr<ConsumingOperator> p = operatorTree->instantiateConsuming();
+        p->consume();
 
-    std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1).count();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1).count();
 
-    std::cout << "\nQuery execution time: " << duration << " ms." << std::endl;
+        std::cout << "\nQuery execution time: " << duration << " ms." << std::endl;
+    } catch(const std::exception &e){
+        std::cout << "\nQuery failed: " << e.what() << std::endl;
+    }
+
 
     return 0;
 }

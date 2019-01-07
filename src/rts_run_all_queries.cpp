@@ -14,32 +14,37 @@ int main(int argc, char** argv) {
 
     using namespace rts;
 
-    int count = 0;
+    int countSuccessful = 0;
+    int countFailed = 0;
 
     for(auto &f : std::filesystem::directory_iterator("../../test/query/")) {
 
-        //TODO: add try catch clause, to really run through all queries.
-        std::ifstream file_in(f.path().string());
+        try {
+            std::ifstream file_in(f.path().string());
 
-        Json::Value json_query;
-        file_in >> json_query;
-        std::cout << "Query: " << f.path().filename() << std::endl;
+            Json::Value json_query;
+            file_in >> json_query;
+            std::cout << "Query: " << f.path().filename() << std::endl;
 
-        std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+            std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
-        std::unique_ptr<OperatorTree> operatorTree = std::make_unique<OperatorTree>(json_query);
-        std::unique_ptr<ConsumingOperator> p = operatorTree->instantiateConsuming();
-        p->consume();
+            std::unique_ptr<OperatorTree> operatorTree = std::make_unique<OperatorTree>(json_query);
+            std::unique_ptr<ConsumingOperator> p = operatorTree->instantiateConsuming();
+            p->consume();
 
-        std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+            std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
-        std::cout << "\nQuery execution time: " << duration << " ms." << std::endl;
-        ++count;
+            std::cout << "\nQuery execution time: " << duration << " ms." << std::endl;
+            countSuccessful += 1;
+        } catch (const std::exception &e){
+            countFailed += 1;
+            std::cout << "\nQuery failed: " << e.what() << std::endl;
+        }
     }
 
-    std::cout << "All queries finished, count: " << count << std::endl;
+    std::cout << "\nAll queries finished, successful: " << countSuccessful << ", failed: " << countFailed << std::endl;
 
     return 0;
 }
