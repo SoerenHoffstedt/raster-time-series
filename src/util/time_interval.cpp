@@ -9,7 +9,7 @@ TimeInterval::TimeInterval() : unit(TimeUnit::Year), length(0) { }
 
 TimeInterval::TimeInterval(TimeUnit unit, uint32_t length) : unit(unit), length(length) { }
 
-TimeInterval::TimeInterval(Json::Value &json) {
+TimeInterval::TimeInterval(const Json::Value &json) {
     unit   = Parsing::parseTimeUnit(json["unit"].asString());
     length = json["length"].asUInt();
 }

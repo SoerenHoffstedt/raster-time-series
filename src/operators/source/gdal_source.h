@@ -17,7 +17,7 @@ namespace rts {
      */
     class GDALSource : public GenericOperator {
     public:
-        GDALSource(const QueryRectangle &qrect, Json::Value &params,
+        GDALSource(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params,
                    std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
         void initialize() override;

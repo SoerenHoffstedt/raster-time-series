@@ -6,10 +6,12 @@
 
 namespace rts {
 
+    class GenericOperator;
+
     class ConsumingOperator : public GenericOperator {
     public:
-        ConsumingOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-                : GenericOperator(qrect, params, std::move(in)) { }
+        ConsumingOperator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+                : GenericOperator(operator_tree, qrect, params, std::move(in)) { }
         virtual void consume() = 0;
         OptionalDescriptor nextDescriptor() override;
     };

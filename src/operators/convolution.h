@@ -17,7 +17,7 @@ namespace rts {
      */
     class Convolution : public GenericOperator {
     public:
-        Convolution(QueryRectangle qrect, Json::Value &params, UniqueOperatorVector &&in);
+        Convolution(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in);
         OptionalDescriptor nextDescriptor() override;
         void initialize() override;
         bool supportsOrder(Order order) const override;

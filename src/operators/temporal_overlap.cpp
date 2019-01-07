@@ -17,8 +17,8 @@ struct TempOverlapCalc {
     }
 };
 
-TemporalOverlap::TemporalOverlap(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(qrect, params, std::move(in)),
+TemporalOverlap::TemporalOverlap(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)),
         input1Time(), input2Time(), lastTileOfRaster1(false),
         loadRasterFromCache1(false), loadRasterFromCache2(false),
         expression(params["expression"])

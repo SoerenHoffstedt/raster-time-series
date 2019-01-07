@@ -11,8 +11,8 @@ using namespace rts;
 
 using UniqueGDALDataset = std::unique_ptr<GDALDataset, decltype(&GDALClose)>;
 
-GeotiffExport::GeotiffExport(QueryRectangle qrect, Json::Value &params, UniqueOperatorVector &&in)
-        : ConsumingOperator(qrect, params, std::move(in))
+GeotiffExport::GeotiffExport(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in)
+        : ConsumingOperator(operator_tree, qrect, params, std::move(in))
 {
     checkInputCount(1);
     driverName      = "GTiff"s;

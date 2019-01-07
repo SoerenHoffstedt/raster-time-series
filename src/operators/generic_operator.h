@@ -15,26 +15,53 @@ namespace rts {
 
     class Descriptor;
     class TimeSeriesIterator;
+    class OperatorTree;
 
     class GenericOperator {
     public:
-        explicit GenericOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
+        explicit GenericOperator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         virtual ~GenericOperator() = default;
         virtual OptionalDescriptor nextDescriptor() = 0;
-        virtual void initialize() = 0;
         virtual bool supportsOrder(Order order) const = 0;
+
         TimeSeriesIterator begin();
         TimeSeriesIterator end();
 
         std::vector<std::unique_ptr<GenericOperator>> input_operators;
         QueryRectangle qrect;
         Json::Value params;
+
+        /**
+         * Initializes this operator and all its child operators by calling their initialize() method.
+         * Initialization starts on this operator and steps through the tree of operators from top to bottom.
+         */
+        void initializeRecursively();
+
     protected:
+
+        /**
+         * Method for initializing data based on the parameters or the qrect.
+         * Can alter the data of the child operators.
+         */
+        virtual void initialize() = 0;
+
+        /**
+         * Helper function called by initializeRecursively doing the actual initialization work.
+         * @param op Pointer to the operator to be initialized.
+         */
+        void callInitializeRecursively(GenericOperator *op);
+
+        /**
+         * Pointer the operator tree that instantiated this operator.
+         */
+        const OperatorTree *operator_tree;
+
         /**
          * Throws an exception if the size of input_operators differs from expected.
          * @param expected the amount of expected input operators.
          */
         void checkInputCount(int expected) const;
+
         /**
          * Throws an exception if the size of input_operators is not between expectedMin and expectedMax.
          * @param expectedMin inclusive minimum of expected input operators.
@@ -47,6 +74,7 @@ namespace rts {
 
     class OperatorUtil {
     public:
+
         /**
          * Skips all the tiles belonging to the raster of the passed Descriptor (same temporal information as currentDesc).
          * @param op The operator that provides the Descriptors.
@@ -54,6 +82,7 @@ namespace rts {
          * @return The first Descriptor of the next raster.
          */
         static OptionalDescriptor skipCurrentTemporal(GenericOperator &op, OptionalDescriptor &currentDesc);
+
         /**
          * Skips all the tiles of the same spatial coordinates as the passed Descriptor (currentDesc).
          * @param op The operator that provides the Descriptors.
@@ -61,6 +90,7 @@ namespace rts {
          * @return The first Descriptor of the next tile.
          */
         static OptionalDescriptor skipCurrentSpatial(GenericOperator &op, OptionalDescriptor &currentDesc);
+
         /**
          * Skips all tiles that are of the same first dimension as the passed Descriptor.
          * If the order of the passed Descriptor is Temporal skipCurrentTemporal is called

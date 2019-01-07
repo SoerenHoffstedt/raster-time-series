@@ -26,8 +26,8 @@ struct Aggregating {
     }
 };
 
-Aggregator::Aggregator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(qrect, params, std::move(in)), nextDesc(std::nullopt), hasTimeInterval(false), lastTileIndex(-1)
+Aggregator::Aggregator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), nextDesc(std::nullopt), hasTimeInterval(false), lastTileIndex(-1)
 {
     checkInputCount(1);
     customDataType = params.isMember("custom_data_type") ? Parsing::parseDataType(params["custom_data_type"].asString()) : GDT_Unknown;

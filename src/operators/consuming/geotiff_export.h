@@ -15,7 +15,7 @@ namespace rts {
      */
     class GeotiffExport : public ConsumingOperator {
     public:
-        explicit GeotiffExport(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
+        explicit GeotiffExport(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         void consume() override;
         void initialize() override;
         bool supportsOrder(Order o) const override;

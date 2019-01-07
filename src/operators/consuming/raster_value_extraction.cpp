@@ -5,8 +5,8 @@
 
 using namespace rts;
 
-RasterValueExtraction::RasterValueExtraction(QueryRectangle qrect, Json::Value &params, UniqueOperatorVector &&in)
-        : ConsumingOperator(qrect, params, std::move(in))
+RasterValueExtraction::RasterValueExtraction(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in)
+        : ConsumingOperator(operator_tree, qrect, params, std::move(in))
 {
     checkInputCount(1);
     std::string outputString = params["output"].asString();

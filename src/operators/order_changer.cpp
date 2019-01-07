@@ -3,8 +3,8 @@
 
 using namespace rts;
 
-OrderChanger::OrderChanger(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(qrect, params, std::move(in)), initialized(false)
+OrderChanger::OrderChanger(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), initialized(false)
 {
     checkInputCount(1);
 }

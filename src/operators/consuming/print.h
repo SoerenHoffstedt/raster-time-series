@@ -12,7 +12,7 @@ namespace rts {
      */
     class Print : public ConsumingOperator {
     public:
-        explicit Print(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
+        explicit Print(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         void consume() override;
         void initialize() override;
         bool supportsOrder(Order o) const override;

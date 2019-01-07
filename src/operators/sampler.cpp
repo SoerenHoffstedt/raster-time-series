@@ -3,8 +3,8 @@
 
 using namespace rts;
 
-Sampler::Sampler(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(qrect, params, std::move(in)), lastSendT1(-1)
+Sampler::Sampler(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), lastSendT1(-1)
 {
     checkInputCount(1);
 

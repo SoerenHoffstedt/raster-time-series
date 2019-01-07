@@ -127,8 +127,8 @@ struct ConvolutionOperation {
     }
 };
 
-Convolution::Convolution(QueryRectangle qrect, Json::Value &params, UniqueOperatorVector &&in)
-        : GenericOperator(qrect, params, std::move(in)), currentTileIndex(0)
+Convolution::Convolution(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), currentTileIndex(0)
 {
     checkInputCount(1);
 }

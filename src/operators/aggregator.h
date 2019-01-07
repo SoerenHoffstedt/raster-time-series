@@ -11,7 +11,8 @@ namespace rts {
 
     /***
      * Allows aggregating in time intervals. If no time interval is provided in the parameters the whole time series is aggregated.
-     * The time interval starts from qrect t1 and increases by the passed time interval
+     * The time interval starts from qrect t1 and increases by the passed time interval.
+     * Product is the mean of all rasters of an interval.
      *
      * Parameters:
      *  - custom_data_type: [Byte, UInt16, Int16, UInt32, Int32, Float32, Float64], when not provided data type of input tiles is used.
@@ -22,7 +23,7 @@ namespace rts {
      */
     class Aggregator : public GenericOperator {
     public:
-        Aggregator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
+        Aggregator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
         void initialize() override;
         bool supportsOrder(Order order) const override;

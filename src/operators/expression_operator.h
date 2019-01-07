@@ -15,7 +15,7 @@ namespace rts {
      */
     class ExpressionOperator : public GenericOperator {
     public:
-        ExpressionOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
+        ExpressionOperator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
         void initialize() override;
         bool supportsOrder(Order order) const override;

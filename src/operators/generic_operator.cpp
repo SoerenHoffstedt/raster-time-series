@@ -9,8 +9,8 @@
 
 using namespace rts;
 
-GenericOperator::GenericOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-    : qrect(qrect), params(params), input_operators(std::move(in))
+GenericOperator::GenericOperator(const OperatorTree *operator_tree, const  QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+    : operator_tree(operator_tree), qrect(qrect), params(params), input_operators(std::move(in))
 {
 
 }
@@ -30,6 +30,17 @@ TimeSeriesIterator GenericOperator::begin() {
 
 TimeSeriesIterator GenericOperator::end() {
     return TimeSeriesIterator::createEndIterator();
+}
+
+void GenericOperator::initializeRecursively() {
+    callInitializeRecursively(this);
+}
+
+void GenericOperator::callInitializeRecursively(GenericOperator *op){
+    op->initialize();
+    for(auto &child : op->input_operators){
+        callInitializeRecursively(child.get());
+    }
 }
 
 OptionalDescriptor OperatorUtil::skipCurrentDimension(GenericOperator &op, OptionalDescriptor &currentDesc) {

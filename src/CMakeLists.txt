@@ -17,6 +17,12 @@ target_include_directories(rts_base_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries_internal(rts_run_query rts_base_lib)
 target_link_libraries_internal(rts_run_all_queries rts_base_lib)
 
+add_library(rts_query_lib
+        queries/operator_tree.cpp)
+target_link_libraries_internal(rts_query_lib rts_base_lib)
+target_link_libraries_internal(rts_base_lib rts_query_lib)
+
+
 add_library(rts_operators_lib
         operators/generic_operator.cpp
         operators/consuming/consuming_operator.cpp
@@ -34,11 +40,6 @@ add_library(rts_operators_lib
         operators/temporal_overlap.cpp)
 target_link_libraries_internal(rts_operators_lib rts_base_lib)
 target_link_libraries_internal(rts_base_lib rts_operators_lib)
-
-add_library(rts_query_lib
-        queries/query_creator.cpp)
-target_link_libraries_internal(rts_query_lib rts_base_lib)
-target_link_libraries_internal(rts_base_lib rts_query_lib)
 
 target_link_libraries(rts_base_lib jsoncpp_lib_static)
 target_include_directories(rts_base_lib PRIVATE ${JSONCPP_INCLUDE_DIRS})

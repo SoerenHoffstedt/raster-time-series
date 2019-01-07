@@ -3,7 +3,9 @@
 
 using namespace rts;
 
-Print::Print(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in) : ConsumingOperator(qrect, params, std::move(in)) {
+Print::Print(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+        : ConsumingOperator(operator_tree, qrect, params, std::move(in))
+{
 
 }
 

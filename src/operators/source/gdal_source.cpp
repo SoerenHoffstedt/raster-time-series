@@ -114,8 +114,8 @@ void GDALSource::initialize() {
 
 }
 
-GDALSource::GDALSource(const QueryRectangle &qrect, Json::Value &params, UniqueOperatorVector &&in)
-        : GenericOperator(qrect, params, std::move(in)), currDataset(nullptr), currRasterband(nullptr), currTileIndex(0), currRasterIndex(0)
+GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), currDataset(nullptr), currRasterband(nullptr), currTileIndex(0), currRasterIndex(0)
 {
     GDALUtil::initGdal();
 
@@ -293,7 +293,6 @@ void GDALSource::setCurrTimeToFirstRaster() {
     }
 }
 
-constexpr int MAX_FILE_NAME_LENGTH = 255;
 
 void GDALSource::loadCurrentGdalDataset() {
     std::string timeString = GDALUtil::timeToString(to_time_t(curr_time), time_format);

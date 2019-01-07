@@ -4,8 +4,8 @@
 
 using namespace rts;
 
-ExpressionOperator::ExpressionOperator(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(qrect, params, std::move(in)), expression(params["expression"])
+ExpressionOperator::ExpressionOperator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), expression(params["expression"])
 {
     checkInputCount(1, 2);
 }

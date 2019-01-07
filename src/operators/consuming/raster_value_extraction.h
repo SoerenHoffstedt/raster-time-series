@@ -46,7 +46,7 @@ namespace rts {
      */
     class RasterValueExtraction : public ConsumingOperator {
     public:
-        RasterValueExtraction(QueryRectangle qrect, Json::Value &params, UniqueOperatorVector &&in);
+        RasterValueExtraction(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in);
         void consume() override;
         void initialize() override;
         bool supportsOrder(Order order) const override;

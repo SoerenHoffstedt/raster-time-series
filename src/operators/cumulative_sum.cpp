@@ -17,8 +17,8 @@ struct CumSumAdder {
     }
 };
 
-CumulativeSum::CumulativeSum(QueryRectangle qrect, Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(qrect, params, std::move(in)), sum(nullptr), lastTileIndex(-1)
+CumulativeSum::CumulativeSum(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), sum(nullptr), lastTileIndex(-1)
 {
     checkInputCount(1);
 }

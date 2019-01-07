@@ -14,10 +14,10 @@ void GDALUtil::initGdal() {
     });
 }
 
-constexpr int MAX_FILE_NAME_LENGTH = 255;
+constexpr int MAX_STRING_LENGTH = 255;
 
 std::string GDALUtil::timeToString(time_t time, const std::string &timeFormat) {
-    char date[MAX_FILE_NAME_LENGTH] = {0};
+    char date[MAX_STRING_LENGTH] = {0};
     tm curr_time_tm = *gmtime(&time);
     strftime(date, sizeof(date), timeFormat.c_str(), &curr_time_tm);
     std::string timeString(date);

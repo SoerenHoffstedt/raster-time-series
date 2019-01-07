@@ -28,7 +28,7 @@ namespace rts {
     public:
         TimeInterval();
         TimeInterval(TimeUnit unit, uint32_t length);
-        explicit TimeInterval(Json::Value &json);
+        explicit TimeInterval(const Json::Value &json);
         TimeUnit unit;
         uint32_t length;
         void increase(boost::posix_time::ptime &time) const;
