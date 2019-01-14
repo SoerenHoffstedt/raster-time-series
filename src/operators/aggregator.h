@@ -9,6 +9,13 @@
 
 namespace rts {
 
+    enum class AggregatorFunction {
+        Mean,
+        Min,
+        Max,
+        Sum
+    };
+
     /***
      * Allows aggregating in time intervals. If no time interval is provided in the parameters the whole time series is aggregated.
      * The time interval starts from qrect t1 and increases by the passed time interval.
@@ -16,6 +23,7 @@ namespace rts {
      *
      * Parameters:
      *  - custom_data_type: [Byte, UInt16, Int16, UInt32, Int32, Float32, Float64], when not provided data type of input tiles is used.
+     *  - function: [Mean, Min, Max, Sum]
      *  - time_interval:
      *      - unit: [Year,Month,Day,Hour,Seconds]
      *      - value: number
@@ -30,7 +38,7 @@ namespace rts {
     private:
         OptionalDescriptor nextDesc;
         GDALDataType customDataType;
-
+        AggregatorFunction function;
         bool hasTimeInterval;
         TimeInterval interval;
         boost::posix_time::ptime currTime;

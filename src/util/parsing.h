@@ -5,6 +5,7 @@
 #include <gdal.h>
 #include "gdal_util.h"
 #include "util/time_interval.h"
+#include "operators/aggregator.h"
 
 namespace rts {
 
@@ -12,7 +13,7 @@ namespace rts {
     public:
         static GDALDataType parseDataType(const std::string &input);
         static TimeUnit parseTimeUnit(const std::string &input);
-
+        static AggregatorFunction parseAggregatorFunction(const std::string &input);
     };
 
 }

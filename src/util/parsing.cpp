@@ -1,6 +1,8 @@
 
 #include <stdexcept>
 #include "util/parsing.h"
+#include "parsing.h"
+
 
 using namespace rts;
 
@@ -38,4 +40,17 @@ TimeUnit Parsing::parseTimeUnit(const std::string &input) {
         return TimeUnit::Second;
     else
         throw std::runtime_error("Could not parse TimeUnit: " + input);
+}
+
+AggregatorFunction Parsing::parseAggregatorFunction(const std::string &input) {
+    if(input == "Mean")
+        return AggregatorFunction::Mean;
+    else if(input == "Min")
+        return AggregatorFunction::Min;
+    else if(input == "Max")
+        return AggregatorFunction::Max;
+    else if(input == "Sum")
+        return AggregatorFunction::Sum;
+    else
+        throw std::runtime_error("Could not parse AggregatorFunction: " + input);
 }

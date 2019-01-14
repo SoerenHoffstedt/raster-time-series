@@ -65,6 +65,8 @@ namespace rts {
         GDALDataType getDataType() const;
         Resolution getResolution() const;
         virtual int32_t sizeOfDataType() const = 0;
+        virtual double getValueRangeMin() const = 0;
+        virtual double getValueRangeMax() const = 0;
 
     protected:
         GDALDataType dataType;
@@ -96,6 +98,8 @@ namespace rts {
         void setCellDouble(int x, int y, double value) override;
         void print() const override;
         int32_t sizeOfDataType() const override;
+        double getValueRangeMin() const override;
+        double getValueRangeMax() const override;
     private:
         T* data;
         const bool owns_data;
@@ -229,6 +233,16 @@ namespace rts {
         offset_ptr += offsetY * res_x * sizeof(T);
         offset_ptr += offsetX * sizeof(T);
         return static_cast<void*>(offset_ptr);
+    }
+
+    template<class T>
+    double TypedRaster<T>::getValueRangeMin() const {
+        return static_cast<double>(std::numeric_limits<T>::min());
+    }
+
+    template<class T>
+    double TypedRaster<T>::getValueRangeMax() const {
+        return static_cast<double>(std::numeric_limits<T>::max());
     }
 
 }

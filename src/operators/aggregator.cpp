@@ -7,19 +7,38 @@ using namespace rts;
 using namespace boost::posix_time;
 
 template<class T1, class T2>
-struct Aggregating {
-    static void rasterOperation(TypedRaster<T1> *addingTo, TypedRaster<T2> *added, int rasterCount, double nodata){
-        Resolution tileResolution = addingTo->getResolution();
+struct AggregatorOperation {
+    static void rasterOperation(TypedRaster<T1> *aggregated_out_raster, TypedRaster<T2> *aggregating_in_raster, int rasterCount, double nodata, AggregatorFunction function){
+        Resolution tileResolution = aggregated_out_raster->getResolution();
         for(int x = 0; x < tileResolution.res_x; ++x){
             for(int y = 0; y < tileResolution.res_y; ++y){
-                T2 val = added->getCell(x,y);
-                if(val == (T2)nodata)
-                    addingTo->setCell(x, y, (T2)nodata);
-                else {
-                    T1 curr_avg = addingTo->getCell(x, y);
-                    // A is current avg value after I values, than is the avg with the next value x: (A * I + x) / (I+1)
-                    T1 newVal = (curr_avg * (rasterCount) + val) / (rasterCount+1);
-                    addingTo->setCell(x,y, newVal);
+                T2 val = aggregating_in_raster->getCell(x,y);
+                T1 out_old = aggregated_out_raster->getCell(x,y);
+
+                switch(function){
+                    case AggregatorFunction::Mean:
+                        if(val == (T2)nodata)
+                            aggregated_out_raster->setCell(x, y, (T2)nodata);
+                        else {
+                            T1 curr_avg = aggregated_out_raster->getCell(x, y);
+                            // A is current avg value after I values, than is the avg with the next value x: (A * I + x) / (I+1)
+                            T1 newVal = (curr_avg * (rasterCount) + val) / (rasterCount+1);
+                            aggregated_out_raster->setCell(x,y, newVal);
+                        }
+                        break;
+                    case AggregatorFunction::Min:
+                        if(out_old == (T1)nodata || out_old > val)
+                            aggregated_out_raster->setCell(x, y, (T1)val);
+                        break;
+                    case AggregatorFunction::Max:
+                        if(out_old == (T1)nodata || out_old < val)
+                            aggregated_out_raster->setCell(x, y, (T1)val);
+                        break;
+                    case AggregatorFunction::Sum:
+                        if(val != (T2)nodata){
+                            aggregated_out_raster->setCell(x, y, out_old + (T1)val);
+                        }
+                        break;
                 }
             }
         }
@@ -31,13 +50,13 @@ Aggregator::Aggregator(const OperatorTree *operator_tree, const QueryRectangle &
 {
     checkInputCount(1);
     customDataType = params.isMember("custom_data_type") ? Parsing::parseDataType(params["custom_data_type"].asString()) : GDT_Unknown;
+    function = Parsing::parseAggregatorFunction(params["function"].asString());
 
     hasTimeInterval = params.isMember("time_interval");
     if(hasTimeInterval){
         interval = TimeInterval(params["time_interval"]);
         currTime = from_time_t(static_cast<time_t>(qrect.t1));
     }
-
 }
 
 void Aggregator::initialize() {
@@ -81,13 +100,16 @@ OptionalDescriptor Aggregator::nextDescriptor() {
     info.rasterInfo.t1 = descriptors[0]->rasterInfo.t1;
     info.rasterInfo.t2 = descriptors[descriptors.size() - 1]->rasterInfo.t2;
 
-    auto getter = [descriptors = std::move(descriptors)](const Descriptor &self) -> UniqueRaster {
+    auto getter = [descriptors = std::move(descriptors), function = function](const Descriptor &self) -> UniqueRaster {
         UniqueRaster out_raster = Raster::createRaster(self.dataType, self.tileResolution);
-        RasterOperations::callUnary<RasterOperations::AllValuesSetter>(out_raster.get(), 0);
+        if(function == AggregatorFunction::Min)
+            RasterOperations::callUnary<RasterOperations::AllValuesSetter>(out_raster.get(), self.nodata);
+        else
+            RasterOperations::callUnary<RasterOperations::AllValuesSetter>(out_raster.get(), 0);
 
         for(int i = 0; i < descriptors.size(); i++){
             UniqueRaster r = descriptors[i]->getRaster();
-            RasterOperations::callBinary<Aggregating>(out_raster.get(), r.get(), i, self.nodata);
+            RasterOperations::callBinary<AggregatorOperation>(out_raster.get(), r.get(), i, self.nodata, function);
         }
 
         return out_raster;
