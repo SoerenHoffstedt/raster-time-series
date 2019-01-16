@@ -56,7 +56,7 @@ struct ConvolutionOperation {
      * Function returning the value of the cell (x,y) of the tile (center). It is handling the case that (x,y) is out
      * of bounds of the tile by getting the value from an adjacent raster (all).
      */
-    static double getCell(int x, int y, Resolution &res, TypedRaster<T2> *center, TypedRaster<T2> **all){
+    static double getCell(int x, int y, Resolution &res, TypedRaster<T2> *center, std::vector<TypedRaster<T2>*> &all){
         int dx = 0;
         int dy = 0;
 
@@ -84,11 +84,12 @@ struct ConvolutionOperation {
 
     }
 
-    static void rasterOperation(TypedRaster<T1> *out_raster, TypedRaster<T2> *input_center, Raster **in_raster) {
+    static void rasterOperation(TypedRaster<T1> *out_raster, TypedRaster<T2> *input_center, std::vector<Raster*> &in_raster) {
 
-        TypedRaster<T2> **in_raster_casted = new TypedRaster<T2>*[9];
+        std::vector<TypedRaster<T2>*> in_raster_casted;
+        in_raster_casted.reserve(9);
         for (int i = 0; i < 9; ++i) {
-            in_raster_casted[i] = (TypedRaster<T2>*)in_raster[i];
+            in_raster_casted.push_back((TypedRaster<T2>*)in_raster[i]);
         }
 
         int conv_length = 3;
@@ -123,7 +124,6 @@ struct ConvolutionOperation {
             }
         }
 
-        delete[] in_raster_casted;
     }
 };
 
@@ -167,23 +167,24 @@ OptionalDescriptor Convolution::nextDescriptor() {
 
     auto getter = [neighbours = std::move(neighbours), tileIndex = currentTileIndex, tileCountDimensional = tileCountDimensional](const Descriptor &self) mutable -> UniqueRaster {
         auto out_raster = Raster::createRaster(self.dataType, self.tileResolution);
-        Raster **inputs = new Raster*[9];
+        //save rasters once as vector of UniqueRaster to make sure they will get deleted, and once as raw pointer vector for usage.
+        std::vector<Raster*> inputs;
         std::vector<UniqueRaster> in_raster;
+        inputs.reserve(9);
         in_raster.reserve(9);
 
         for(int i = 0; i < 9; i++){
             if(neighbours[i].has_value()){
                 in_raster.push_back(neighbours[i]->getRaster());
-                inputs[i] = in_raster[i].get();
+                inputs.push_back(in_raster[i].get());
             } else {
                 in_raster.emplace_back(nullptr);
-                inputs[i] = nullptr;
+                inputs.emplace_back(nullptr);
             }
         }
 
         RasterOperations::callBinary<ConvolutionOperation>(out_raster.get(), inputs[0], inputs);
 
-        delete[] inputs;
         return out_raster;
     };
 
