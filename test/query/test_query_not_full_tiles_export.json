@@ -28,8 +28,8 @@
 			"operator" : "fake_source",
 			"params" : {
 				"dataset" : "byte_dataset",
-				"tile_size_x" : 90,
-				"tile_size_y" : 90,
+				"tile_size_x" : 100,
+				"tile_size_y" : 100,
 				"fill_index" : false
 			},
 			"sources" : [

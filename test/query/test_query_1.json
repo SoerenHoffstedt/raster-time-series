@@ -1,8 +1,8 @@
 {
 	"query_rectangle" : {
 		"resolution" : {
-			"x" : 36,
-			"y" : 18
+			"x" : 360,
+			"y" : 180
 		},
 		"temporal_reference" : {
 			"type" : "UNIX",
@@ -22,39 +22,34 @@
 	"params" : {
 
 	},
-	"sources" : [		
+	"sources" : [
 		{
-			"operator" : "expression",
+			"operator" : "aggregator",
 			"params" : {
-				"expression" : "B * A"
+				"function" : "Max"
 			},
 			"sources" : [
-				
 				{
-					"operator" : "fake_source",
+					"operator" : "expression",
 					"params" : {
-						"dataset" : "first_dataset",
-						"tile_size_x" : 18,
-						"tile_size_y" : 18,
-						"fill_with_index" : true
+						"expression" : "A * 2"
 					},
 					"sources" : [
+						
+						{
+							"operator" : "fake_source",
+							"params" : {
+								"dataset" : "first_dataset",
+								"tile_size_x" : 90,
+								"tile_size_y" : 90,
+								"fill_with_index" : true
+							},
+							"sources" : [
 
-					]
-				},
-				{
-					"operator" : "fake_source",
-					"params" : {
-						"dataset" : "second_dataset",
-						"tile_size_x" : 18,
-						"tile_size_y" : 18,
-						"fill_with_index" : true
-					},
-					"sources" : [
-
+							]
+						}					
 					]
 				}
-					
 			]
 			
 		}	

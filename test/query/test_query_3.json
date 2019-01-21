@@ -26,6 +26,7 @@
 		{
 			"operator" : "aggregator",
 			"params" : {
+				"function" : "Mean",
 				"custom_data_type" : "Float32",
 				"time_interval" : {
 					"unit" : "Month",
@@ -36,7 +37,7 @@
 				{									
 					"operator" : "expression",
 					"params" : {
-						
+						"expression" : "A * 2"
 					},
 					"sources" : [
 						{									

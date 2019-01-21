@@ -32,6 +32,7 @@
 				{
 					"operator" : "aggregator",
 					"params" : {
+						"function" : "Mean",
 						"custom_data_type" : "Float32",
 						"time_interval" : {
 							"unit" : "Second",

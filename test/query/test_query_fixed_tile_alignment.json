@@ -27,7 +27,7 @@
 		{
 			"operator" : "expression",
 			"params" : {
-
+				"expression" : "A * 5"
 			},
 			"sources" : [
 				{
