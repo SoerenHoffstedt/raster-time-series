@@ -12,6 +12,20 @@
 		"length" : 1	
 	},
 
+	"coords" : {
+		"extent" : {
+			"x1" : -180,
+          	"y1" : -90,
+          	"x2" : 180,
+          	"y2" : 90,
+          	"projection" : "EPSG:4326"
+		},
+		"size" : {
+			"x" : 3600,
+			"y" : 1800
+		}
+	},
+
 	"channel" : 1,
 	"description" : "Leaf area index."
 }
