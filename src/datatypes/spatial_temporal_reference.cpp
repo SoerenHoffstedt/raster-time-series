@@ -22,6 +22,16 @@ SpatialReference Projection::getExtent() const {
         return SpatialReference(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
 }
 
+Projection::Projection(const Json::Value &spatial_def) : Projection(spatial_def["projection"].asString()) {
+
+}
+
+Projection::Projection(const std::string &proj) {
+    auto separation = proj.find(':');
+    authority = proj.substr(0, separation);
+    code = std::stoi(proj.substr(separation + 1));
+}
+
 // Temporal Reference definitions:
 
 TemporalReference::TemporalReference(double t1, double t2) : t1(t1), t2(t2) { }
@@ -69,7 +79,7 @@ SpatialReference::SpatialReference() : projection() {
     y2 = extent.y2;
 }
 
-SpatialReference::SpatialReference(const Json::Value &spat) : projection() {
+SpatialReference::SpatialReference(const Json::Value &spat) : projection(spat["projection"].asString()) {
     x1 = spat["x1"].asDouble();
     x2 = spat["x2"].asDouble();
     y1 = spat["y1"].asDouble();

@@ -13,11 +13,12 @@ namespace rts {
 
     class Projection {
     public:
-        //TODO: not handling projection right at the moment, for now everything is EPSG:4326. fix that.
         Projection();
         Projection(std::string authority, uint32_t code);
+        explicit Projection(const Json::Value &proj);
+        explicit Projection(const std::string &proj);
         std::string authority;
-        uint32_t code;
+        int32_t code;
 
         /**
          * @return The coordinates maximum extent of this projection.
