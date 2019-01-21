@@ -115,7 +115,7 @@ void GDALSource::initialize() {
 }
 
 GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in)
-        : GenericOperator(operator_tree, qrect, params, std::move(in)), currDataset(nullptr), currRasterband(nullptr), currTileIndex(0), currRasterIndex(0)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), currDataset(nullptr), currRasterband(nullptr)
 {
     GDALUtil::initGdal();
 
@@ -134,6 +134,10 @@ GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &
     dataset_time_end            = time_from_string(dataset_json["time_end"].asString());
     setCurrTimeToFirstRaster();
 
+    Json::Value coords = dataset_json["coords"];
+    fileRasterSize = Resolution(coords["size"]);
+    fileRasterExtent = SpatialReference(coords["extent"]);
+
     //calc number of tiles
     rasterWorldPixelStart = RasterCalculations::coordinateToPixel(fileRasterSize, fileRasterExtent, qrect.x1, qrect.y1);
 
@@ -149,7 +153,12 @@ GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &
         num_x += 1;
     if(size.res_y % tileRes.res_y > 0)
         num_y += 1;
-    tileCount = num_x * num_y;
+
+    tileCount       = num_x * num_y;
+    state_x         = 0;
+    state_y         = 0;
+    currTileIndex   = 0;
+    currRasterIndex = 0;
 }
 
 OptionalDescriptor GDALSource::nextDescriptor() {
