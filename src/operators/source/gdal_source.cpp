@@ -135,12 +135,13 @@ GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &
     setCurrTimeToFirstRaster();
 
     //calc number of tiles
-    rasterWorldPixelStart = RasterCalculations::coordinateToWorldPixel(qrect, qrect.x1, qrect.y1);
+    rasterWorldPixelStart = RasterCalculations::coordinateToPixel(fileRasterSize, fileRasterExtent, qrect.x1, qrect.y1);
 
     Resolution rasterStep = rasterWorldPixelStart;
     rasterStep.res_x -= rasterWorldPixelStart.res_x % tileRes.res_x;
     rasterStep.res_y -= rasterWorldPixelStart.res_y % tileRes.res_y;
-    Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToWorldPixel(qrect, qrect.x2, qrect.y2);
+    Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(fileRasterSize, fileRasterExtent, qrect.x2,
+                                                                           qrect.y2);
     Resolution size(rasterWorldPixelEnd.res_x - rasterStep.res_x, rasterWorldPixelEnd.res_y - rasterStep.res_y);
     uint32_t num_x = size.res_x / tileRes.res_x;
     uint32_t num_y = size.res_y / tileRes.res_y;
@@ -189,8 +190,8 @@ OptionalDescriptor GDALSource::nextDescriptor() {
     Resolution res_left_to_fill(qrect.res_x - state_x, qrect.res_y - state_y);
 
     Resolution tile_start_world_res(rasterWorldPixelStart.res_x + state_x, rasterWorldPixelStart.res_y + state_y);
-    SpatialReference tile_spat = RasterCalculations::calcSpatialInfoFromPixel(qrect, tile_start_world_res,
-                                                                              tile_start_world_res + tileRes);
+    SpatialReference tile_spat = RasterCalculations::pixelToSpatialRectangle(qrect, tile_start_world_res,
+                                                                             tile_start_world_res + tileRes);
 
     auto getter = [currDataset = currDataset, currRasterband = currRasterband, fill_from = fill_from, res_left_to_fill = res_left_to_fill](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);

@@ -91,7 +91,8 @@ void RasterValueExtraction::consume() {
             }
         }
 
-        Resolution pixelCoord = RasterCalculations::coordinateToWorldPixel(desc->rasterInfo, point.x, point.y);
+        Resolution pixelCoord = RasterCalculations::coordinateToPixel(desc->rasterInfo, desc->rasterInfo, point.x,
+                                                                      point.y);
         pixelCoord.res_x = pixelCoord.res_x % desc->tileResolution.res_x;
         pixelCoord.res_y = pixelCoord.res_y % desc->tileResolution.res_y;
         UniqueRaster raster = desc->getRaster();

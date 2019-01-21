@@ -144,8 +144,8 @@ void GeotiffExport::calcTilePosAndSize(const Descriptor &in_desc, int &x, int &y
     if(spatInfo.y2 > qrect.y2)
         spatInfo.y2 = qrect.y2;
 
-    Resolution start = RasterCalculations::coordinateToWorldPixel(in_desc.rasterInfo, spatInfo.x1, spatInfo.y1);
-    Resolution end   = RasterCalculations::coordinateToWorldPixel(in_desc.rasterInfo, spatInfo.x2, spatInfo.y2);
+    Resolution start = RasterCalculations::coordinateToPixel(in_desc.rasterInfo, spatInfo.x1, spatInfo.y1);
+    Resolution end   = RasterCalculations::coordinateToPixel(in_desc.rasterInfo, spatInfo.x2, spatInfo.y2);
 
     x = start.res_x;
     y = start.res_y;

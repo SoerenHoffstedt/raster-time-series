@@ -9,30 +9,52 @@ namespace rts {
     class RasterCalculations {
     public:
         /**
-         *
-         * @param rasterInfo
-         * @param coord_x
-         * @param coord_y
-         * @return
+         * Calculates the pixel position of a coordinate in the given rasters extent and size.
+         * @param rasterSize The pixel size of the raster.
+         * @param rasterExtent The coordinate extent of the raster.
+         * @param coord_x x part of the coordinate.
+         * @param coord_y y part of the coordinate.
+         * @return The pixel position of the coordinates.
          */
-        static Resolution coordinateToWorldPixel(const SpatialTemporalReference &rasterInfo, double coord_x, double coord_y);
+        static Resolution coordinateToPixel(const Resolution &rasterSize,
+                                            const SpatialReference &rasterExtent,
+                                            double coord_x,
+                                            double coord_y);
+        /**
+         * Calculates the pixel position of a coordinate in the given rasters extent and size.
+         * @param rasterInfo SpatialTemporalReference defining the pixel size and coordinate extent of the raster.
+         * @param coord_x x part of the coordinate.
+         * @param coord_y y part of the coordinate.
+         * @return The pixel position of the coordinates.
+         */
+        static Resolution coordinateToPixel(const SpatialTemporalReference &rasterInfo,
+                                            double coord_x,
+                                            double coord_y);
 
         /**
-         *
-         * @param rasterInfo
-         * @return
+         * Calculates the spatial coordinates of a pixel rectangle by locating it in a raster, defined by its total
+         * pixel size and its coordinate extent.
+         * @param rasterSize The size of the total raster.
+         * @param rasterExtent The coordinate extent of the total raster.
+         * @param pixelStart The smaller pixel position of the pixel rectangle.
+         * @param pixelEnd The bigger pixel position of the pixel rectangle.
+         * @return The coordinates of the pixel rectangle as spatial reference.
          */
-        static Resolution calcWorldResolution(const SpatialTemporalReference &rasterInfo);
-
+        static SpatialReference pixelToSpatialRectangle(const Resolution &rasterSize,
+                                                        const SpatialReference &rasterExtent,
+                                                        Resolution pixelStart,
+                                                        Resolution pixelEnd);
         /**
-         *
-         * @param rasterInfo
-         * @param pixelStart
-         * @param pixelEnd
-         * @return
+         * Calculates the spatial coordinates of a pixel rectangle by locating it in a raster, defined by its total
+         * pixel size and its coordinate extent.
+         * @param rasterInfo SpatialTemporalReference of the total raster defining its pixel resolution and coordinate extent.
+         * @param pixelStart The smaller pixel position of the pixel rectangle.
+         * @param pixelEnd The bigger pixel position of the pixel rectangle.
+         * @return The coordinates of the pixel rectangle as spatial reference.
          */
-        static SpatialReference calcSpatialInfoFromPixel(const SpatialTemporalReference &rasterInfo,
-                                                         Resolution pixelStart, Resolution pixelEnd);
+        static SpatialReference pixelToSpatialRectangle(const SpatialTemporalReference &rasterInfo,
+                                                        Resolution pixelStart,
+                                                        Resolution pixelEnd);
     };
 
 }

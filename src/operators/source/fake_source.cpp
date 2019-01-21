@@ -50,12 +50,12 @@ FakeSource::FakeSource(const OperatorTree *operator_tree, const QueryRectangle &
     }
 
     //calc number of tiles
-    rasterWorldPixelStart = RasterCalculations::coordinateToWorldPixel(qrect, qrect.x1, qrect.y1);
+    rasterWorldPixelStart = RasterCalculations::coordinateToPixel(qrect, qrect.x1, qrect.y1);
 
     Resolution rasterStep = rasterWorldPixelStart;
     rasterStep.res_x -= rasterWorldPixelStart.res_x % tile_res.res_x;
     rasterStep.res_y -= rasterWorldPixelStart.res_y % tile_res.res_y;
-    Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToWorldPixel(qrect, qrect.x2, qrect.y2);
+    Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(qrect, qrect.x2, qrect.y2);
     Resolution size(rasterWorldPixelEnd.res_x - rasterStep.res_x, rasterWorldPixelEnd.res_y - rasterStep.res_y);
     uint32_t num_x = size.res_x / tile_res.res_x;
     uint32_t num_y = size.res_y / tile_res.res_y;
@@ -119,8 +119,8 @@ OptionalDescriptor FakeSource::nextDescriptor() {
     Resolution res_left_to_fill(qrect.res_x - state_x, qrect.res_y - state_y);
 
     Resolution tile_start_world_res(rasterWorldPixelStart.res_x + state_x, rasterWorldPixelStart.res_y + state_y);
-    SpatialReference tile_spat = RasterCalculations::calcSpatialInfoFromPixel(qrect, tile_start_world_res,
-                                                                              tile_start_world_res + tile_res);
+    SpatialReference tile_spat = RasterCalculations::pixelToSpatialRectangle(qrect, tile_start_world_res,
+                                                                             tile_start_world_res + tile_res);
 
     auto getter = [index = rasterIndex, res_left_to_fill = res_left_to_fill, fill_from = fill_from, fill_index = fill_with_index](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);
