@@ -139,12 +139,13 @@ GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &
     fileRasterExtent = SpatialReference(coords["extent"]);
 
     //calc number of tiles
-    rasterWorldPixelStart = RasterCalculations::coordinateToPixel(fileRasterSize, fileRasterExtent, qrect.x1, qrect.y1);
+    Resolution queryRes = qrect;
+    rasterWorldPixelStart = RasterCalculations::coordinateToPixel(queryRes, fileRasterExtent, qrect.x1, qrect.y1);
 
     Resolution rasterStep = rasterWorldPixelStart;
     rasterStep.res_x -= rasterWorldPixelStart.res_x % tileRes.res_x;
     rasterStep.res_y -= rasterWorldPixelStart.res_y % tileRes.res_y;
-    Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(fileRasterSize, fileRasterExtent, qrect.x2,
+    Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(queryRes, fileRasterExtent, qrect.x2,
                                                                            qrect.y2);
     Resolution size(rasterWorldPixelEnd.res_x - rasterStep.res_x, rasterWorldPixelEnd.res_y - rasterStep.res_y);
     uint32_t num_x = size.res_x / tileRes.res_x;
