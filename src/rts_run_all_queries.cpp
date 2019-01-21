@@ -16,6 +16,7 @@ int main(int argc, char** argv) {
 
     int countSuccessful = 0;
     int countFailed = 0;
+    std::vector<std::string> failedQueries;
 
     for(auto &f : std::filesystem::directory_iterator("../../test/query/")) {
 
@@ -36,15 +37,20 @@ int main(int argc, char** argv) {
 
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
-            std::cout << "\nQuery execution time: " << duration << " ms." << std::endl;
+            std::cout << "\nQuery execution time: " << duration << " ms.\n" << std::endl;
             countSuccessful += 1;
         } catch (const std::exception &e){
             countFailed += 1;
+            failedQueries.push_back(f.path().filename());
             std::cout << "\nQuery failed: " << e.what() << std::endl;
         }
     }
 
-    std::cout << "\nAll queries finished, successful: " << countSuccessful << ", failed: " << countFailed << std::endl;
+    std::cout << "\nAll queries finished, successful: " << countSuccessful << ", failed: " << countFailed << ". Names of failed:" << std::endl;
+
+    for(auto &name : failedQueries){
+        std::cout << name << std::endl;
+    }
 
     return 0;
 }
