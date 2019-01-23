@@ -148,14 +148,13 @@ GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &
     Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(queryRes, fileRasterExtent, qrect.x2,
                                                                            qrect.y2);
     Resolution size(rasterWorldPixelEnd.res_x - rasterStep.res_x, rasterWorldPixelEnd.res_y - rasterStep.res_y);
-    uint32_t num_x = size.res_x / tileRes.res_x;
-    uint32_t num_y = size.res_y / tileRes.res_y;
+    tileCount.res_x = size.res_x / tileRes.res_x;
+    tileCount.res_y = size.res_y / tileRes.res_y;
     if(size.res_x % tileRes.res_x > 0)
-        num_x += 1;
+        tileCount.res_x += 1;
     if(size.res_y % tileRes.res_y > 0)
-        num_y += 1;
+        tileCount.res_y += 1;
 
-    tileCount       = num_x * num_y;
     state_x         = 0;
     state_y         = 0;
     currTileIndex   = 0;
@@ -170,7 +169,7 @@ OptionalDescriptor GDALSource::nextDescriptor() {
         return std::nullopt;
     }
 
-    if(currTileIndex >= tileCount){
+    if(currTileIndex >= tileCount.res_x * tileCount.res_y){
         return std::nullopt;
     }
 

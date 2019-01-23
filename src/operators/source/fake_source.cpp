@@ -57,13 +57,12 @@ FakeSource::FakeSource(const OperatorTree *operator_tree, const QueryRectangle &
     rasterStep.res_y -= rasterWorldPixelStart.res_y % tile_res.res_y;
     Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(qrect, qrect.x2, qrect.y2);
     Resolution size(rasterWorldPixelEnd.res_x - rasterStep.res_x, rasterWorldPixelEnd.res_y - rasterStep.res_y);
-    uint32_t num_x = size.res_x / tile_res.res_x;
-    uint32_t num_y = size.res_y / tile_res.res_y;
+    tileCount.res_x = size.res_x / tile_res.res_x;
+    tileCount.res_y = size.res_y / tile_res.res_y;
     if(size.res_x % tile_res.res_x > 0)
-        num_x += 1;
+        tileCount.res_x += 1;
     if(size.res_y % tile_res.res_y > 0)
-        num_y += 1;
-    tileCount = num_x * num_y;
+        tileCount.res_y += 1;
 
     extent = qrect.projection.getExtent();
     fill_with_index = params.get("fill_with_index", false).asBool();

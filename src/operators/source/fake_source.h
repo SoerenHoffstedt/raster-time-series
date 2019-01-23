@@ -31,7 +31,7 @@ namespace rts {
         int state_x;
         int state_y;
         Resolution rasterWorldPixelStart;
-        uint32_t tileCount;
+        Resolution tileCount;
         SpatialReference extent;
 
         /***

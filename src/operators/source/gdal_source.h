@@ -32,7 +32,7 @@ namespace rts {
         int state_x;
         int state_y;
         Resolution rasterWorldPixelStart;
-        uint32_t tileCount;
+        Resolution tileCount;
 
         boost::posix_time::ptime curr_time;
         boost::posix_time::ptime dataset_time_start;

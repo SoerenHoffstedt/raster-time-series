@@ -17,12 +17,14 @@ namespace rts {
     class Descriptor;
 
     /**
-    * A class to clean up the passing of arguments from an input descriptor to an output descriptor in operators.
-    * Because many arguments of an input descriptor will be the same in the output, the operator has to create
+    * A class of all the metadata saved in a Descriptor. The Descriptor class inherits DescriptorInfo.
+    * This extra class is used to clean up the passing of arguments from an input descriptor to an
+    * output descriptor in operators.
+    * Because many information of an input descriptor will be the same for the output, the operator has to create
     * fields to save all of them before moving the input descriptor into the closure.
-    * This class is contains all the meta information of a tile for the Descriptor, excluding the getter
+    * This class contains all the meta information of a tile for the Descriptor, excluding the getter
     * (that will be different in the output).
-    * The actual Descriptor class inherits this class, so the data fields are actually the same.
+    * Therefore all information can be copied at once, without additionally copying the getRaster closure.
     * The Descriptor provides a constructor that takes the getter function and a DescriptorArguments object.
     */
     class DescriptorInfo {
@@ -32,7 +34,7 @@ namespace rts {
                             const Resolution &tileResolution,
                             Order order,
                             uint32_t tileIndex,
-                            uint32_t tileCount,
+                            Resolution rasterTileCountDimensional,
                             double nodata,
                             GDALDataType dataType);
         explicit DescriptorInfo(const std::optional<Descriptor> &desc);
@@ -57,9 +59,15 @@ namespace rts {
         uint32_t tileIndex;
 
         /**
-         * The number of tiles of this raster.
+         * The number of tiles of the complete raster.
          */
         uint32_t rasterTileCount;
+
+        /**
+         * The number of tiles of the complete raster in each dimension. rasterTileCount is
+         * the product of both dimensional fields.
+         */
+        Resolution rasterTileCountDimensional;
 
         /**
          * The spatial coordinates and projection of the described tile. This are the real coordinates of the tile, not
@@ -88,15 +96,13 @@ namespace rts {
          */
         bool isOnlyNodata() const;
 
-        Resolution getDimensionalTileCount() const;
-
     protected:
         bool _isOnlyNodata;
     };
 
     /**
-     * Core class for descriptors, containing meta data about a tile (see DescriptorArguments) and
-     * an std::function that is used to load the raster in getRaster().
+     * Core class for descriptors, containing metadata about a tile through inheritance of DescriptorInfo and
+     * a std::function that is used to load the raster in getRaster().
      */
     class Descriptor : public DescriptorInfo {
     public:
@@ -106,7 +112,7 @@ namespace rts {
                    const Resolution &tileResolution,
                    Order order,
                    uint32_t tileIndex,
-                   uint32_t tileCount,
+                   Resolution rasterTileCountDimensional,
                    double nodata,
                    GDALDataType dataType);
 
@@ -116,18 +122,31 @@ namespace rts {
         Descriptor(const Descriptor &other) = default;
         Descriptor& operator=(const Descriptor &other) = default;
 
+        /**
+         * Creates a descriptor that is only nodata. Adds a getter that fills the raster only with nodata and saves that work.
+         */
         static std::optional<Descriptor> createNodataDescriptor(SpatialTemporalReference &totalInfo,
                                                                 SpatialReference &tileSpatialInfo,
                                                                 Resolution &tileResolution,
                                                                 Order order,
                                                                 uint32_t tileIndex,
-                                                                uint32_t tileCount,
+                                                                Resolution rasterTileCountDimensional,
                                                                 double nodata,
                                                                 GDALDataType dataType);
 
+        /**
+         * Call the saved getter closure to create the raster/tile described by this descriptor. Called multiple times
+         * it would always create a new unique raster.
+         * @return A unique pointer to the raster described by this descriptor.
+         */
         std::unique_ptr<Raster> getRaster() const;
 
     private:
+        /**
+         * Member variable to save the getRaster closure created by the operator that created this descriptor.
+         * The std::function saves the captured values of the closure in dynamic memory. Therefore moving a descriptor
+         * is preferred when possible.
+         */
         std::function<UniqueRaster(const Descriptor&)> getter;
     };
 

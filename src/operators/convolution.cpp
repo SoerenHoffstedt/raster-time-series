@@ -150,7 +150,7 @@ OptionalDescriptor Convolution::nextDescriptor() {
             descCache.reserve(input->rasterTileCount);
         }
         currentTileCount = input->rasterTileCount;
-        tileCountDimensional = input->getDimensionalTileCount();
+        tileCountDimensional = input->rasterTileCountDimensional;
         currentTileIndex = 0;
         descCache.push_back(std::move(input));
 
