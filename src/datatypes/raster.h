@@ -9,7 +9,7 @@
 namespace rts {
 
     /**
-     * Base type for raster/tiles. Contains common functionality, resolution, data type, and more.
+     * Base type for raster/tile data. Contains common functionality, resolution, data type, and more.
      * The actual data is stored in the generic sub type TypedRaster.
      */
     class Raster {
@@ -41,6 +41,7 @@ namespace rts {
          * @return The value at cell (x,y) after casting it to double.
          */
         virtual double getCellDouble(int x, int y) = 0;
+
         /**
          * Method for commonly setting a cell of the raster independent from the actual data type.
          * A double can contain all available data ranges.
@@ -50,22 +51,55 @@ namespace rts {
          * the raster. So data could be lost.
          */
         virtual void setCellDouble(int x, int y, double value) = 0;
+
+        /**
+         * Prints the first MAX_PRINT_SIZE cells of each dimension of the tile to std::cout. Used for debugging.
+         */
         virtual void print() const = 0;
+
+        /**
+         * @return The total number of cells of the tile, is res_x * res_y.
+         */
         int getDataLength() const;
+
+        /**
+         * @return Pointer to the raster/tile data, casted to a void pointer for general usage.
+         */
         virtual void *getVoidDataPointer() = 0;
+
         /**
          * Returns the data pointer, but offsets it by offsetX pixel and offsetY lines.
-         * This is important for reading and writing to the data, but not from (0,0) but
-         * from where the data actually starts. The actual data pointer is not affected.
+         * This is important for reading and writing to the data, when the wanted data does not start at (0,0)
+         * but has an offset. The actual data pointer is not affected.
          * @param offsetX how many pixel to offset.
          * @param offsetY how many lines of the tile to offset.
          * @return Pointer to the raster data but offset.
          */
         virtual void *getVoidDataPointerOffset(int x, int y) = 0;
+
+        /**
+         * @return The data type of the tile.
+         */
         GDALDataType getDataType() const;
+
+        /**
+         * @return The resolution of the tile.
+         */
         Resolution getResolution() const;
+
+        /**
+         * @return The size of the data type of the raster in bytes.
+         */
         virtual int32_t sizeOfDataType() const = 0;
+
+        /**
+         * @return The minimum value possible in the data type of the tile.
+         */
         virtual double getValueRangeMin() const = 0;
+
+        /**
+         * @return The maximum value possible in the data type of the tile.
+         */
         virtual double getValueRangeMax() const = 0;
 
     protected:
@@ -78,7 +112,7 @@ namespace rts {
     using UniqueRaster = std::unique_ptr<Raster>;
 
     /**
-     * A raster with actual data of a specific type.
+     * A raster with actual data of a specific type. Many functions from Raster class are implemented here.
      * @tparam T The data type of the raster, expressed as C++ type.
      */
     template<class T>
