@@ -49,6 +49,9 @@ Aggregator::Aggregator(const OperatorTree *operator_tree, const QueryRectangle &
         : GenericOperator(operator_tree, qrect, params, std::move(in)), nextDesc(std::nullopt), hasTimeInterval(false), lastTileIndex(-1)
 {
     checkInputCount(1);
+}
+
+void Aggregator::initialize() {
     customDataType = params.isMember("custom_data_type") ? Parsing::parseDataType(params["custom_data_type"].asString()) : GDT_Unknown;
     function = Parsing::parseAggregatorFunction(params["function"].asString());
 
@@ -57,10 +60,6 @@ Aggregator::Aggregator(const OperatorTree *operator_tree, const QueryRectangle &
         interval = TimeInterval(params["time_interval"]);
         currTime = from_time_t(static_cast<time_t>(qrect.t1));
     }
-}
-
-void Aggregator::initialize() {
-
 }
 
 OptionalDescriptor Aggregator::nextDescriptor() {

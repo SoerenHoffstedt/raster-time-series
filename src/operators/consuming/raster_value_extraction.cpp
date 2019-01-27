@@ -9,15 +9,14 @@ RasterValueExtraction::RasterValueExtraction(const OperatorTree *operator_tree, 
         : ConsumingOperator(operator_tree, qrect, params, std::move(in))
 {
     checkInputCount(1);
+}
+
+void RasterValueExtraction::initialize() {
     std::string outputString = params["output"].asString();
     if(outputString == "print")
         output = Output::Print;
     else if(outputString == "file")
         output = Output::File;
-}
-
-void RasterValueExtraction::initialize() {
-
 }
 
 bool RasterValueExtraction::supportsOrder(Order order) const {

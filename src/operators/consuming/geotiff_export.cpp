@@ -15,15 +15,14 @@ GeotiffExport::GeotiffExport(const OperatorTree *operator_tree, const QueryRecta
         : ConsumingOperator(operator_tree, qrect, params, std::move(in))
 {
     checkInputCount(1);
+}
+
+void GeotiffExport::initialize() {
     driverName      = "GTiff"s;
     path            = "results/"s;
     extent          = qrect.projection.getExtent();
     timeFormat      = params["time_format"].asString();
     baseFilename    = params["filename"].asString();
-}
-
-void GeotiffExport::initialize() {
-
 }
 
 bool GeotiffExport::supportsOrder(Order o) const {
@@ -124,6 +123,7 @@ void GeotiffExport::consume() {
             out_rasterBand = nullptr;
         }
         if(qrect.order == Order::Spatial){
+            //TODO: dont do it here, but above. If its spatial, but only one raster (eg aggregator over complete time series) it does not have to be closed.
             out_dataset.reset(nullptr);
             out_rasterBand = nullptr;
         }

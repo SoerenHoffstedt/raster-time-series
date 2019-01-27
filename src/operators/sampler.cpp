@@ -7,12 +7,10 @@ Sampler::Sampler(const OperatorTree *operator_tree, const QueryRectangle &qrect,
         : GenericOperator(operator_tree, qrect, params, std::move(in)), lastSendT1(-1)
 {
     checkInputCount(1);
-
-    toSkip = params["to_skip"].asUInt();
 }
 
 void Sampler::initialize() {
-
+    toSkip = params["to_skip"].asUInt();
 }
 
 OptionalDescriptor Sampler::nextDescriptor() {

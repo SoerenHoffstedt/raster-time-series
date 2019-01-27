@@ -1,6 +1,6 @@
 
 #include "datatypes/raster_operations.h"
-#include "operators/expression_operator.h"
+#include "expression_operator.h"
 
 using namespace rts;
 
