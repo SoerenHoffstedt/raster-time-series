@@ -43,6 +43,18 @@ void GenericOperator::callInitializeRecursively(GenericOperator *op){
     }
 }
 
+void GenericOperator::skipCurrentRaster() {
+    for(auto &input_op : input_operators){
+        input_op->skipCurrentRaster();
+    }
+}
+
+void GenericOperator::skipCurrentTile() {
+    for(auto &input_op : input_operators){
+        input_op->skipCurrentTile();
+    }
+}
+
 OptionalDescriptor OperatorUtil::skipCurrentDimension(GenericOperator &op, OptionalDescriptor &currentDesc) {
     if(currentDesc->order == Order::Spatial)
         return skipCurrentSpatial(op, currentDesc);

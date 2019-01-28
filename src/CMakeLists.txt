@@ -27,6 +27,7 @@ add_library(rts_operators_lib
         operators/generic_operator.cpp
         operators/consuming/consuming_operator.cpp
         operators/consuming/geotiff_export.cpp
+        operators/source/source_operator.cpp
         operators/source/fake_source.cpp
         operators/source/gdal_source.cpp
         operators/consuming/print.cpp

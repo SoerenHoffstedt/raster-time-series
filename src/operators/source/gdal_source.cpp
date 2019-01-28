@@ -111,13 +111,14 @@ struct GdalSourceWriter {
     }
 };
 
-void GDALSource::initialize() {
-
-}
 
 GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in)
-        : GenericOperator(operator_tree, qrect, params, std::move(in)), currDataset(nullptr), currRasterband(nullptr)
+        : SourceOperator(operator_tree, qrect, params, std::move(in)), currDataset(nullptr), currRasterband(nullptr)
 {
+    checkInputCount(0);
+}
+
+void GDALSource::initialize() {
     GDALUtil::initGdal();
 
     Json::Value dataset_json    = loadDatasetJson(params["dataset"].asString());
@@ -131,8 +132,8 @@ GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &
     Json::Value time_interval_json   = dataset_json["time_interval"];
     time_interval = TimeInterval(time_interval_json);
 
-    dataset_time_start          = time_from_string(dataset_json["time_start"].asString());
-    dataset_time_end            = time_from_string(dataset_json["time_end"].asString());
+    datasetStartTime = (double)to_time_t(time_from_string(dataset_json["time_start"].asString()));
+    datasetEndTime   = (double)to_time_t(time_from_string(dataset_json["time_end"].asString()));
     setCurrTimeToFirstRaster();
 
     Json::Value coords = dataset_json["coords"];
@@ -157,28 +158,12 @@ GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &
         tileCount.resX += 1;
     if(size.resY % tileRes.resY > 0)
         tileCount.resY += 1;
-        tileCount.res_y += 1;
-
-    state_x         = 0;
-    state_y         = 0;
-    currTileIndex   = 0;
-    currRasterIndex = 0;
 }
 
-OptionalDescriptor GDALSource::nextDescriptor() {
-
-    time_t curr_time_t = to_time_t(curr_time);
-
-    if(curr_time_t > qrect.t2 || curr_time > dataset_time_end){
-        return std::nullopt;
-    }
-
-    if(currTileIndex >= tileCount.res_x * tileCount.res_y){
-        return std::nullopt;
-    }
+OptionalDescriptor GDALSource::createDescriptor(double time, int pixelStartX, int pixelStartY) {
 
     if(currDataset == nullptr){
-        loadCurrentGdalDataset();
+        loadCurrentGdalDataset(time);
     }
 
     double nodata = currRasterband->GetNoDataValue();
@@ -200,66 +185,25 @@ OptionalDescriptor GDALSource::nextDescriptor() {
     Resolution tileStartWorldRes(rasterWorldPixelStart.resX + pixelStartX, rasterWorldPixelStart.resY + pixelStartY);
     SpatialReference tileSpat = RasterCalculations::pixelToSpatialRectangle(scale, origin, tileStartWorldRes, tileStartWorldRes + tileRes);
 
-    auto getter = [currDataset = currDataset, currRasterband = currRasterband, fill_from = fill_from, res_left_to_fill = res_left_to_fill](const Descriptor &self) -> std::unique_ptr<Raster> {
+    auto getter = [currDataset = currDataset, currRasterband = currRasterband, fillFrom = fillFrom, resLeftToFill = resLeftToFill](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);
-        RasterOperations::callUnary<GdalSourceWriter>(out.get(), currDataset, currRasterband, self, fill_from, res_left_to_fill);
+        RasterOperations::callUnary<GdalSourceWriter>(out.get(), currDataset, currRasterband, self, fillFrom, resLeftToFill);
         return out;
     };
 
-    TemporalReference tempInfo(static_cast<double>(to_time_t(curr_time)), getCurrentTimeEnd());
+    TemporalReference tempInfo(currTime, getCurrentTimeEnd());
     int tileIndexNow = currTileIndex;
     SpatialTemporalReference rasterInfo = qrect;
     rasterInfo.t1 = tempInfo.t1;
     rasterInfo.t2 = tempInfo.t2;
 
-    if(qrect.order == Order::Temporal){
-        if(increaseSpatial()){
-            increaseTemporal();
-        }
-    } else if(qrect.order == Order::Spatial){
-        if(increaseTemporal()){
-            increaseSpatial();
-        }
-    }
-
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_spat, tileRes,
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileSpat, tileRes,
                                           qrect.order, tileIndexNow, tileCount, nodata, dataType);
-
 }
 
-bool GDALSource::increaseTemporal() {
-    currRasterIndex += 1;
+bool GDALSource::increaseTemporally() {
     currDataset = nullptr;
-    increaseCurrentTime();
-    auto curr_time_t = static_cast<double>(to_time_t(curr_time));
-    if(curr_time_t > qrect.t2 || curr_time > dataset_time_end){
-        if(qrect.order == Order::Spatial){
-            //reset only if order is spatial, else keep time_curr above t2/dataset_end_time as end condition at top of nextDescriptor() method
-            currRasterIndex = 0;
-            setCurrTimeToFirstRaster();
-            return true;
-        }
-    }
-    return false;
-}
-
-bool GDALSource::increaseSpatial() {
-
-    currTileIndex += 1;
-    state_x += tileRes.res_x;
-    if(state_x >= static_cast<int>(qrect.res_x)){
-        state_x = 0;
-        state_y += tileRes.res_y;
-        if(state_y >= static_cast<int>(qrect.res_y)){
-            if(qrect.order == Order::Temporal){
-                //reset only if spatial is the outer dimension, else keep state_y as end condition at start of nextDescriptor() method.
-                currTileIndex = 0;
-                state_y = 0;
-                return true;
-            }
-        }
-    }
-    return false;
+    return SourceOperator::increaseTemporally();
 }
 
 bool GDALSource::supportsOrder(Order o) const {
@@ -284,26 +228,19 @@ double GDALSource::parseIsoTime(const std::string &str) const {
 }
 
 void GDALSource::increaseCurrentTime() {
-    time_interval.increase(curr_time);
+    ptime currPTime = from_time_t((time_t)currTime);
+    time_interval.increase(currPTime);
+    currTime = (double)to_time_t(currPTime);
 }
 
 double GDALSource::getCurrentTimeEnd() const {
-    ptime curr = curr_time;
-    time_interval.increase(curr);
-    return static_cast<double>(to_time_t(curr));
+    ptime currPTime = from_time_t((time_t)currTime);
+    time_interval.increase(currPTime);
+    return static_cast<double>(to_time_t(currPTime));
 }
 
-void GDALSource::setCurrTimeToFirstRaster() {
-    //advance start point for raster, until it is not smaller than t1.
-    curr_time = dataset_time_start;
-    while(to_time_t(curr_time) < qrect.t1 && getCurrentTimeEnd() < qrect.t1){
-        increaseCurrentTime();
-    }
-}
-
-
-void GDALSource::loadCurrentGdalDataset() {
-    std::string timeString = GDALUtil::timeToString(to_time_t(curr_time), time_format);
+void GDALSource::loadCurrentGdalDataset(double time) {
+    std::string timeString = GDALUtil::timeToString((time_t)time, time_format);
 
     std::string placeholder = "%%%TIME_STRING%%%";
     size_t placeholderPos = base_file_name.find(placeholder);

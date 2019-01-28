@@ -2,7 +2,7 @@
 #ifndef RASTER_TIME_SERIES_GDAL_SOURCE_H
 #define RASTER_TIME_SERIES_GDAL_SOURCE_H
 
-#include "operators/generic_operator.h"
+#include "operators/source/source_operator.h"
 #include "util/gdal_util.h"
 #include "util/time_interval.h"
 #include <gdal_priv.h>
@@ -15,28 +15,18 @@ namespace rts {
      * A GDALSource dataset is defined by a start and end point, and a time interval (time unit and value).
      * Therefore it represents rasters that are valid in regular time intervals.
      */
-    class GDALSource : public GenericOperator {
+    class GDALSource : public SourceOperator {
     public:
         GDALSource(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params,
                    std::vector<std::unique_ptr<GenericOperator>> &&in);
-        OptionalDescriptor nextDescriptor() override;
+        //OptionalDescriptor nextDescriptor() override;
         void initialize() override;
         bool supportsOrder(Order o) const override;
     private:
+        OptionalDescriptor createDescriptor(double time, int pixelStartX, int pixelStartY) override;
+
         std::shared_ptr<GDALDataset> currDataset;
         GDALRasterBand *currRasterband; //this can stay a normal ptr, because it is handled by the dataset. The dataset now always has to live as long as the rasterband. maybe put them in one structure?
-
-        Resolution tileRes;
-        int currRasterIndex;
-        int currTileIndex;
-        int state_x;
-        int state_y;
-        Resolution rasterWorldPixelStart;
-        Resolution tileCount;
-
-        boost::posix_time::ptime curr_time;
-        boost::posix_time::ptime dataset_time_start;
-        boost::posix_time::ptime dataset_time_end;
 
         TimeInterval time_interval;
         std::string time_format;
@@ -48,12 +38,11 @@ namespace rts {
 
         Json::Value loadDatasetJson(const std::string &name);
         double parseIsoTime(const std::string &str) const;
-        bool increaseSpatial();
-        bool increaseTemporal();
-        void loadCurrentGdalDataset();
-        void increaseCurrentTime();
-        void setCurrTimeToFirstRaster();
-        double getCurrentTimeEnd() const;
+        void loadCurrentGdalDataset(double time);
+
+        bool increaseTemporally() override;
+        double getCurrentTimeEnd() const override;
+        void increaseCurrentTime() override;
     };
 
 }

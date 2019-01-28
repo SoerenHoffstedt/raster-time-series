@@ -29,18 +29,23 @@ struct FakeSourceWriter {
 };
 
 FakeSource::FakeSource(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in)
-        : GenericOperator(operator_tree, qrect, params, std::move(in)), rasterIndex(0), tileIndex(0) {
-    dataset_json = loadDatasetJson(params["dataset"].asString());
-    raster_count = dataset_json["raster_count"].asInt();
-    time_start = dataset_json["time_start"].asDouble();
-    time_curr = time_start;
-    time_duration = dataset_json["time_duration"].asDouble();
+        : SourceOperator(operator_tree, qrect, params, std::move(in)) {
+
+}
+
+void FakeSource::initialize() {
+    auto dataset_json = loadDatasetJson(params["dataset"].asString());
+    rasterCount = dataset_json["raster_count"].asInt();
+    datasetStartTime = dataset_json["time_start"].asDouble();
+    datasetEndTime = std::numeric_limits<double>::max();
+    timeDuration = dataset_json["time_duration"].asDouble();
+    setCurrTimeToFirstRaster();
+
     nodata = dataset_json["nodata"].asDouble();
     dataType = Parsing::parseDataType(dataset_json["data_type"].asString());
-    state_x = 0;
+
     tileRes.resX = params["tile_size_x"].asUInt();
     tileRes.resY = params["tile_size_y"].asUInt();
-    tile_res.res_y = params["tile_size_y"].asUInt();
     if(dataset_json.isMember("spatial_reference")){
         SpatialReference sref(dataset_json["spatial_reference"]);
         this->qrect.x1 = sref.x1;
@@ -51,8 +56,8 @@ FakeSource::FakeSource(const OperatorTree *operator_tree, const QueryRectangle &
 
     //calc number of tiles
     rasterWorldPixelStart = RasterCalculations::coordinateToPixel(qrect, qrect.x1, qrect.y1);
-
-    //TODO: set scaleOrigin
+    origin.x = qrect.x1;
+    origin.y = qrect.y1;
 
     Resolution rasterStep = rasterWorldPixelStart;
     rasterStep.resX -= rasterWorldPixelStart.resX % tileRes.resX;
@@ -70,10 +75,6 @@ FakeSource::FakeSource(const OperatorTree *operator_tree, const QueryRectangle &
     fill_with_index = params.get("fill_with_index", false).asBool();
 }
 
-void FakeSource::initialize() {
-
-}
-
 Json::Value FakeSource::loadDatasetJson(std::string name) {
     std::filesystem::path p("../../test/data/fake_source");
     p /= std::filesystem::path(name + ".json");
@@ -83,104 +84,47 @@ Json::Value FakeSource::loadDatasetJson(std::string name) {
     return dataset_json;
 }
 
-OptionalDescriptor FakeSource::nextDescriptor() {
+OptionalDescriptor FakeSource::createDescriptor(double time, int pixelStartX, int pixelStartY) {
 
-    if(rasterIndex >= raster_count)
-        return std::nullopt;
-
-    while(time_curr < qrect.t1){
-        time_curr += time_duration;
-        rasterIndex += 1;
-        if(rasterIndex >= raster_count)
-            return std::nullopt;
-    }
-
-    if(time_curr > qrect.t2){
-        return std::nullopt;
-    }
-    if(state_y >= static_cast<int>(qrect.res_y)){ //when state_y is not reset, the end is reached.
-        return std::nullopt;
-    }
-
-    Resolution fill_from(0, 0);
+    Resolution fillFrom(0, 0);
 
     //fill_from: for fixed alignment of tiles, start of a tile is not always 0, based on what pixel in world space the tile starts.
-    if(state_x == 0) {
-        fill_from.res_x = rasterWorldPixelStart.res_x % tile_res.res_x;
-        state_x -= fill_from.res_x; //state_x will have tile_res.res_x added later on, so align it to the tiles here.
-    } else if(state_x < 0){
-        fill_from.res_x = rasterWorldPixelStart.res_x % tile_res.res_x;
+    if(pixelStartX < 0){
+        fillFrom.resX = (uint32_t)(-1 * pixelStartX);
     }
-    if(state_y == 0) {
-        fill_from.res_y = rasterWorldPixelStart.res_y % tile_res.res_y;
-        state_y -= fill_from.res_y;
-    } else if(state_y < 0){
-        fill_from.res_y = rasterWorldPixelStart.res_y % tile_res.res_y;
+    if(pixelStartY < 0){
+        fillFrom.resY = (uint32_t)(-1 * pixelStartY);
     }
-    Resolution res_left_to_fill(qrect.res_x - state_x, qrect.res_y - state_y);
+    Resolution res_left_to_fill(qrect.resX - pixelStartX, qrect.resY - pixelStartY);
 
-    Resolution tile_start_world_res(rasterWorldPixelStart.res_x + state_x, rasterWorldPixelStart.res_y + state_y);
+    Resolution tile_start_world_res(rasterWorldPixelStart.resX + pixelStartX, rasterWorldPixelStart.resY + pixelStartY);
     SpatialReference tile_spat = RasterCalculations::pixelToSpatialRectangle(qrect, tile_start_world_res,
-                                                                             tile_start_world_res + tile_res);
+                                                                             tile_start_world_res + tileRes);
 
-    auto getter = [index = rasterIndex, res_left_to_fill = res_left_to_fill, fill_from = fill_from, fill_index = fill_with_index](const Descriptor &self) -> std::unique_ptr<Raster> {
+    auto getter = [index = currRasterIndex, res_left_to_fill = res_left_to_fill, fillFrom = fillFrom, fill_index = fill_with_index](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);
-        RasterOperations::callUnary<FakeSourceWriter>(out.get(), fill_from, res_left_to_fill, index, self.nodata, fill_index);
+        RasterOperations::callUnary<FakeSourceWriter>(out.get(), fillFrom, res_left_to_fill, index, self.nodata, fill_index);
         return out;
     };
 
-    TemporalReference tempInfo(time_curr, time_curr + time_duration);
-    int tileIndexNow = tileIndex;
-
-    if(qrect.order == Order::Temporal){
-        if(increaseSpatial()){
-            increaseTemporal();
-        }
-    } else if(qrect.order == Order::Spatial){
-        if(increaseTemporal()){
-            increaseSpatial();
-        }
-    }
+    TemporalReference tempInfo(time, time + timeDuration);
+    int tileIndexNow = currTileIndex;
 
     SpatialTemporalReference rasterInfo = qrect;
     rasterInfo.t1 = tempInfo.t1;
     rasterInfo.t2 = tempInfo.t2;
 
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_spat, tile_res, qrect.order, tileIndexNow, tileCount, nodata, dataType);
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_spat, tileRes, qrect.order, tileIndexNow, tileCount, nodata, dataType);
 }
 
 bool FakeSource::supportsOrder(Order o) const {
     return o == Order::Spatial || o == Order::Temporal;
 }
 
-bool FakeSource::increaseTemporal() {
-    rasterIndex += 1;
-    time_curr += time_duration;
-    if(time_curr >= qrect.t2){
-        if(qrect.order == Order::Spatial){
-            //reset only if temporal is the outer dimension, else keep time_curr above t2 as end condition at top of nextDescriptor() method
-            rasterIndex = 0;
-            time_curr = time_start;
-            return true;
-        }
-    }
-    return false;
+void FakeSource::increaseCurrentTime() {
+    currTime += timeDuration;
 }
 
-bool FakeSource::increaseSpatial() {
-    tileIndex += 1;
-    state_x += tile_res.res_x;
-    if(state_x >= static_cast<int>(qrect.res_x)){
-        state_x = 0;
-        state_y += tile_res.res_y;
-        if(state_y >= static_cast<int>(qrect.res_y)){
-            if(qrect.order == Order::Temporal){
-                //reset only if spatial is the outer dimension, else keep state_y as end condition at start of nextDescriptor() method.
-                tileIndex = 0;
-                state_y = 0;
-                return true;
-            }
-        }
-    }
-    return false;
+double FakeSource::getCurrentTimeEnd() const {
+    return currTime + timeDuration;
 }

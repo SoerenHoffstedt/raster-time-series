@@ -2,7 +2,7 @@
 #ifndef RASTER_TIME_SERIES_FAKE_SOURCE_H
 #define RASTER_TIME_SERIES_FAKE_SOURCE_H
 
-#include "operators/generic_operator.h"
+#include "source_operator.h"
 
 namespace rts {
 
@@ -10,28 +10,18 @@ namespace rts {
      * Source operator for creating test data used to test the workflow.
      * It is based on datasets stored on disc providing resolution and time info. Each raster has its index as data.
      */
-    class FakeSource : public GenericOperator {
+    class FakeSource : public SourceOperator {
     public:
         explicit FakeSource(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in);
-        OptionalDescriptor nextDescriptor() override;
+        OptionalDescriptor createDescriptor(double time, int pixelStartX, int pixelStartY) override;
         void initialize() override;
         bool supportsOrder(Order o) const override;
     private:
         Json::Value loadDatasetJson(std::string name);
-        Json::Value dataset_json;
-        int rasterIndex;
-        int tileIndex;
-        int raster_count;
+        int rasterCount;
         double nodata;
         GDALDataType dataType;
-        double time_start;
-        double time_curr;
-        double time_duration;
-        Resolution tile_res;
-        int state_x;
-        int state_y;
-        Resolution rasterWorldPixelStart;
-        Resolution tileCount;
+        double timeDuration;
         SpatialReference extent;
 
         /***
@@ -39,12 +29,16 @@ namespace rts {
          */
         bool fill_with_index;
 
-        ///
-        /// \return returns true if end of temporal iteration is reached.
-        bool increaseTemporal();
-        ///
-        /// \return returns true if end of spatial iteration is reached.
-        bool increaseSpatial();
+        /**
+         * Increase the currTime variable to the time the next raster starts.
+         */
+        void increaseCurrentTime() override;
+        /**
+         * Get the end time of the validity of the current raster.
+         * @return
+         */
+        double getCurrentTimeEnd() const override;
+
     };
 
 }

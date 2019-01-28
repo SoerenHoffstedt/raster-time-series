@@ -21,7 +21,25 @@ namespace rts {
     public:
         explicit GenericOperator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         virtual ~GenericOperator() = default;
+
+        /**
+         *
+         * @return
+         */
         virtual OptionalDescriptor nextDescriptor() = 0;
+
+        /**
+         *
+         * @param index
+         * @return
+         */
+        //virtual OptionalDescriptor getDescriptor(int index) = 0;
+
+        /**
+         *
+         * @param order
+         * @return
+         */
         virtual bool supportsOrder(Order order) const = 0;
 
         TimeSeriesIterator begin();
@@ -68,6 +86,18 @@ namespace rts {
          * @param expectedMax inclusive maximum of expected input operators.
          */
         void checkInputCount(int expectedMin, int expectedMax) const;
+
+        /**
+         * Only to be called when order is temporal.
+         * Skips the tiles of the current raster that are not yet processed.
+         */
+        virtual void skipCurrentRaster();
+
+        /**
+         * Only to be called when order is spatial.
+         * Skips the other rasters not yet processed for the current tile. For the next tile it will appear again.
+         */
+        virtual void skipCurrentTile();
     };
 
     using UniqueOperatorVector = std::vector<std::unique_ptr<GenericOperator>>;
