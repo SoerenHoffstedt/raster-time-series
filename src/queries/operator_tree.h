@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 #include <json/json.h>
-#include "operators/consuming/consuming_operator.h"
+#include "operators/generic_operator.h"
 
 namespace rts {
 

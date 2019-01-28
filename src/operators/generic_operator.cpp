@@ -55,6 +55,20 @@ void GenericOperator::skipCurrentTile() {
     }
 }
 
+std::unique_ptr<GenericOperator> GenericOperator::reInstantiate(const QueryRectangle &qrect) const {
+    auto clone = operator_tree->instantiate();
+    setQrectRecursively(clone.get(), qrect);
+    clone->initializeRecursively();
+    return clone;
+}
+
+void GenericOperator::setQrectRecursively(GenericOperator *op, const QueryRectangle &qrect) const {
+    op->qrect = qrect;
+    for(auto &in : op->input_operators){
+        setQrectRecursively(in.get(), qrect);
+    }
+}
+
 OptionalDescriptor OperatorUtil::skipCurrentDimension(GenericOperator &op, OptionalDescriptor &currentDesc) {
     if(currentDesc->order == Order::Spatial)
         return skipCurrentSpatial(op, currentDesc);

@@ -10,12 +10,14 @@
 #include "util/make_unique.h"
 #include "datatypes/descriptor.h"
 #include "datatypes/timeseries_iterator.h"
+#include "queries/operator_tree.h"
 
 namespace rts {
 
     class Descriptor;
     class TimeSeriesIterator;
     class OperatorTree;
+    class ConsumingOperator;
 
     class GenericOperator {
     public:
@@ -55,7 +57,21 @@ namespace rts {
          */
         void initializeRecursively();
 
+        /**
+         * re-instantiate this operator with a new query rectangle. Is independent from this operator.
+         * @param qrect
+         * @return A re-instantiated operator with all input operators.
+         */
+        std::unique_ptr<GenericOperator> reInstantiate(const QueryRectangle &qrect) const;
+
     protected:
+
+        /**
+         * Set the query rectangle of the passed operators and all its input operators.
+         * @param op
+         * @param qrect The query rectangle to set to the operators.
+         */
+        void setQrectRecursively(GenericOperator *op, const QueryRectangle &qrect) const;
 
         /**
          * Method for initializing data based on the parameters or the qrect.
