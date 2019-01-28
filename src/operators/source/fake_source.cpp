@@ -6,9 +6,9 @@
 #include <filesystem>
 #include "datatypes/raster_operations.h"
 #include "datatypes/descriptor.h"
-#include "operators/source/fake_source.h"
 #include "util/raster_calculations.h"
 #include "util/parsing.h"
+#include "fake_source.h"
 
 using namespace rts;
 
@@ -16,10 +16,10 @@ template<class T>
 struct FakeSourceWriter {
     static void rasterOperation(TypedRaster<T> *raster, Resolution fill_from, Resolution res_left_to_fill, int index, double nodata, bool fillIndex){
         Resolution res = raster->getResolution();
-        for (int x = 0; x < res.res_x; ++x) {
-            for (int y = 0; y < res.res_y; ++y) {
+        for (int x = 0; x < res.resX; ++x) {
+            for (int y = 0; y < res.resY; ++y) {
                 int val = fillIndex ? index : x + y;
-                if(x >= fill_from.res_x && y >= fill_from.res_y && x < res_left_to_fill.res_x && y < res_left_to_fill.res_y)
+                if(x >= fill_from.resX && y >= fill_from.resY && x < res_left_to_fill.resX && y < res_left_to_fill.resY)
                     raster->setCell(x, y, (T)val);
                 else
                     raster->setCell(x, y, (T)nodata);
@@ -38,8 +38,8 @@ FakeSource::FakeSource(const OperatorTree *operator_tree, const QueryRectangle &
     nodata = dataset_json["nodata"].asDouble();
     dataType = Parsing::parseDataType(dataset_json["data_type"].asString());
     state_x = 0;
-    state_y = 0;
-    tile_res.res_x = params["tile_size_x"].asUInt();
+    tileRes.resX = params["tile_size_x"].asUInt();
+    tileRes.resY = params["tile_size_y"].asUInt();
     tile_res.res_y = params["tile_size_y"].asUInt();
     if(dataset_json.isMember("spatial_reference")){
         SpatialReference sref(dataset_json["spatial_reference"]);
@@ -52,17 +52,19 @@ FakeSource::FakeSource(const OperatorTree *operator_tree, const QueryRectangle &
     //calc number of tiles
     rasterWorldPixelStart = RasterCalculations::coordinateToPixel(qrect, qrect.x1, qrect.y1);
 
+    //TODO: set scaleOrigin
+
     Resolution rasterStep = rasterWorldPixelStart;
-    rasterStep.res_x -= rasterWorldPixelStart.res_x % tile_res.res_x;
-    rasterStep.res_y -= rasterWorldPixelStart.res_y % tile_res.res_y;
+    rasterStep.resX -= rasterWorldPixelStart.resX % tileRes.resX;
+    rasterStep.resY -= rasterWorldPixelStart.resY % tileRes.resY;
     Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(qrect, qrect.x2, qrect.y2);
-    Resolution size(rasterWorldPixelEnd.res_x - rasterStep.res_x, rasterWorldPixelEnd.res_y - rasterStep.res_y);
-    tileCount.res_x = size.res_x / tile_res.res_x;
-    tileCount.res_y = size.res_y / tile_res.res_y;
-    if(size.res_x % tile_res.res_x > 0)
-        tileCount.res_x += 1;
-    if(size.res_y % tile_res.res_y > 0)
-        tileCount.res_y += 1;
+    Resolution size(rasterWorldPixelEnd.resX - rasterStep.resX, rasterWorldPixelEnd.resY - rasterStep.resY);
+    tileCount.resX = size.resX / tileRes.resX;
+    tileCount.resY = size.resY / tileRes.resY;
+    if(size.resX % tileRes.resX > 0)
+        tileCount.resX += 1;
+    if(size.resY % tileRes.resY > 0)
+        tileCount.resY += 1;
 
     extent = qrect.projection.getExtent();
     fill_with_index = params.get("fill_with_index", false).asBool();

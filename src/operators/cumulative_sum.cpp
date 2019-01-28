@@ -7,8 +7,8 @@ using namespace rts;
 template<class T1, class T2>
 struct CumSumAdder {
     static void rasterOperation(TypedRaster<T1> *sum_raster, TypedRaster<T2> *input_raster, Resolution tileResolution) {
-        for (int x = 0; x < tileResolution.res_x; ++x) {
-            for (int y = 0; y < tileResolution.res_y; ++y) {
+        for (int x = 0; x < tileResolution.resX; ++x) {
+            for (int y = 0; y < tileResolution.resY; ++y) {
                 T1 val = sum_raster->getCell(x, y) + input_raster->getCell(x, y);
                 sum_raster->setCell(x, y, val);
                 input_raster->setCell(x, y, val);

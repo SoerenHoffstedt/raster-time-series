@@ -25,7 +25,7 @@ DescriptorInfo::DescriptorInfo(const SpatialTemporalReference &totalInfo,
           order(order),
           tileIndex(tileIndex),
           rasterTileCountDimensional(rasterTileCountDimensional),
-          rasterTileCount(rasterTileCountDimensional.res_x * rasterTileCountDimensional.res_y),
+          rasterTileCount(rasterTileCountDimensional.resX * rasterTileCountDimensional.resY),
           nodata(nodata),
           dataType(dataType)
 {

@@ -1,8 +1,9 @@
 
 #include "datatypes/raster_operations.h"
-#include "operators/source/gdal_source.h"
 #include "util/raster_calculations.h"
 #include "util/parsing.h"
+#include "gdal_source.h"
+
 #include <filesystem>
 #include <fstream>
 #include <ctime>
@@ -82,27 +83,27 @@ struct GdalSourceWriter {
         int gdal_pixel_height = gdal_pixel_y2 - gdal_pixel_y1;
 
         Resolution size = tileRes - fill_from;
-        if(res_left_to_fill.res_x < size.res_x)
-            size.res_x = res_left_to_fill.res_x;
-        if(res_left_to_fill.res_y < size.res_y)
-            size.res_y = res_left_to_fill.res_y;
+        if(res_left_to_fill.resX < size.resX)
+            size.resX = res_left_to_fill.resX - fill_from.resX;
+        if(res_left_to_fill.resY < size.resY)
+            size.resY = res_left_to_fill.resY - fill_from.resY;
 
-        if(fill_from.res_x > 0 || fill_from.res_y > 0 || size.res_x < tileRes.res_x || size.res_y < tileRes.res_y){
-            for (int x = 0; x < tileRes.res_x; ++x) {
-                for (int y = 0; y < tileRes.res_y; ++y) {
+        if(fill_from.resX > 0 || fill_from.resY > 0 || size.resX < tileRes.resX || size.resY < tileRes.resY){
+            for (int x = 0; x < tileRes.resX; ++x) {
+                for (int y = 0; y < tileRes.resY; ++y) {
                     raster->setCell(x,y, (T)self.nodata);
                 }
             }
         }
 
         void *buffer = nullptr;
-        if(fill_from.res_x > 0 || fill_from.res_y > 0)
-            buffer = raster->getVoidDataPointerOffset(fill_from.res_x, fill_from.res_y);
+        if(fill_from.resX > 0 || fill_from.resY > 0)
+            buffer = raster->getVoidDataPointerOffset(fill_from.resX, fill_from.resY);
         else
             buffer = raster->getVoidDataPointer();
 
         auto res = rasterBand->RasterIO(GF_Read, gdal_pixel_x1, gdal_pixel_y1, gdal_pixel_width, gdal_pixel_height,
-                buffer, size.res_x, size.res_y, self.dataType, 0, sizeof(T) * tileRes.res_x, nullptr);
+                buffer, size.resX, size.resY, self.dataType, 0, sizeof(T) * tileRes.resX, nullptr);
 
         if(res != CE_None){
             throw std::runtime_error("GDAL Source: Reading from raster failed.");
@@ -135,24 +136,27 @@ GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &
     setCurrTimeToFirstRaster();
 
     Json::Value coords = dataset_json["coords"];
-    fileRasterSize = Resolution(coords["size"]);
-    fileRasterExtent = SpatialReference(coords["extent"]);
+    auto fileRasterExtent = SpatialReference(coords["extent"]);
 
     //calc number of tiles
-    Resolution queryRes = qrect;
-    rasterWorldPixelStart = RasterCalculations::coordinateToPixel(queryRes, fileRasterExtent, qrect.x1, qrect.y1);
+    origin.x = fileRasterExtent.x1;
+    origin.y = fileRasterExtent.y1;
+    scale.x  = (qrect.x2 - qrect.x1) / (double)qrect.resX;
+    scale.y  = (qrect.y2 - qrect.y1) / (double)qrect.resY;
+
+    rasterWorldPixelStart = RasterCalculations::coordinateToPixel(scale, origin, qrect.x1, qrect.y1);
 
     Resolution rasterStep = rasterWorldPixelStart;
-    rasterStep.res_x -= rasterWorldPixelStart.res_x % tileRes.res_x;
-    rasterStep.res_y -= rasterWorldPixelStart.res_y % tileRes.res_y;
-    Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(queryRes, fileRasterExtent, qrect.x2,
-                                                                           qrect.y2);
-    Resolution size(rasterWorldPixelEnd.res_x - rasterStep.res_x, rasterWorldPixelEnd.res_y - rasterStep.res_y);
-    tileCount.res_x = size.res_x / tileRes.res_x;
-    tileCount.res_y = size.res_y / tileRes.res_y;
-    if(size.res_x % tileRes.res_x > 0)
-        tileCount.res_x += 1;
-    if(size.res_y % tileRes.res_y > 0)
+    rasterStep.resX -= rasterWorldPixelStart.resX % tileRes.resX;
+    rasterStep.resY -= rasterWorldPixelStart.resY % tileRes.resY;
+    Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(scale, origin, qrect.x2, qrect.y2);
+    Resolution size(rasterWorldPixelEnd.resX - rasterStep.resX, rasterWorldPixelEnd.resY - rasterStep.resY);
+    tileCount.resX = size.resX / tileRes.resX;
+    tileCount.resY = size.resY / tileRes.resY;
+    if(size.resX % tileRes.resX > 0)
+        tileCount.resX += 1;
+    if(size.resY % tileRes.resY > 0)
+        tileCount.resY += 1;
         tileCount.res_y += 1;
 
     state_x         = 0;
@@ -180,27 +184,21 @@ OptionalDescriptor GDALSource::nextDescriptor() {
     double nodata = currRasterband->GetNoDataValue();
     GDALDataType dataType = currRasterband->GetRasterDataType();
 
-    Resolution fill_from(0, 0);
+    Resolution fillFrom(0, 0);
 
-    //fill_from: for fixed alignment of tiles, start of a tile is not always 0, based on what pixel in world space the tile starts.
-    if(state_x == 0) {
-        fill_from.res_x = rasterWorldPixelStart.res_x % tileRes.res_x;
-        state_x -= fill_from.res_x; //state_x will have tile_res.res_x added later on, so align it to the tiles here.
-    } else if(state_x < 0){
-        fill_from.res_x = rasterWorldPixelStart.res_x % tileRes.res_x;
+    //fillFrom: for fixed alignment of tiles, start of a tile is not always 0, based on what pixel in world space the tile starts.
+    if(pixelStartX < 0){
+        fillFrom.resX = (uint32_t)(-1 * pixelStartX);
     }
-    if(state_y == 0) {
-        fill_from.res_y = rasterWorldPixelStart.res_y % tileRes.res_y;
-        state_y -= fill_from.res_y;
-    } else if(state_y < 0){
-        fill_from.res_y = rasterWorldPixelStart.res_y % tileRes.res_y;
+    if(pixelStartY < 0){
+        fillFrom.resY = (uint32_t)(-1 * pixelStartY);
     }
+
     //total pixel left to fill, may be bigger as tileSize
-    Resolution res_left_to_fill(qrect.res_x - state_x, qrect.res_y - state_y);
+    Resolution resLeftToFill(qrect.resX - pixelStartX, qrect.resY - pixelStartY); //pixelInTileLeftToFill
 
-    Resolution tile_start_world_res(rasterWorldPixelStart.res_x + state_x, rasterWorldPixelStart.res_y + state_y);
-    SpatialReference tile_spat = RasterCalculations::pixelToSpatialRectangle(qrect, tile_start_world_res,
-                                                                             tile_start_world_res + tileRes);
+    Resolution tileStartWorldRes(rasterWorldPixelStart.resX + pixelStartX, rasterWorldPixelStart.resY + pixelStartY);
+    SpatialReference tileSpat = RasterCalculations::pixelToSpatialRectangle(scale, origin, tileStartWorldRes, tileStartWorldRes + tileRes);
 
     auto getter = [currDataset = currDataset, currRasterband = currRasterband, fill_from = fill_from, res_left_to_fill = res_left_to_fill](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);

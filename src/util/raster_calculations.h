@@ -27,9 +27,13 @@ namespace rts {
          * @param coord_y y part of the coordinate.
          * @return The pixel position of the coordinates.
          */
-        static Resolution coordinateToPixel(const SpatialTemporalReference &rasterInfo,
-                                            double coord_x,
-                                            double coord_y);
+        static Resolution coordinateToPixel(const SpatialTemporalReference &rasterInfo, double coord_x, double coord_y);
+
+        static Resolution coordinateToPixel(const Scale& scale, const Origin &origin, double coord_x, double coord_y);
+
+        static std::pair<double,double> pixelToCoordinate(const Scale& scale, const Origin &origin, uint32_t pixelX, uint32_t pixelY);
+
+        static std::pair<double,double> pixelToCoordinate(const Scale& scale, const Origin &origin, Resolution pixelCoord);
 
         /**
          * Calculates the spatial coordinates of a pixel rectangle by locating it in a raster, defined by its total
@@ -53,6 +57,11 @@ namespace rts {
          * @return The coordinates of the pixel rectangle as spatial reference.
          */
         static SpatialReference pixelToSpatialRectangle(const SpatialTemporalReference &rasterInfo,
+                                                        Resolution pixelStart,
+                                                        Resolution pixelEnd);
+
+        static SpatialReference pixelToSpatialRectangle(const Scale &scale,
+                                                        const Origin &origin,
                                                         Resolution pixelStart,
                                                         Resolution pixelEnd);
     };

@@ -4,6 +4,18 @@
 
 using namespace rts;
 
+// Scale (& Origin) deftinitions:
+Scale::Scale(double x, double y) : x(x), y(y)
+{
+
+}
+
+Scale::Scale() : x(1), y(1)
+{
+
+}
+
+
 // Projection definitions:
 
 Projection::Projection() : code(4326), authority("EPSG") { }
@@ -112,37 +124,48 @@ bool SpatialReference::containsSpatial(double x, double y) const {
 
 // Resolution definitions:
 
-Resolution::Resolution(uint32_t x, uint32_t y) : res_x(x), res_y(y) { }
+Resolution::Resolution(uint32_t x, uint32_t y) : resX(x), resY(y) { }
 
-Resolution::Resolution() : res_x(0), res_y(0) { }
+Resolution::Resolution() : resX(0), resY(0) { }
 
 Resolution::Resolution(const Json::Value &res){
-    res_x = res["x"].asUInt();
-    res_y = res["y"].asUInt();
+    resX = res["x"].asUInt();
+    resY = res["y"].asUInt();
 }
 
 bool Resolution::equalsResolution(const Resolution &other) const {
-    return res_x == other.res_x && res_y == other.res_y;
+    return resX == other.resX && resY == other.resY;
 }
 
 Resolution Resolution::operator+(const Resolution &other) const {
-    return Resolution(this->res_x + other.res_x, this->res_y + other.res_y);
+    return Resolution(this->resX + other.resX, this->resY + other.resY);
 }
 
 Resolution Resolution::operator-(const Resolution &other) const {
-    return Resolution(this->res_x - other.res_x, this->res_y - other.res_y);
+    return Resolution(this->resX - other.resX, this->resY - other.resY);
 }
 
 // Spatial Temporal Reference definitions:
 
 SpatialTemporalReference::SpatialTemporalReference(double t1, double t2, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y)
-        : TemporalReference(t1, t2), SpatialReference(x1, x2, y1, y2), Resolution(res_x, res_y) { }
+        : TemporalReference(t1, t2), SpatialReference(x1, x2, y1, y2), Resolution(res_x, res_y), scale((x2 - x1) / res_x, (y2 - y1) / res_y)
+{
+
+}
 
 SpatialTemporalReference::SpatialTemporalReference(const TemporalReference &temp_ref, const SpatialReference &spat_ref, const Resolution &res)
-        : TemporalReference(temp_ref), SpatialReference(spat_ref), Resolution(res) { }
+        : TemporalReference(temp_ref), SpatialReference(spat_ref), Resolution(res),
+          scale((x2 - x1) / resX, (y2 - y1) / resY)
+{
+
+}
 
 SpatialTemporalReference::SpatialTemporalReference(const Json::Value &qrect)
-        : TemporalReference(qrect["temporal_reference"]),SpatialReference(qrect["spatial_reference"]), Resolution(qrect["resolution"]) { }
+        : TemporalReference(qrect["temporal_reference"]), SpatialReference(qrect["spatial_reference"]),
+          Resolution(qrect["resolution"]), scale((x2 - x1) / resX, (y2 - y1) / resY)
+{
+
+}
 
 // Query Rectangle defintions:
 

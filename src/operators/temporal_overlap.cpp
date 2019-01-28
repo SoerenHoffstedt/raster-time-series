@@ -8,8 +8,8 @@ template<class T1, class T2, class T3>
 struct TempOverlapCalc {
     static void rasterOperation(TypedRaster<T1> *in1, TypedRaster<T2> *in2, TypedRaster<T3> *out){
         Resolution res = out->getResolution();
-        for (int x = 0; x < res.res_x; ++x) {
-            for (int y = 0; y < res.res_y; ++y) {
+        for (int x = 0; x < res.resX; ++x) {
+            for (int y = 0; y < res.resY; ++y) {
                 T1 val = in1->getCell(x,y) * 1000 + in2->getCell(x,y);
                 out->setCell(x, y, (T3)val);
             }

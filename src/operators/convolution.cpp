@@ -62,11 +62,11 @@ struct ConvolutionOperation {
 
         if(x < 0)
             dx = -1;
-        else if(x >= res.res_x)
+        else if(x >= res.resX)
             dx = 1;
         if(y < 0)
             dy = -1;
-        else if(y >= res.res_y)
+        else if(y >= res.resY)
             dy = 1;
 
         if(dx == 0 && dy == 0)
@@ -77,9 +77,9 @@ struct ConvolutionOperation {
             return 0.0;
 
         if(dx != 0)
-            x -= dx * res.res_x;
+            x -= dx * res.resX;
         if(dy != 0)
-            y -= dy * res.res_y;
+            y -= dy * res.resY;
         return static_cast<double>(all[index]->getCell(x,y));
 
     }
@@ -97,8 +97,8 @@ struct ConvolutionOperation {
 
         Resolution res = out_raster->getResolution();
 
-        for (int x = 0; x < res.res_x; ++x) {
-            for (int y = 0; y < res.res_y; ++y) {
+        for (int x = 0; x < res.resX; ++x) {
+            for (int y = 0; y < res.resY; ++y) {
 
                 //using laplacian edge detection for now. TODO: Make others usable by passing a kernel.
                 //taken from: http://desktop.arcgis.com/en/arcmap/10.3/manage-data/raster-and-images/convolution-function.htm
@@ -202,7 +202,7 @@ bool Convolution::supportsOrder(Order order) const {
 }
 
 bool Convolution::isInRange(int x, int y) const {
-    return x >= 0 && y >= 0 && x < tileCountDimensional.res_x && y < tileCountDimensional.res_y;
+    return x >= 0 && y >= 0 && x < tileCountDimensional.resX && y < tileCountDimensional.resY;
 }
 
 void Convolution::fillWithNeighbourTiles(OptionalDescriptorVector &neighbours, int tileIndex) const {
@@ -215,8 +215,8 @@ void Convolution::fillWithNeighbourTiles(OptionalDescriptorVector &neighbours, i
      */
     //if a tile does not exist, it will be nullopt.
 
-    int indexX = tileIndex % tileCountDimensional.res_x;
-    int indexY = tileIndex / tileCountDimensional.res_x;
+    int indexX = tileIndex % tileCountDimensional.resX;
+    int indexY = tileIndex / tileCountDimensional.resX;
 
     neighbours.push_back(descCache[tileIndex]);
 
@@ -258,7 +258,7 @@ void Convolution::fillWithNeighbourTiles(OptionalDescriptorVector &neighbours, i
 
         //if (x,y) is in range at its tile into neighbours, else add a nullopt.
         if(isInRange(x,y)){
-            int index = x + y * tileCountDimensional.res_x;
+            int index = x + y * tileCountDimensional.resX;
             neighbours.push_back(descCache[index]);
         } else {
             neighbours.emplace_back(std::nullopt);

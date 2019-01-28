@@ -56,7 +56,6 @@ void GeotiffExport::consume() {
 
     GenericOperator *in_op = input_operators[0].get();
 
-    int x = 0, y = 0;
     for(auto &in_desc : *in_op){
 
         if(out_dataset == nullptr){
@@ -73,7 +72,7 @@ void GeotiffExport::consume() {
             if(qrect.order == Order::Spatial && in_desc.tileIndex > 0){
                 out_dataset = UniqueGDALDataset((GDALDataset *)GDALOpen(filePath.c_str(), GA_Update), GDALClose);
             } else {
-                out_dataset = UniqueGDALDataset(driver->Create(filePath.c_str(), in_desc.rasterInfo.res_x, in_desc.rasterInfo.res_y, 1, in_desc.dataType, papszOptions), GDALClose);
+                out_dataset = UniqueGDALDataset(driver->Create(filePath.c_str(), in_desc.rasterInfo.resX, in_desc.rasterInfo.resY, 1, in_desc.dataType, papszOptions), GDALClose);
             }
 
             if(out_dataset == nullptr){
@@ -97,7 +96,8 @@ void GeotiffExport::consume() {
         void *data = raster->getVoidDataPointer();
 
         out_rasterBand->SetNoDataValue(in_desc.nodata);
-        int w = in_desc.tileResolution.res_x, h = in_desc.tileResolution.res_y;
+        int x = 0, y = 0;
+        int w = in_desc.tileResolution.resX, h = in_desc.tileResolution.resY;
         int offsetX = 0, offsetY = 0;
 
         calcTilePosAndSize(in_desc, x, y, w, h, offsetX, offsetY);
@@ -111,7 +111,7 @@ void GeotiffExport::consume() {
         auto res = out_rasterBand->RasterIO(
                 GF_Write, x, y, w, h,
                 data, w, h, raster->getDataType(),
-                0, dataSize * in_desc.tileResolution.res_x,
+                0, dataSize * in_desc.tileResolution.resX,
                 nullptr);
 
         if(res != CE_None){
@@ -132,9 +132,15 @@ void GeotiffExport::consume() {
 
 void GeotiffExport::calcTilePosAndSize(const Descriptor &in_desc, int &x, int &y, int &w, int &h, int &offsetX, int &offsetY) const {
 
-    //The spatial extent of a tile can be more that the query rectangles. Here only the really requested data
-    //should be written, so make the tile spatial info smaller if needed.
     SpatialReference spatInfo = in_desc.tileSpatialInfo;
+
+    //the origin of the single tile itself, for calculating start and
+    // end pixel points of the actual data in the tile.
+    Origin tileOrigin;
+    tileOrigin.x = spatInfo.x1;
+    tileOrigin.y = spatInfo.y1;
+
+    //set the actual coordinates of the data in the tile, if tile is bigger than qrect.
     if(spatInfo.x1 < qrect.x1)
         spatInfo.x1 = qrect.x1;
     if(spatInfo.x2 > qrect.x2)
@@ -144,29 +150,20 @@ void GeotiffExport::calcTilePosAndSize(const Descriptor &in_desc, int &x, int &y
     if(spatInfo.y2 > qrect.y2)
         spatInfo.y2 = qrect.y2;
 
-    Resolution start = RasterCalculations::coordinateToPixel(in_desc.rasterInfo, spatInfo.x1, spatInfo.y1);
-    Resolution end   = RasterCalculations::coordinateToPixel(in_desc.rasterInfo, spatInfo.x2, spatInfo.y2);
+    //start and end pixel positions of the actual data in the tile, for offset and width/height.
+    auto startPixel = RasterCalculations::coordinateToPixel(in_desc.rasterInfo.scale, tileOrigin, spatInfo.x1, spatInfo.y1);
+    auto endPixel   = RasterCalculations::coordinateToPixel(in_desc.rasterInfo.scale, tileOrigin, spatInfo.x2, spatInfo.y2);
 
-    x = start.res_x;
-    y = start.res_y;
+    offsetX = startPixel.resX;
+    offsetY = startPixel.resY;
+    w = endPixel.resX - startPixel.resX;
+    h = endPixel.resY - startPixel.resY;
 
-    int modXStart   = start.res_x % in_desc.tileResolution.res_x;
-    int modYStart   = start.res_y % in_desc.tileResolution.res_y;
-    int modXEnd     = end.res_x % in_desc.tileResolution.res_x;
-    int modYEnd     = end.res_y % in_desc.tileResolution.res_y;
-
-    //if start pixel are not aligned to the tile resolution, an offset for the data pointer is needed:
-    offsetX = modXStart;
-    offsetY = modYStart;
-
-    if(modXStart != 0)
-        w -= modXStart;
-    if(modYStart != 0)
-        h -= modYStart;
-
-    if(modXEnd  != 0)
-        w -= in_desc.tileResolution.res_x - modXEnd;
-    if(modYEnd != 0)
-        h -= in_desc.tileResolution.res_y - modYEnd;
-
+    //x,y are the start positions of the tile data in the output raster.
+    Origin rasterOrigin;
+    rasterOrigin.x = in_desc.rasterInfo.x1;
+    rasterOrigin.y = in_desc.rasterInfo.y1;
+    auto startPixelInRaster = RasterCalculations::coordinateToPixel(in_desc.rasterInfo.scale, rasterOrigin, spatInfo.x1, spatInfo.y1);
+    x = startPixelInRaster.resX;
+    y = startPixelInRaster.resY;
 }

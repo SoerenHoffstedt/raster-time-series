@@ -92,15 +92,15 @@ void RasterValueExtraction::consume() {
 
         Resolution pixelCoord = RasterCalculations::coordinateToPixel(desc->rasterInfo, desc->rasterInfo, point.x,
                                                                       point.y);
-        pixelCoord.res_x = pixelCoord.res_x % desc->tileResolution.res_x;
-        pixelCoord.res_y = pixelCoord.res_y % desc->tileResolution.res_y;
+        pixelCoord.resX = pixelCoord.resX % desc->tileResolution.resX;
+        pixelCoord.resY = pixelCoord.resY % desc->tileResolution.resY;
         UniqueRaster raster = desc->getRaster();
         if(output == Output::Print){
             std::cout << "(" << point.x << "," << point.y << ") at [" << point.t << "] : ";
-            printPixelAt(std::cout, raster.get(), pixelCoord.res_x, pixelCoord.res_y);
+            printPixelAt(std::cout, raster.get(), pixelCoord.resX, pixelCoord.resY);
         } else {
             file_output << "(" << point.x << "," << point.y << ") at [" << point.t << "] : ";
-            printPixelAt(file_output, raster.get(), pixelCoord.res_x, pixelCoord.res_y);
+            printPixelAt(file_output, raster.get(), pixelCoord.resX, pixelCoord.resY);
         }
     }
 }

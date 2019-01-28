@@ -44,15 +44,6 @@ namespace rts {
         std::string path;
         int channel;
 
-        /**
-         * The size of the raster on disc. Is read from dataset.
-         */
-        Resolution fileRasterSize;
-        /**
-         * The extent (x1,x2,y1,y2) of the raster on disc. Is read from dataset.
-         */
-        SpatialReference fileRasterExtent;
-
         std::map<std::string, std::shared_ptr<GDALDataset>> openDatasets;
 
         Json::Value loadDatasetJson(const std::string &name);

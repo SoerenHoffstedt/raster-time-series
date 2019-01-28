@@ -11,6 +11,22 @@ namespace rts {
 
     class SpatialReference;
 
+    /**
+     * Class for representing pixel scale in two elements (x and y).
+     */
+    class Scale {
+    public:
+        Scale();
+        Scale(double x, double y);
+        double x, y;
+
+    };
+
+    /**
+     * Alias for the Scale class representing the origin of a raster.
+     */
+    using Origin = Scale;
+
     class Projection {
     public:
         Projection();
@@ -67,8 +83,8 @@ namespace rts {
         bool equalsResolution(const Resolution &other) const;
         Resolution operator+(const Resolution &other) const;
         Resolution operator-(const Resolution &other) const;
-        uint32_t res_x;
-        uint32_t res_y;
+        uint32_t resX;
+        uint32_t resY;
     };
 
     class SpatialTemporalReference : public TemporalReference, public SpatialReference, public Resolution {
@@ -77,6 +93,10 @@ namespace rts {
         SpatialTemporalReference(const TemporalReference &temp_ref, const SpatialReference &spat_ref, const Resolution &res);
         explicit SpatialTemporalReference(const Json::Value &qrect);
         SpatialTemporalReference(const SpatialTemporalReference &other) = default;
+        /**
+         * Represents the pixel scale of this SpatialTemporalReference.
+         */
+        Scale scale;
     };
 
     class QueryRectangle : public SpatialTemporalReference {
