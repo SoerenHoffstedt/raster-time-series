@@ -31,7 +31,7 @@ OptionalDescriptor SourceOperator::nextDescriptor() {
     increaseDimensions = true;
 
     //if currTime is bigger than query or dataset and not reset to beginning, the end of time series is reached.
-    if(currTime > qrect.t2 || currTime> datasetEndTime){
+    if(currTime >= qrect.t2 || currTime > datasetEndTime){
         return std::nullopt;
     }
 
