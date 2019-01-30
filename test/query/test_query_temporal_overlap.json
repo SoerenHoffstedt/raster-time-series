@@ -16,7 +16,11 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "Temporal"
+		"order" : "Temporal",
+		"tileRes" : {
+			"x" : 18,
+			"y" : 18
+		}
 	},
 	"operator" : "print",
 	"params" : {
@@ -45,8 +49,6 @@
 					"operator" : "fake_source",
 					"params" : {
 						"dataset" : "temp_overlap_2",
-						"tile_size_x" : 18,
-						"tile_size_y" : 18,
 						"fill_with_index" : true
 					},
 					"sources" : [

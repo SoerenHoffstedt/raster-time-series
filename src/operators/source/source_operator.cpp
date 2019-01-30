@@ -44,10 +44,10 @@ OptionalDescriptor SourceOperator::nextDescriptor() {
     // the tile will start in negative space of the output raster. So subtract the starting pixel in world space
     // modulo the tile res to get the starting pixels in the tile that will be returned.
     if(pixelStateX == 0) {
-        pixelStateX -= rasterWorldPixelStart.resX % tileRes.resX;
+        pixelStateX -= rasterWorldPixelStart.resX % qrect.tileRes.resX;
     }
     if(pixelStateY == 0) {
-        pixelStateY -= rasterWorldPixelStart.resY % tileRes.resY;
+        pixelStateY -= rasterWorldPixelStart.resY % qrect.tileRes.resY;
     }
 
     return createDescriptor(currTime, pixelStateX, pixelStateY);
@@ -65,14 +65,14 @@ Resolution SourceOperator::tileIndexToStartPixel(int tileIndex) {
 
     //raster does not start at (0,0) if it does not align with the tiles, see explanation in nextDescriptor()
     Resolution pixelStart;
-    pixelStart.resX -= rasterWorldPixelStart.resX % tileRes.resX;
-    pixelStart.resY -= rasterWorldPixelStart.resY % tileRes.resY;
+    pixelStart.resX -= rasterWorldPixelStart.resX % qrect.tileRes.resX;
+    pixelStart.resY -= rasterWorldPixelStart.resY % qrect.tileRes.resY;
 
     for(; tileIndex > 0; --tileIndex){
-        pixelStart.resX += tileRes.resX;
+        pixelStart.resX += qrect.tileRes.resX;
         if(pixelStart.resX >= qrect.resX){
-            pixelStart.resX = rasterWorldPixelStart.resX % tileRes.resX;
-            pixelStart.resY += tileRes.resY;
+            pixelStart.resX = rasterWorldPixelStart.resX % qrect.tileRes.resX;
+            pixelStart.resY += qrect.tileRes.resY;
         }
     }
 
@@ -92,10 +92,10 @@ void SourceOperator::skipCurrentRaster() {
 void SourceOperator::skipCurrentTile() {
     //skipping current tile means increasing pixelState and resetting raster index and time to beginning.
     increaseDimensions = false;
-    pixelStateX += tileRes.resX;
+    pixelStateX += qrect.tileRes.resX;
     if(pixelStateX >= qrect.resX){
         pixelStateX = 0;
-        pixelStateY += tileRes.resY;
+        pixelStateY += qrect.tileRes.resY;
     }
     currTileIndex += 1;
     currRasterIndex = 0;
@@ -122,11 +122,11 @@ bool SourceOperator::increaseTemporally() {
 bool SourceOperator::increaseSpatially() {
     //increasing to next tile
     currTileIndex += 1;
-    pixelStateX += tileRes.resX;
+    pixelStateX += qrect.tileRes.resX;
     if(pixelStateX >= static_cast<int>(qrect.resX)){
         //next tile is in next line
         pixelStateX = 0;
-        pixelStateY += tileRes.resY;
+        pixelStateY += qrect.tileRes.resY;
         if(pixelStateY >= static_cast<int>(qrect.resY)){
             //end of raster reached.
             if(qrect.order == Order::Temporal){

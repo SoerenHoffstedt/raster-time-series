@@ -16,7 +16,11 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "Temporal"
+		"order" : "Temporal",
+		"tileRes" : {
+			"x" : 300,
+			"y" : 300
+		}
 	},
 	"operator" : "geotiff_export",
 	"params" : {
@@ -33,9 +37,7 @@
 				{
 					"operator" : "gdal_source",
 					"params" : {
-						"dataset" : "leaf_area_index",
-						"tile_size_x" : 300,
-						"tile_size_y" : 300
+						"dataset" : "leaf_area_index"
 					},
 					"sources" : [
 

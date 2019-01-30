@@ -44,8 +44,6 @@ void FakeSource::initialize() {
     nodata = dataset_json["nodata"].asDouble();
     dataType = Parsing::parseDataType(dataset_json["data_type"].asString());
 
-    tileRes.resX = params["tile_size_x"].asUInt();
-    tileRes.resY = params["tile_size_y"].asUInt();
     if(dataset_json.isMember("spatial_reference")){
         SpatialReference sref(dataset_json["spatial_reference"]);
         this->qrect.x1 = sref.x1;
@@ -60,15 +58,15 @@ void FakeSource::initialize() {
     origin.y = qrect.y1;
 
     Resolution rasterStep = rasterWorldPixelStart;
-    rasterStep.resX -= rasterWorldPixelStart.resX % tileRes.resX;
-    rasterStep.resY -= rasterWorldPixelStart.resY % tileRes.resY;
+    rasterStep.resX -= rasterWorldPixelStart.resX % qrect.tileRes.resX;
+    rasterStep.resY -= rasterWorldPixelStart.resY % qrect.tileRes.resY;
     Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(qrect, qrect.x2, qrect.y2);
     Resolution size(rasterWorldPixelEnd.resX - rasterStep.resX, rasterWorldPixelEnd.resY - rasterStep.resY);
-    tileCount.resX = size.resX / tileRes.resX;
-    tileCount.resY = size.resY / tileRes.resY;
-    if(size.resX % tileRes.resX > 0)
+    tileCount.resX = size.resX / qrect.tileRes.resX;
+    tileCount.resY = size.resY / qrect.tileRes.resY;
+    if(size.resX % qrect.tileRes.resX > 0)
         tileCount.resX += 1;
-    if(size.resY % tileRes.resY > 0)
+    if(size.resY % qrect.tileRes.resY > 0)
         tileCount.resY += 1;
 
     extent = qrect.projection.getExtent();
@@ -99,7 +97,7 @@ OptionalDescriptor FakeSource::createDescriptor(double time, int pixelStartX, in
 
     Resolution tile_start_world_res(rasterWorldPixelStart.resX + pixelStartX, rasterWorldPixelStart.resY + pixelStartY);
     SpatialReference tile_spat = RasterCalculations::pixelToSpatialRectangle(qrect, tile_start_world_res,
-                                                                             tile_start_world_res + tileRes);
+                                                                             tile_start_world_res + qrect.tileRes);
 
     auto getter = [index = currRasterIndex, res_left_to_fill = res_left_to_fill, fillFrom = fillFrom, fill_index = fill_with_index](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);
@@ -108,13 +106,11 @@ OptionalDescriptor FakeSource::createDescriptor(double time, int pixelStartX, in
     };
 
     TemporalReference tempInfo(time, time + timeDuration);
-    int tileIndexNow = currTileIndex;
-
     SpatialTemporalReference rasterInfo = qrect;
     rasterInfo.t1 = tempInfo.t1;
     rasterInfo.t2 = tempInfo.t2;
 
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_spat, tileRes, qrect.order, tileIndexNow, tileCount, nodata, dataType);
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_spat, qrect.tileRes, qrect.order, currTileIndex, tileCount, nodata, dataType);
 }
 
 bool FakeSource::supportsOrder(Order o) const {

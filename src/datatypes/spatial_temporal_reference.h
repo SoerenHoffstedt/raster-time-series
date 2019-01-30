@@ -101,11 +101,12 @@ namespace rts {
 
     class QueryRectangle : public SpatialTemporalReference {
     public:
-        QueryRectangle(double t1, double t2, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y, Order order);
-        QueryRectangle(const TemporalReference &temp_ref, const SpatialReference &spat_ref, const Resolution &res, Order order);
+        QueryRectangle(double t1, double t2, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y, Order order, Resolution tileRes);
+        QueryRectangle(const TemporalReference &temp_ref, const SpatialReference &spat_ref, const Resolution &res, Order order, Resolution tileRes);
         explicit QueryRectangle(const Json::Value &qrect);
         QueryRectangle(const QueryRectangle &other) = default;
         Order order;
+        Resolution tileRes;
     };
 
 }

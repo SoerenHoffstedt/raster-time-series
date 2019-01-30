@@ -113,7 +113,7 @@ struct GdalSourceWriter {
 
 
 GDALSource::GDALSource(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in)
-        : SourceOperator(operator_tree, qrect, params, std::move(in)), currDataset(nullptr), currRasterband(nullptr)
+        : SourceOperator(operator_tree, qrect, params, std::move(in)), currDataset(nullptr), currRasterband(nullptr), currDatasetTime(0)
 {
     checkInputCount(0);
 }
@@ -122,15 +122,14 @@ void GDALSource::initialize() {
     GDALUtil::initGdal();
 
     Json::Value dataset_json    = loadDatasetJson(params["dataset"].asString());
-    tileRes                     = Resolution(params["tile_size_x"].asUInt(), params["tile_size_y"].asUInt());
     channel                     = dataset_json["channel"].asInt();
 
-    base_file_name              = dataset_json["filename"].asString();
+    baseFileName                = dataset_json["filename"].asString();
     path                        = dataset_json["path"].asString();
-    time_format                 = dataset_json["time_format"].asString();
+    timeFormat                  = dataset_json["time_format"].asString();
 
     Json::Value time_interval_json   = dataset_json["time_interval"];
-    time_interval = TimeInterval(time_interval_json);
+    timeInterval = TimeInterval(time_interval_json);
 
     datasetStartTime = (double)to_time_t(time_from_string(dataset_json["time_start"].asString()));
     datasetEndTime   = (double)to_time_t(time_from_string(dataset_json["time_end"].asString()));
@@ -148,21 +147,21 @@ void GDALSource::initialize() {
     rasterWorldPixelStart = RasterCalculations::coordinateToPixel(scale, origin, qrect.x1, qrect.y1);
 
     Resolution rasterStep = rasterWorldPixelStart;
-    rasterStep.resX -= rasterWorldPixelStart.resX % tileRes.resX;
-    rasterStep.resY -= rasterWorldPixelStart.resY % tileRes.resY;
+    rasterStep.resX -= rasterWorldPixelStart.resX % qrect.tileRes.resX;
+    rasterStep.resY -= rasterWorldPixelStart.resY % qrect.tileRes.resY;
     Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(scale, origin, qrect.x2, qrect.y2);
     Resolution size(rasterWorldPixelEnd.resX - rasterStep.resX, rasterWorldPixelEnd.resY - rasterStep.resY);
-    tileCount.resX = size.resX / tileRes.resX;
-    tileCount.resY = size.resY / tileRes.resY;
-    if(size.resX % tileRes.resX > 0)
+    tileCount.resX = size.resX / qrect.tileRes.resX;
+    tileCount.resY = size.resY / qrect.tileRes.resY;
+    if(size.resX % qrect.tileRes.resX > 0)
         tileCount.resX += 1;
-    if(size.resY % tileRes.resY > 0)
+    if(size.resY % qrect.tileRes.resY > 0)
         tileCount.resY += 1;
 }
 
 OptionalDescriptor GDALSource::createDescriptor(double time, int pixelStartX, int pixelStartY) {
 
-    if(currDataset == nullptr){
+    if(currDataset == nullptr || time != currDatasetTime){
         loadCurrentGdalDataset(time);
     }
 
@@ -183,7 +182,7 @@ OptionalDescriptor GDALSource::createDescriptor(double time, int pixelStartX, in
     Resolution resLeftToFill(qrect.resX - pixelStartX, qrect.resY - pixelStartY); //pixelInTileLeftToFill
 
     Resolution tileStartWorldRes(rasterWorldPixelStart.resX + pixelStartX, rasterWorldPixelStart.resY + pixelStartY);
-    SpatialReference tileSpat = RasterCalculations::pixelToSpatialRectangle(scale, origin, tileStartWorldRes, tileStartWorldRes + tileRes);
+    SpatialReference tileSpat = RasterCalculations::pixelToSpatialRectangle(scale, origin, tileStartWorldRes, tileStartWorldRes + qrect.tileRes);
 
     auto getter = [currDataset = currDataset, currRasterband = currRasterband, fillFrom = fillFrom, resLeftToFill = resLeftToFill](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);
@@ -192,13 +191,12 @@ OptionalDescriptor GDALSource::createDescriptor(double time, int pixelStartX, in
     };
 
     TemporalReference tempInfo(currTime, getCurrentTimeEnd());
-    int tileIndexNow = currTileIndex;
     SpatialTemporalReference rasterInfo = qrect;
     rasterInfo.t1 = tempInfo.t1;
     rasterInfo.t2 = tempInfo.t2;
 
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileSpat, tileRes,
-                                          qrect.order, tileIndexNow, tileCount, nodata, dataType);
+    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileSpat, qrect.tileRes,
+                                          qrect.order, currTileIndex, tileCount, nodata, dataType);
 }
 
 bool GDALSource::increaseTemporally() {
@@ -229,23 +227,24 @@ double GDALSource::parseIsoTime(const std::string &str) const {
 
 void GDALSource::increaseCurrentTime() {
     ptime currPTime = from_time_t((time_t)currTime);
-    time_interval.increase(currPTime);
+    timeInterval.increase(currPTime);
     currTime = (double)to_time_t(currPTime);
 }
 
 double GDALSource::getCurrentTimeEnd() const {
     ptime currPTime = from_time_t((time_t)currTime);
-    time_interval.increase(currPTime);
+    timeInterval.increase(currPTime);
     return static_cast<double>(to_time_t(currPTime));
 }
 
 void GDALSource::loadCurrentGdalDataset(double time) {
-    std::string timeString = GDALUtil::timeToString((time_t)time, time_format);
+    currDatasetTime = time;
+    std::string timeString = GDALUtil::timeToString((time_t)time, timeFormat);
 
     std::string placeholder = "%%%TIME_STRING%%%";
-    size_t placeholderPos = base_file_name.find(placeholder);
+    size_t placeholderPos = baseFileName.find(placeholder);
 
-    std::string fileName = base_file_name;
+    std::string fileName = baseFileName;
     fileName.replace(placeholderPos, placeholder.length(), timeString);
 
     if(openDatasets.find(fileName) != openDatasets.end())

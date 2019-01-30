@@ -96,10 +96,6 @@ namespace rts {
          */
         int currRasterIndex;
         /**
-         * Resolution of the tiles created by the operator.
-         */
-        Resolution tileRes;
-        /**
          * The pixel position of the start of query bounding box in the extent of source raster,
          * based on the query resolution not the source rasters resolution.
          */

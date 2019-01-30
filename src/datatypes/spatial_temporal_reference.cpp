@@ -169,11 +169,11 @@ SpatialTemporalReference::SpatialTemporalReference(const Json::Value &qrect)
 
 // Query Rectangle defintions:
 
-QueryRectangle::QueryRectangle(double t1, double t2, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y, Order order)
-        : SpatialTemporalReference(t1,t2, x1, x2, y1, y2, res_x, res_y), order(order) { }
+QueryRectangle::QueryRectangle(double t1, double t2, double x1, double x2, double y1, double y2, uint32_t res_x, uint32_t res_y, Order order, Resolution tileRes)
+        : SpatialTemporalReference(t1,t2, x1, x2, y1, y2, res_x, res_y), order(order), tileRes(tileRes) { }
 
-QueryRectangle::QueryRectangle(const TemporalReference &temp_ref, const SpatialReference &spat_ref, const Resolution &res, Order order)
-        : SpatialTemporalReference(temp_ref, spat_ref, res), order(order) { }
+QueryRectangle::QueryRectangle(const TemporalReference &temp_ref, const SpatialReference &spat_ref, const Resolution &res, Order order, Resolution tileRes)
+        : SpatialTemporalReference(temp_ref, spat_ref, res), order(order), tileRes(tileRes) { }
 
 QueryRectangle::QueryRectangle(const Json::Value &qrect)
         : SpatialTemporalReference(qrect)
@@ -185,4 +185,7 @@ QueryRectangle::QueryRectangle(const Json::Value &qrect)
         order = Order::Temporal;
     else
         throw std::runtime_error("Invalid value for order enum: " + order_str);
+    Json::Value tileResJson = qrect["tileRes"];
+    tileRes.resX = tileResJson["x"].asUInt();
+    tileRes.resY = tileResJson["y"].asUInt();
 }

@@ -27,10 +27,11 @@ namespace rts {
 
         std::shared_ptr<GDALDataset> currDataset;
         GDALRasterBand *currRasterband; //this can stay a normal ptr, because it is handled by the dataset. The dataset now always has to live as long as the rasterband. maybe put them in one structure?
+        double currDatasetTime;
 
-        TimeInterval time_interval;
-        std::string time_format;
-        std::string base_file_name;
+        TimeInterval timeInterval;
+        std::string timeFormat;
+        std::string baseFileName;
         std::string path;
         int channel;
 

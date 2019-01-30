@@ -16,7 +16,11 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "Spatial"
+		"order" : "Spatial",
+		"tileRes" : {
+			"x" : 900,
+			"y" : 900
+		}
 	},
 	"operator" : "geotiff_export",
 	"params" : {
@@ -27,9 +31,7 @@
 		{		
 			"operator" : "gdal_source",
 			"params" : {
-				"dataset" : "temp_month",
-				"tile_size_x" : 900,
-				"tile_size_y" : 900
+				"dataset" : "temp_month"
 			},
 			"sources" : [
 

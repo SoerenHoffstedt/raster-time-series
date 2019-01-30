@@ -16,7 +16,11 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "Temporal"
+		"order" : "Temporal",
+		"tileRes" : {
+			"x" : 36,
+			"y" : 36
+		}
 	},
 	"operator" : "print",
 	"params" : {
@@ -26,9 +30,7 @@
 		{
 			"operator" : "gdal_source",
 			"params" : {
-				"dataset" : "temp_month",
-				"tile_size_x" : 36,
-				"tile_size_y" : 36
+				"dataset" : "temp_month"
 			},
 			"sources" : [
 

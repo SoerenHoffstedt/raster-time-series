@@ -6,8 +6,8 @@
 		},
 		"temporal_reference" : {
 			"type" : "UNIX",
-        	"start" : 1519862400,
-        	"end": 1543622400
+        	"start" : 1519905600,
+        	"end": 1527897600
 		},
 		"spatial_reference" : {
 			"projection": "EPSG:4326",
@@ -16,7 +16,11 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "Spatial"
+		"order" : "Spatial",
+		"tileRes" : {
+			"x" : 18,
+			"y" : 18
+		}
 	},
 	"operator" : "print",
 	"params" : {
@@ -33,8 +37,7 @@
 					"operator" : "fake_source",
 					"params" : {
 						"dataset" : "first_dataset",
-						"tile_size_x" : 18,
-						"tile_size_y" : 18
+						"fill_with_index" : true
 					},
 					"sources" : [
 

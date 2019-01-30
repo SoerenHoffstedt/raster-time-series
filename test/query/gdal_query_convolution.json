@@ -2,7 +2,7 @@
 	"query_rectangle" : {
 		"resolution" : {
 			"x" : 3600,
-			"y" : 1800
+			"y" : 850
 		},
 		"temporal_reference" : {
 			"type" : "UNIX",
@@ -13,10 +13,14 @@
 			"projection": "EPSG:4326",
 	        "x1": -180,
 	        "x2": 180,
-	        "y1": -90,
-	        "y2": 90
+	        "y1": -50,
+	        "y2": 60
 		},
-		"order" : "Temporal"
+		"order" : "Temporal",
+		"tileRes" : {
+			"x" : 900,
+			"y" : 900
+		}
 	},
 	"operator" : "geotiff_export",
 	"params" : {
@@ -33,9 +37,7 @@
 				{
 					"operator" : "gdal_source",
 					"params" : {
-						"dataset" : "temp_month",
-						"tile_size_x" : 900,
-						"tile_size_y" : 900
+						"dataset" : "temp_month"
 					},
 					"sources" : [
 

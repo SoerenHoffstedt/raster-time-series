@@ -16,7 +16,11 @@
 	        "y1": -60,
 	        "y2": 30
 		},
-		"order" : "Temporal"
+		"order" : "Temporal",
+		"tileRes" : {
+			"x" : 100,
+			"y" : 100
+		}
 	},
 	"operator" : "geotiff_export",
 	"params" : {
@@ -28,8 +32,6 @@
 			"operator" : "fake_source",
 			"params" : {
 				"dataset" : "byte_dataset",
-				"tile_size_x" : 100,
-				"tile_size_y" : 100,
 				"fill_index" : false
 			},
 			"sources" : [

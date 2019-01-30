@@ -16,7 +16,11 @@
 	        "y1": -90,
 	        "y2": 90
 		},
-		"order" : "Temporal"
+		"order" : "Temporal",
+		"tileRes" : {
+			"x" : 18,
+			"y" : 18
+		}
 	},
 	"operator" : "print",
 	"params" : {
@@ -43,9 +47,7 @@
 						{									
 							"operator" : "fake_source",
 							"params" : {
-								"dataset" : "first_dataset",
-								"tile_size_x" : 18,
-								"tile_size_y" : 18
+								"dataset" : "first_dataset"
 							},
 							"sources" : [
 
