@@ -128,7 +128,7 @@ struct ConvolutionOperation {
 };
 
 Convolution::Convolution(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in)
-        : GenericOperator(operator_tree, qrect, params, std::move(in)), currentTileIndex(0)
+        : GenericOperator(operator_tree, qrect, params, std::move(in))
 {
     checkInputCount(1);
 }
@@ -139,57 +139,37 @@ void Convolution::initialize() {
 
 OptionalDescriptor Convolution::nextDescriptor() {
 
-    //new raster, put all descriptors into cache
-    if(descCache.empty()){
-        auto input = input_operators[0]->nextDescriptor();
+    auto input = input_operators[0]->nextDescriptor();
 
-        if(input == std::nullopt)
-            return std::nullopt;
+    if(input == std::nullopt)
+        return std::nullopt;
 
-        if(descCache.capacity() == 0){
-            descCache.reserve(input->rasterTileCount);
-        }
-        currentTileCount = input->rasterTileCount;
-        tileCountDimensional = input->rasterTileCountDimensional;
-        currentTileIndex = 0;
-        descCache.push_back(std::move(input));
-
-        for (int i = 1; i < currentTileCount; ++i) {
-            descCache.push_back(input_operators[0]->nextDescriptor());
-        }
-    }
-
-    OptionalDescriptorVector neighbours;
-    neighbours.reserve(9);
-    fillWithNeighbourTiles(neighbours, currentTileIndex);
-
-    auto output = createOutput(neighbours);
-
-    //if last raster was reached, clear the tile cache.
-    if(currentTileIndex == currentTileCount){
-        descCache.clear();
-    }
+    auto output = createOutput(input, input->tileIndex);
 
     return output;
 }
 
 OptionalDescriptor Convolution::getDescriptor(int tileIndex) {
-    auto input = input_operators[0]->getDescriptor(tileIndex);
+    auto mainDescriptor = input_operators[0]->getDescriptor(tileIndex);
+
+    if(mainDescriptor == std::nullopt)
+        return std::nullopt;
+
+    return createOutput(mainDescriptor, tileIndex);
+}
+
+OptionalDescriptor Convolution::createOutput(OptionalDescriptor &mainDescriptor, uint32_t mainTileIndex) {
 
     OptionalDescriptorVector neighbours;
     neighbours.reserve(9);
-
-    //TODO: fill with neighbours.
-
-    return createOutput(neighbours);
-}
-
-OptionalDescriptor Convolution::createOutput(OptionalDescriptorVector &neighbours) {
+    neighbours.push_back(std::move(mainDescriptor));
+    fillWithNeighbourTiles(neighbours, mainTileIndex, neighbours[0]->rasterTileCountDimensional);
 
     DescriptorInfo info = neighbours[0].value();
 
-    auto getter = [neighbours = std::move(neighbours), tileIndex = currentTileIndex, tileCountDimensional = tileCountDimensional](const Descriptor &self) mutable -> UniqueRaster {
+    auto getter = [neighbours = std::move(neighbours)](const Descriptor &self) mutable -> UniqueRaster {
         auto out_raster = Raster::createRaster(self.dataType, self.tileResolution);
+
         //save rasters once as vector of UniqueRaster to make sure they will get deleted, and once as raw pointer vector for usage.
         std::vector<Raster*> inputs;
         std::vector<UniqueRaster> in_raster;
@@ -211,9 +191,6 @@ OptionalDescriptor Convolution::createOutput(OptionalDescriptorVector &neighbour
         return out_raster;
     };
 
-    currentTileIndex++;
-
-
     return std::make_optional<Descriptor>(std::move(getter), info);
 }
 
@@ -221,11 +198,11 @@ bool Convolution::supportsOrder(Order order) const {
     return order == Order::Temporal;
 }
 
-bool Convolution::isInRange(int x, int y) const {
+bool Convolution::isInRange(int x, int y, Resolution tileCountDimensional) const {
     return x >= 0 && y >= 0 && x < tileCountDimensional.resX && y < tileCountDimensional.resY;
 }
 
-void Convolution::fillWithNeighbourTiles(OptionalDescriptorVector &neighbours, int tileIndex) const {
+void Convolution::fillWithNeighbourTiles(OptionalDescriptorVector &neighbours, int tileIndex, Resolution tileCountDimensional) const {
     //tile 0: the tile itself
     //tile 1: Above the tile, than go clockwise.
     //tile 3: right from the tile, etc...
@@ -237,8 +214,6 @@ void Convolution::fillWithNeighbourTiles(OptionalDescriptorVector &neighbours, i
 
     int indexX = tileIndex % tileCountDimensional.resX;
     int indexY = tileIndex / tileCountDimensional.resX;
-
-    neighbours.push_back(descCache[tileIndex]);
 
     for(int i = 1; i < 9; i++){
         auto dir = static_cast<DirectionEight>(i);
@@ -277,9 +252,9 @@ void Convolution::fillWithNeighbourTiles(OptionalDescriptorVector &neighbours, i
         }
 
         //if (x,y) is in range at its tile into neighbours, else add a nullopt.
-        if(isInRange(x,y)){
+        if(isInRange(x, y, tileCountDimensional)){
             int index = x + y * tileCountDimensional.resX;
-            neighbours.push_back(descCache[index]);
+            neighbours.push_back(input_operators[0]->getDescriptor(index));
         } else {
             neighbours.emplace_back(std::nullopt);
 

@@ -23,12 +23,8 @@ namespace rts {
         void initialize() override;
         bool supportsOrder(Order order) const override;
     private:
-        OptionalDescriptor createOutput(OptionalDescriptorVector &neighbours);
+        OptionalDescriptor createOutput(OptionalDescriptor &mainDescriptor, uint32_t mainTileIndex);
 
-        OptionalDescriptorVector descCache;
-        uint32_t currentTileIndex;
-        uint32_t currentTileCount;
-        Resolution tileCountDimensional;
         /**
          * Fills the vector neighbours with the neighbouring tile descriptors.
          * The indexes in neighbours are fixed as follows:
@@ -42,14 +38,14 @@ namespace rts {
          * @param neighbours Reference to vector of OptionalDescriptors to be filled with the neighbours of the tile.
          * @param tileIndex The current center tile index. On dim. index from the descriptor.
          */
-        void fillWithNeighbourTiles(OptionalDescriptorVector &neighbours, int tileIndex) const;
+        void fillWithNeighbourTiles(OptionalDescriptorVector &neighbours, int tileIndex, Resolution tileCountDimensional) const;
         /**
          * Checks if a two dimensional tile index is in bounds of the raster.
          * @param x x index position of the tile in the raster.
          * @param y y index position of the tile in the raster.
          * @return If x,y is a valid two dimensional index for a tile in a raster.
          */
-        bool isInRange(int x, int y) const;
+        bool isInRange(int x, int y, Resolution tileCountDimensional) const;
     };
 
 }
