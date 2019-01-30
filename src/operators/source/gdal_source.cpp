@@ -31,13 +31,15 @@ struct GdalSourceWriter {
         double scale_x = adfGeoTransform[1];
         double scale_y = adfGeoTransform[5];
 
-        //TODO: why is the origin swapped here? make this hack go away. (in mapping i also had to flip the loaded raster hor.)
-        if(origin_y == 90.0){
-            auto extent = self.rasterInfo.projection.getExtent();
-            if(extent.y1 == -90.0){
-                origin_y = extent.y1;
-                scale_y *= -1;
-            }
+        int rasterSizeX = rasterBand->GetXSize();
+        int rasterSizeY = rasterBand->GetYSize();
+
+        //GDAL often has a positive y origin and a negative scale, but I assume the origin to be the smaller
+        //coordinate and the scale to be positive, so swap that here. use raster size for calculation of actual origin.
+        if(scale_y < 0){
+            double old_origin_y = origin_y;
+            origin_y = origin_y + scale_y * rasterSizeY;
+            scale_y *= -1;
         }
 
         SpatialReference spatInfo = self.tileSpatialInfo;
@@ -49,9 +51,6 @@ struct GdalSourceWriter {
             spatInfo.y1 = self.rasterInfo.y1;
         if(spatInfo.y2 > self.rasterInfo.y2)
             spatInfo.y2 = self.rasterInfo.y2;
-
-        int rasterSizeX = rasterBand->GetXSize();
-        int rasterSizeY = rasterBand->GetYSize();
 
         int pixel_x1 = 0;
         int pixel_y1 = 0;
