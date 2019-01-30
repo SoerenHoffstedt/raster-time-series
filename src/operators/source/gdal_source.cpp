@@ -137,11 +137,11 @@ void GDALSource::initialize() {
     setCurrTimeToFirstRaster();
 
     Json::Value coords = dataset_json["coords"];
-    auto fileRasterExtent = SpatialReference(coords["extent"]);
+    auto extent = qrect.projection.getExtent();
 
     //calc number of tiles
-    origin.x = fileRasterExtent.x1;
-    origin.y = fileRasterExtent.y1;
+    origin.x = extent.x1;
+    origin.y = extent.y1;
     scale.x  = (qrect.x2 - qrect.x1) / (double)qrect.resX;
     scale.y  = (qrect.y2 - qrect.y1) / (double)qrect.resY;
 
