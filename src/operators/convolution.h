@@ -19,9 +19,12 @@ namespace rts {
     public:
         Convolution(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in);
         OptionalDescriptor nextDescriptor() override;
+        OptionalDescriptor getDescriptor(int tileIndex);
         void initialize() override;
         bool supportsOrder(Order order) const override;
     private:
+        OptionalDescriptor createOutput(OptionalDescriptorVector &neighbours);
+
         OptionalDescriptorVector descCache;
         uint32_t currentTileIndex;
         uint32_t currentTileCount;

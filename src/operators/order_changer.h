@@ -10,6 +10,7 @@ namespace rts {
     public:
         OrderChanger(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
+        OptionalDescriptor getDescriptor(int tileSize) override;
         void initialize() override;
         bool supportsOrder(Order order) const override;
     private:

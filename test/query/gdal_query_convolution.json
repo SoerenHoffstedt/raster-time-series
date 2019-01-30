@@ -2,7 +2,7 @@
 	"query_rectangle" : {
 		"resolution" : {
 			"x" : 3600,
-			"y" : 850
+			"y" : 1800
 		},
 		"temporal_reference" : {
 			"type" : "UNIX",
@@ -13,13 +13,13 @@
 			"projection": "EPSG:4326",
 	        "x1": -180,
 	        "x2": 180,
-	        "y1": -50,
-	        "y2": 60
+	        "y1": -90,
+	        "y2": 90
 		},
 		"order" : "Temporal",
 		"tileRes" : {
-			"x" : 900,
-			"y" : 900
+			"x" : 1000,
+			"y" : 1000
 		}
 	},
 	"operator" : "geotiff_export",

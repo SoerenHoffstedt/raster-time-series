@@ -35,7 +35,7 @@ namespace rts {
          * @param index
          * @return
          */
-        //virtual OptionalDescriptor getDescriptor(int index) = 0;
+        virtual OptionalDescriptor getDescriptor(int tileIndex) = 0;
 
         /**
          *
@@ -63,6 +63,18 @@ namespace rts {
          * @return A re-instantiated operator with all input operators.
          */
         std::unique_ptr<GenericOperator> reInstantiate(const QueryRectangle &qrect) const;
+
+        /**
+         * Only to be called when order is temporal.
+         * Skips the tiles of the current raster that are not yet processed.
+         */
+        virtual void skipCurrentRaster();
+
+        /**
+         * Only to be called when order is spatial.
+         * Skips the other rasters not yet processed for the current tile. For the next tile it will appear again.
+         */
+        virtual void skipCurrentTile();
 
     protected:
 
@@ -102,18 +114,6 @@ namespace rts {
          * @param expectedMax inclusive maximum of expected input operators.
          */
         void checkInputCount(int expectedMin, int expectedMax) const;
-
-        /**
-         * Only to be called when order is temporal.
-         * Skips the tiles of the current raster that are not yet processed.
-         */
-        virtual void skipCurrentRaster();
-
-        /**
-         * Only to be called when order is spatial.
-         * Skips the other rasters not yet processed for the current tile. For the next tile it will appear again.
-         */
-        virtual void skipCurrentTile();
     };
 
     using UniqueOperatorVector = std::vector<std::unique_ptr<GenericOperator>>;

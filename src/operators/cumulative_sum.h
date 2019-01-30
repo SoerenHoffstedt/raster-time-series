@@ -10,12 +10,14 @@ namespace rts {
     public:
         CumulativeSum(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
+        OptionalDescriptor getDescriptor(int tileIndex) override;
         void initialize() override;
         bool supportsOrder(Order order) const override;
     private:
         UniqueRaster sum;
         int lastTileIndex;
-        TemporalReference lastTileTemp;
+        TemporalReference firstTileTemp;
+        double lastTileT2;
         void setSumRasterZero(const Resolution &res);
     };
 

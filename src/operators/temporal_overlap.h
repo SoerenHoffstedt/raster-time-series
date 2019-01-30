@@ -19,9 +19,11 @@ namespace rts {
     public:
         TemporalOverlap(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
+        OptionalDescriptor getDescriptor(int tileIndex) override;
         void initialize() override;
         bool supportsOrder(Order order) const override;
     private:
+        OptionalDescriptor createOutput(OptionalDescriptor &inputA, OptionalDescriptor &inputB, TemporalReference &rasterResultTime);
         TemporalReference input1Time;
         TemporalReference input2Time;
         std::vector<OptionalDescriptor> descriptorCache1;

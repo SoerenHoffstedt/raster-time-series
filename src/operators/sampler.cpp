@@ -1,5 +1,5 @@
 
-#include "sampler.h"
+#include "operators/sampler.h"
 
 using namespace rts;
 
@@ -56,6 +56,12 @@ OptionalDescriptor Sampler::nextDescriptor() {
         lastSendT1 = currInput->rasterInfo.t1;
 
     return currInput;
+}
+
+OptionalDescriptor Sampler::getDescriptor(int tileIndex) {
+    //TODO: think about how to do this? save the last returned rasterIndex and if the passed rasterIndex
+    //would have to be skipped return nullopt
+    return input_operators[0]->getDescriptor(tileIndex);
 }
 
 bool Sampler::supportsOrder(Order order) const {

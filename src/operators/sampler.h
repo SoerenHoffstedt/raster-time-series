@@ -11,9 +11,11 @@ namespace rts {
     public:
         Sampler(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
+        OptionalDescriptor getDescriptor(int tileIndex) override;
         void initialize() override;
         bool supportsOrder(Order order) const override;
     private:
+
         uint32_t toSkip;
         double lastSendT1;
     };

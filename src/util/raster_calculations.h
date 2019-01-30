@@ -64,6 +64,9 @@ namespace rts {
                                                         const Origin &origin,
                                                         Resolution pixelStart,
                                                         Resolution pixelEnd);
+
+        static SpatialReference tileIndexToSpatialRectangle(const QueryRectangle &qrect, int tileIndex);
+
     };
 
 }

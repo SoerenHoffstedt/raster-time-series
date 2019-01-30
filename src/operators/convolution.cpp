@@ -1,5 +1,5 @@
 
-#include "convolution.h"
+#include "operators/convolution.h"
 #include "datatypes/raster.h"
 #include "datatypes/raster_operations.h"
 
@@ -159,11 +159,34 @@ OptionalDescriptor Convolution::nextDescriptor() {
         }
     }
 
-    DescriptorInfo info = descCache[currentTileIndex].value();
-
     OptionalDescriptorVector neighbours;
     neighbours.reserve(9);
     fillWithNeighbourTiles(neighbours, currentTileIndex);
+
+    auto output = createOutput(neighbours);
+
+    //if last raster was reached, clear the tile cache.
+    if(currentTileIndex == currentTileCount){
+        descCache.clear();
+    }
+
+    return output;
+}
+
+OptionalDescriptor Convolution::getDescriptor(int tileIndex) {
+    auto input = input_operators[0]->getDescriptor(tileIndex);
+
+    OptionalDescriptorVector neighbours;
+    neighbours.reserve(9);
+
+    //TODO: fill with neighbours.
+
+    return createOutput(neighbours);
+}
+
+OptionalDescriptor Convolution::createOutput(OptionalDescriptorVector &neighbours) {
+
+    DescriptorInfo info = neighbours[0].value();
 
     auto getter = [neighbours = std::move(neighbours), tileIndex = currentTileIndex, tileCountDimensional = tileCountDimensional](const Descriptor &self) mutable -> UniqueRaster {
         auto out_raster = Raster::createRaster(self.dataType, self.tileResolution);
@@ -190,10 +213,7 @@ OptionalDescriptor Convolution::nextDescriptor() {
 
     currentTileIndex++;
 
-    //if last raster was reached, clear the tile cache.
-    if(currentTileIndex == currentTileCount){
-        descCache.clear();
-    }
+
     return std::make_optional<Descriptor>(std::move(getter), info);
 }
 

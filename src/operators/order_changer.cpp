@@ -1,5 +1,5 @@
 
-#include "order_changer.h"
+#include "operators/order_changer.h"
 
 using namespace rts;
 
@@ -16,6 +16,8 @@ void OrderChanger::initialize() {
     targetOrder = qrect.order;
     incomingOrder = targetOrder == Order::Temporal ? Order::Spatial : Order::Temporal;
     setOrderOfChildOperators(this, incomingOrder);
+    currRaster = 0;
+    currTile = 0;
 }
 
 OptionalDescriptor OrderChanger::nextDescriptor() {
@@ -88,4 +90,9 @@ void OrderChanger::setOrderOfChildOperators(GenericOperator *op, Order order) {
         childOp->qrect.order = order;
         setOrderOfChildOperators(childOp.get(), order);
     }
+}
+
+OptionalDescriptor OrderChanger::getDescriptor(int tileSize) {
+    //TODO: implement
+    return std::nullopt;
 }

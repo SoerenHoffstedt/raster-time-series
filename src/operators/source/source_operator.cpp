@@ -53,10 +53,10 @@ OptionalDescriptor SourceOperator::nextDescriptor() {
     return createDescriptor(currTime, pixelStateX, pixelStateY);
 }
 
-/*OptionalDescriptor SourceOperator::getDescriptor(int tileIndex) {
+OptionalDescriptor SourceOperator::getDescriptor(int tileIndex) {
     Resolution pixelStart = tileIndexToStartPixel(tileIndex);
     return createDescriptor(currTime, pixelStart.resX, pixelStart.resY);
-}*/
+}
 
 Resolution SourceOperator::tileIndexToStartPixel(int tileIndex) {
     //calculate where a tile starts.

@@ -33,10 +33,11 @@ namespace rts {
     public:
         Aggregator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
+        OptionalDescriptor getDescriptor(int tileIndex);
         void initialize() override;
         bool supportsOrder(Order order) const override;
     private:
-        OptionalDescriptor nextDesc;
+        OptionalDescriptor createOutput(OptionalDescriptorVector &list, double t1, double t2);
         GDALDataType customDataType;
         AggregatorFunction function;
         bool hasTimeInterval;

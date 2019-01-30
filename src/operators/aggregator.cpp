@@ -1,7 +1,8 @@
 
-#include "operators/aggregator.h"
+#include <util/raster_calculations.h>
 #include "datatypes/raster_operations.h"
 #include "util/parsing.h"
+#include "aggregator.h"
 
 using namespace rts;
 using namespace boost::posix_time;
@@ -46,7 +47,7 @@ struct AggregatorOperation {
 };
 
 Aggregator::Aggregator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(operator_tree, qrect, params, std::move(in)), nextDesc(std::nullopt), hasTimeInterval(false), lastTileIndex(-1)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), hasTimeInterval(false), lastTileIndex(-1)
 {
     checkInputCount(1);
 }
@@ -64,40 +65,122 @@ void Aggregator::initialize() {
 
 OptionalDescriptor Aggregator::nextDescriptor() {
     //first descriptor could already be loaded and stored in nextDesc
-    OptionalDescriptor input = nextDesc != std::nullopt ? nextDesc : input_operators[0]->nextDescriptor();
-
-    if(input == std::nullopt){
+    OptionalDescriptor input = input_operators[0]->nextDescriptor();
+    if(input == std::nullopt)
         return std::nullopt;
-    }
 
     int index = input->tileIndex;
-    if(lastTileIndex < index){
+    if(index > lastTileIndex){ //new tile started
         currTime = from_time_t(static_cast<time_t>(qrect.t1));
     }
     lastTileIndex = index;
 
+    double aggregateFrom  = static_cast<double>(to_time_t(currTime));
+    double aggregateUntil = getNextTimeBorder();
+
+    //
+    while(aggregateFrom < input->rasterInfo.t1){
+        aggregateFrom = aggregateUntil;
+        aggregateUntil = getNextTimeBorder();
+    }
+
+    //
+    while(input->rasterInfo.t1 < aggregateFrom){
+        input = input_operators[0]->nextDescriptor();
+
+        if(input == std::nullopt)
+            return std::nullopt;
+    }
+
+    double t1 = aggregateFrom;
+    double t2 = aggregateUntil;
+
+    double lastT2 = input->rasterInfo.t2;
     std::vector<OptionalDescriptor> descriptors;
     descriptors.push_back(std::move(input));
 
-    double aggregate_until = getNextTimeBorder();
 
-    //save all same tile descriptors into the vector. when desc is the next tile, save it into member variable nextDesc
-    while(true){
-        OptionalDescriptor desc = input_operators[0]->nextDescriptor();
-
-        if(desc == std::nullopt || desc->tileIndex != index || desc->rasterInfo.t2 >= aggregate_until){
-            nextDesc = std::move(desc);
+    while(lastT2 < aggregateUntil && lastT2 < qrect.t2){
+        input = input_operators[0]->nextDescriptor();
+        if(input == std::nullopt)
             break;
-        } else {
-            descriptors.push_back(std::move(desc));
-        }
+        lastT2 = input->rasterInfo.t2;
+        descriptors.emplace_back(std::move(input));
     }
+
+    return createOutput(descriptors, t1, t2);
+}
+
+OptionalDescriptor Aggregator::getDescriptor(int tileIndex) {
+
+    //currTime is the interval start for nextRasterIndex, calc interval start time for rasterIndex from the difference.
+    ptime intervalStart = currTime;
+
+    //currTime is the beginning of the next time interval, therefore decrease it once.
+    ptime currTimeCopy = currTime;
+    interval.decrease(currTimeCopy);
+    auto t1 = static_cast<double>(to_time_t(currTimeCopy));
+    auto t2 = static_cast<double>(to_time_t(currTime));
+
+    std::vector<OptionalDescriptor> descriptors;
+
+    auto cloneQrect = qrect;
+    cloneQrect.t1 = t1;
+    cloneQrect.t2 = t2;
+
+    //calc spatial rectangle for tile
+    //TODO: calculation does not work for arbitrary raster resolution and bounding box
+    auto spatInfo = RasterCalculations::tileIndexToSpatialRectangle(qrect, tileIndex);
+
+    if(spatInfo.x1 < qrect.x1)
+        spatInfo.x1 = qrect.x1;
+    if(spatInfo.x2 > qrect.x2)
+        spatInfo.x2 = qrect.x2;
+    if(spatInfo.y1 < qrect.y1)
+        spatInfo.y1 = qrect.y1;
+    if(spatInfo.y2 > qrect.y2)
+        spatInfo.y2 = qrect.y2;
+
+    cloneQrect.x1 = spatInfo.x1;
+    cloneQrect.y1 = spatInfo.y1;
+    cloneQrect.x2 = spatInfo.x2;
+    cloneQrect.y2 = spatInfo.y2;
+    cloneQrect.resX = static_cast<uint32_t>((cloneQrect.x2 - cloneQrect.x1) / qrect.scale.x);
+    cloneQrect.resY = static_cast<uint32_t>((cloneQrect.y2 - cloneQrect.y1) / qrect.scale.y);
+
+
+    auto clonedOperator = input_operators[0]->reInstantiate(cloneQrect);
+
+    for(auto &inDesc : *clonedOperator){
+        if(inDesc.rasterInfo.t1 < t1)
+            continue;
+
+        //reset the raster info to the actual whole raster, because the cloned operator got another query.
+        inDesc.rasterInfo.x1 = qrect.x1;
+        inDesc.rasterInfo.x2 = qrect.x2;
+        inDesc.rasterInfo.y1 = qrect.y1;
+        inDesc.rasterInfo.y2 = qrect.y2;
+        inDesc.rasterInfo.resX = qrect.resX;
+        inDesc.rasterInfo.resY = qrect.resY;
+        inDesc.tileIndex = tileIndex;
+
+        //TODO: set these:
+        //inDesc.rasterTileCount;
+        //inDesc.rasterTileCountDimensional;
+
+        descriptors.emplace_back(inDesc);
+    }
+
+    return createOutput(descriptors, t1, t2);
+}
+
+OptionalDescriptor Aggregator::createOutput(OptionalDescriptorVector &descriptors, double t1, double t2) {
 
     DescriptorInfo info = descriptors[0].value();
     if(customDataType != GDT_Unknown)
         info.dataType = customDataType;
-    info.rasterInfo.t1 = descriptors[0]->rasterInfo.t1;
-    info.rasterInfo.t2 = descriptors[descriptors.size() - 1]->rasterInfo.t2;
+    info.rasterInfo.t1 = t1;
+    info.rasterInfo.t2 = t2;
 
     auto getter = [descriptors = std::move(descriptors), function = function](const Descriptor &self) -> UniqueRaster {
         UniqueRaster out_raster = Raster::createRaster(self.dataType, self.tileResolution);

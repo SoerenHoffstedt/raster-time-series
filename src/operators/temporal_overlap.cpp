@@ -1,5 +1,5 @@
 
-#include "temporal_overlap.h"
+#include "operators/temporal_overlap.h"
 #include "datatypes/raster_operations.h"
 
 using namespace rts;
@@ -31,6 +31,8 @@ void TemporalOverlap::initialize() {
 }
 
 OptionalDescriptor TemporalOverlap::nextDescriptor() {
+    //TODO: make sure that the last loaded input descriptors are the ones being used for returning, dont load the next one.
+    // should be checkable with the end time.
     OptionalDescriptor input1 = std::nullopt;
     OptionalDescriptor input2 = std::nullopt;
     //if last tile was last of its rasters and caching was needed, the raster has to be loaded from cache
@@ -126,9 +128,21 @@ OptionalDescriptor TemporalOverlap::nextDescriptor() {
     if(input2NeedsCaching && descriptorCache2.size() == input2->rasterTileCount)
         loadRasterFromCache2 = true;
 
-    TemporalReference raster_result_time = input1Time.getOverlapTemporal(input2Time);
+    TemporalReference rasterResultTime = input1Time.getOverlapTemporal(input2Time);
+
+    return createOutput(input1, input2, rasterResultTime);
+}
+
+OptionalDescriptor TemporalOverlap::getDescriptor(int tileIndex) {
+    auto input1 = input_operators[0]->getDescriptor(tileIndex);
+    auto input2 = input_operators[1]->getDescriptor(tileIndex);
+    TemporalReference rasterResultTime = input1->rasterInfo.getOverlapTemporal(input2->rasterInfo);
+    return createOutput(input1, input2, rasterResultTime);
+}
+
+OptionalDescriptor TemporalOverlap::createOutput(OptionalDescriptor &input1, OptionalDescriptor &input2, TemporalReference &rasterResultTime) {
     DescriptorInfo descInfo(input1);
-    descInfo.rasterInfo = SpatialTemporalReference(raster_result_time, input1->rasterInfo, input1->rasterInfo);
+    descInfo.rasterInfo = SpatialTemporalReference(rasterResultTime, input1->rasterInfo, input1->rasterInfo);
 
     OptionalDescriptorVector inputs;
     inputs.reserve(2);

@@ -12,8 +12,21 @@ namespace rts {
     public:
         ConsumingOperator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
                 : GenericOperator(operator_tree, qrect, params, std::move(in)) { }
+
+        /**
+         * Function for iterating over all tiles of the output time series and consume them as needed.
+         */
         virtual void consume() = 0;
-        OptionalDescriptor nextDescriptor() override;
+
+        /**
+         * Not needed, only returns std::nullopt.
+         */
+        OptionalDescriptor nextDescriptor() final;
+
+        /**
+         * Not needed, only returns std::nullopt.
+         */
+        OptionalDescriptor getDescriptor(int tileSize) final;
     };
 
 }

@@ -26,7 +26,7 @@ namespace rts {
          */
         virtual OptionalDescriptor createDescriptor(double time, int pixelStartX, int pixelStartY) = 0;
         OptionalDescriptor nextDescriptor() override;
-        //OptionalDescriptor getDescriptor(int tileIndex) override;
+        OptionalDescriptor getDescriptor(int tileIndex) override;
     protected:
         /**
          * Increases the spatial position of the pixelState
