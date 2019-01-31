@@ -41,7 +41,8 @@ add_library(rts_operators_lib
         operators/convolution.cpp
         operators/order_changer.cpp
         operators/consuming/raster_value_extraction.cpp
-        operators/temporal_overlap.cpp)
+        operators/temporal_overlap.cpp
+        operators/cache_simulator.cpp)
 target_link_libraries_internal(rts_operators_lib rts_base_lib)
 target_link_libraries_internal(rts_base_lib rts_operators_lib)
 
