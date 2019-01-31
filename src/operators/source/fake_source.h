@@ -13,7 +13,7 @@ namespace rts {
     class FakeSource : public SourceOperator {
     public:
         explicit FakeSource(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in);
-        OptionalDescriptor createDescriptor(double time, int pixelStartX, int pixelStartY) override;
+        OptionalDescriptor createDescriptor(double time, int pixelStartX, int pixelStartY, int tileIndex) override;
         void initialize() override;
         bool supportsOrder(Order o) const override;
     private:

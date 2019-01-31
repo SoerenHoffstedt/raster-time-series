@@ -4,7 +4,7 @@
 using namespace rts;
 
 OrderChanger::OrderChanger(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(operator_tree, qrect, params, std::move(in)), initialized(false)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), initialized(false), temporalTargetDescriptor(std::nullopt)
 {
     checkInputCount(1);
 }
@@ -22,24 +22,65 @@ void OrderChanger::initialize() {
 
 OptionalDescriptor OrderChanger::nextDescriptor() {
 
-    if(!initialized)
-    {
-        descriptors.reserve(1024);
-        for(auto desc : *input_operators[0]){
-            desc.order = targetOrder;
-            descriptors.emplace_back(std::move(desc));
+    if(targetOrder == Order::Temporal){
+
+        if(currTile == 0){
+            temporalTargetDescriptor = input_operators[0]->nextDescriptor();
+            if(temporalTargetDescriptor == std::nullopt || temporalTargetDescriptor->tileIndex > 0)
+                return std::nullopt;
         }
-        if(descriptors.empty())
+
+        auto desc = (currTile == 0) ? temporalTargetDescriptor : input_operators[0]->getDescriptor(currTile);
+
+        desc->order = targetOrder;
+
+        currTile += 1;
+        if(currTile >= temporalTargetDescriptor->rasterTileCount){
+            input_operators[0]->skipCurrentRaster();
+            temporalTargetDescriptor = std::nullopt;
+            currTile = 0;
+            currRaster += 1;
+        }
+
+        return desc;
+
+    } else {
+
+        if(!initialized)
+        {
+            descriptors.reserve(1024);
+            for(auto desc : *input_operators[0]){
+                desc.order = targetOrder;
+                descriptors.emplace_back(std::move(desc));
+            }
+            if(descriptors.empty())
+                return std::nullopt;
+
+            tilesPerRaster = descriptors[0]->rasterTileCount;
+            totalTiles = descriptors.size();
+            if(totalTiles % tilesPerRaster != 0){
+                throw std::runtime_error("Order Changer: number of tiles does not match a multiple of the tiles per raster count.");
+            }
+            rasterCount = totalTiles / tilesPerRaster;
+            initialized = true;
+        }
+
+        if(currTile >= tilesPerRaster)
             return std::nullopt;
 
-        tilesPerRaster = descriptors[0]->rasterTileCount;
-        totalTiles = descriptors.size();
-        if(totalTiles % tilesPerRaster != 0){
-            throw std::runtime_error("Order Changer: number of tiles does not match a multiple of the tiles per raster count.");
+        uint64_t index = currTile + currRaster * tilesPerRaster;
+
+        currRaster += 1;
+        if(currRaster == rasterCount){
+            currRaster = 0;
+            currTile += 1;
         }
-        rasterCount = totalTiles / tilesPerRaster;
-        initialized = true;
+
+        return descriptors[index];
+
     }
+
+
 
 
     if(targetOrder == Order::Temporal){
@@ -62,18 +103,7 @@ OptionalDescriptor OrderChanger::nextDescriptor() {
 
     } else {
 
-        if(currTile >= tilesPerRaster)
-            return std::nullopt;
 
-        uint64_t index = currTile + currRaster * tilesPerRaster;
-
-        currRaster += 1;
-        if(currRaster == rasterCount){
-            currRaster = 0;
-            currTile += 1;
-        }
-
-        return descriptors[index];
 
     }
 

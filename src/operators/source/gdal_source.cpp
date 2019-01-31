@@ -158,7 +158,7 @@ void GDALSource::initialize() {
         tileCount.resY += 1;
 }
 
-OptionalDescriptor GDALSource::createDescriptor(double time, int pixelStartX, int pixelStartY) {
+OptionalDescriptor GDALSource::createDescriptor(double time, int pixelStartX, int pixelStartY, int tileIndex) {
 
     if(currDataset == nullptr || time != currDatasetTime){
         loadCurrentGdalDataset(time);
@@ -195,7 +195,7 @@ OptionalDescriptor GDALSource::createDescriptor(double time, int pixelStartX, in
     rasterInfo.t2 = tempInfo.t2;
 
     return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileSpat, qrect.tileRes,
-                                          qrect.order, currTileIndex, tileCount, nodata, dataType);
+                                          qrect.order, tileIndex, tileCount, nodata, dataType);
 }
 
 bool GDALSource::increaseTemporally() {

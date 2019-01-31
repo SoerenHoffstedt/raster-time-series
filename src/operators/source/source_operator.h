@@ -24,7 +24,7 @@ namespace rts {
          * @param pixelStartY pixel positions from where to return the tile.
          * @return Descriptor for the tile.
          */
-        virtual OptionalDescriptor createDescriptor(double time, int pixelStartX, int pixelStartY) = 0;
+        virtual OptionalDescriptor createDescriptor(double time, int pixelStartX, int pixelStartY, int tileIndex) = 0;
         OptionalDescriptor nextDescriptor() override;
         OptionalDescriptor getDescriptor(int tileIndex) override;
     protected:
