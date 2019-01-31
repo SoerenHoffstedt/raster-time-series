@@ -14,6 +14,7 @@ namespace rts {
         void initialize() override;
         bool supportsOrder(Order order) const override;
     private:
+        OptionalDescriptor temporalTargetDescriptor;
         std::vector<OptionalDescriptor> descriptors;
         uint32_t tilesPerRaster;
         uint64_t rasterCount;
