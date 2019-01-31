@@ -50,12 +50,12 @@ OptionalDescriptor SourceOperator::nextDescriptor() {
         pixelStateY -= rasterWorldPixelStart.resY % qrect.tileRes.resY;
     }
 
-    return createDescriptor(currTime, pixelStateX, pixelStateY);
+    return createDescriptor(currTime, pixelStateX, pixelStateY, currTileIndex);
 }
 
 OptionalDescriptor SourceOperator::getDescriptor(int tileIndex) {
     Resolution pixelStart = tileIndexToStartPixel(tileIndex);
-    return createDescriptor(currTime, pixelStart.resX, pixelStart.resY);
+    return createDescriptor(currTime, pixelStart.resX, pixelStart.resY, tileIndex);
 }
 
 Resolution SourceOperator::tileIndexToStartPixel(int tileIndex) {
