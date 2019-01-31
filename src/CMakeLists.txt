@@ -1,5 +1,6 @@
 add_executable(rts_run_query rts_run_query.cpp)
 add_executable(rts_run_all_queries rts_run_all_queries.cpp)
+add_executable(rts_benchmark_query benchmark_query.cpp)
 
 include(LinkLibrariesInternal)
 add_library(rts_base_lib
@@ -12,10 +13,12 @@ add_library(rts_base_lib
         util/gdal_util.cpp
         util/parsing.cpp
         util/expression.cpp
+        util/benchmark.cpp
         util/time_interval.cpp)
 target_include_directories(rts_base_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries_internal(rts_run_query rts_base_lib)
 target_link_libraries_internal(rts_run_all_queries rts_base_lib)
+target_link_libraries_internal(rts_benchmark_query rts_base_lib)
 
 add_library(rts_query_lib
         queries/operator_tree.cpp)
