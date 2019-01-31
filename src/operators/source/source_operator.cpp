@@ -106,7 +106,7 @@ bool SourceOperator::increaseTemporally() {
     //increasing time means going to next raster.
     currRasterIndex += 1;
     increaseCurrentTime();
-    if(currTime > qrect.t2 || currTime > datasetEndTime){
+    if(currTime >= qrect.t2 || currTime > datasetEndTime){
         //end of time series or query reached.
         if(qrect.order == Order::Spatial){
             //reset to beginning of time series only if order is spatial and return true to move on to next tile
