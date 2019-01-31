@@ -136,6 +136,8 @@ void GDALSource::initialize() {
 
     Json::Value coords = dataset_json["coords"];
     auto extent = qrect.projection.getExtent();
+    if(params["dataset"] == "msg_eu_scaled_int") //TODO: bad hack for meteosat queries. test properly what the error is.
+        extent = SpatialReference(coords["extent"]);
 
     //calc number of tiles
     origin.x = extent.x1;
