@@ -27,9 +27,9 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    int count = std::stoi(argv[2]);
+    int count = std::stoi(argv[3]);
 
-    std::string outputFilename = argv[3];
+    std::string outputFilename = argv[2];
     std::ofstream outputFile(outputFilename);
 
     Benchmark::setFileOutputStream(outputFile);
