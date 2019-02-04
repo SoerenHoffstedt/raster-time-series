@@ -9,7 +9,9 @@
 using namespace std::string_literals;
 using namespace rts;
 
-using UniqueGDALDataset = std::unique_ptr<GDALDataset, decltype(&GDALClose)>;
+using SharedGDALDataset = std::shared_ptr<GDALDataset>;
+
+constexpr int MAX_OPEN_DATASETS = 256;
 
 GeotiffExport::GeotiffExport(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in)
         : ConsumingOperator(operator_tree, qrect, params, std::move(in))
@@ -34,7 +36,7 @@ void GeotiffExport::consume() {
     GDALUtil::initGdal();
 
     GDALDriver *driver = nullptr;
-    UniqueGDALDataset out_dataset(nullptr, GDALClose);
+    SharedGDALDataset out_dataset(nullptr, GDALClose);
     GDALRasterBand *out_rasterBand = nullptr;
 
     driver = GetGDALDriverManager()->GetDriverByName(driverName.c_str());
@@ -54,6 +56,7 @@ void GeotiffExport::consume() {
         std::filesystem::create_directory(p);
     }
 
+    std::map<std::string, SharedGDALDataset> sharedDatasets;
     GenericOperator *in_op = input_operators[0].get();
 
     for(auto &in_desc : *in_op){
@@ -68,27 +71,37 @@ void GeotiffExport::consume() {
             std::filesystem::path filePath = path;
             filePath /= filename;
 
-            //GDALDatasets are not kept open at the moment for spatial order.
             if(qrect.order == Order::Spatial && in_desc.tileIndex > 0){
-                out_dataset = UniqueGDALDataset((GDALDataset *)GDALOpen(filePath.c_str(), GA_Update), GDALClose);
+                if(sharedDatasets.find(filePath) != sharedDatasets.end()){
+                    out_dataset = sharedDatasets[filePath];
+                }
+                else {
+                    out_dataset = SharedGDALDataset((GDALDataset *) GDALOpen(filePath.c_str(), GA_Update), GDALClose);
+                }
             } else {
-                out_dataset = UniqueGDALDataset(driver->Create(filePath.c_str(), in_desc.rasterInfo.resX, in_desc.rasterInfo.resY, 1, in_desc.dataType, papszOptions), GDALClose);
+                out_dataset = SharedGDALDataset(driver->Create(filePath.c_str(), in_desc.rasterInfo.resX, in_desc.rasterInfo.resY, 1, in_desc.dataType, papszOptions), GDALClose);
+                if(qrect.order == Order::Spatial && sharedDatasets.size() < MAX_OPEN_DATASETS){
+                    //temporal order only opens a dataset once and is done.
+                    sharedDatasets[filePath] = out_dataset;
+                }
+                if(out_dataset == nullptr){
+                    throw std::runtime_error("Dataset could not be opened or created.");
+                }
+
+                double scale_x = in_desc.rasterInfo.scale.x, scale_y = in_desc.rasterInfo.scale.x;
+                double origin_x = in_desc.rasterInfo.x1, origin_y = in_desc.rasterInfo.y1;
+                double adfGeoTransform[6]{ origin_x, scale_x, 0, origin_y, 0, scale_y };
+
+                //set dataset parameters
+                out_dataset->SetGeoTransform(adfGeoTransform);
+                //TODO: set projection, this is how it's done in mapping. Projection has to be converted to WKT string.
+                //std::string srs = GDAL::WKTFromCrsId(stref.crsId);
+                //out_dataset->SetProjection(srs.c_str());
             }
 
             if(out_dataset == nullptr){
                 throw std::runtime_error("Dataset could not be opened or created.");
             }
-
-            double scale_x = 1, scale_y = -1;
-            double origin_x = in_desc.rasterInfo.x1, origin_y = in_desc.rasterInfo.y1;
-            double adfGeoTransform[6]{ origin_x, scale_x, 0, origin_y, 0, scale_y };
-
-            //set dataset parameters
-            out_dataset->SetGeoTransform(adfGeoTransform);
-            //TODO: set projection, this is how it's done in mapping. Projection has to be converted to WKT string.
-            //std::string srs = GDAL::WKTFromCrsId(stref.crsId);
-            //out_dataset->SetProjection(srs.c_str());
-
             out_rasterBand = out_dataset->GetRasterBand(1);
         }
 
@@ -104,8 +117,11 @@ void GeotiffExport::consume() {
 
         int dataSize = raster->sizeOfDataType();
 
+        void *data = nullptr;
         if(offsetX != 0 || offsetY != 0){
             data = raster->getVoidDataPointerOffset(offsetX, offsetY);
+        } else {
+            data = raster->getVoidDataPointer();
         }
 
         auto res = out_rasterBand->RasterIO(
@@ -119,12 +135,11 @@ void GeotiffExport::consume() {
         }
 
         if(qrect.order == Order::Temporal && in_desc.tileIndex == in_desc.rasterTileCount - 1){
-            out_dataset.reset(nullptr);
+            out_dataset.reset();
             out_rasterBand = nullptr;
         }
-        if(qrect.order == Order::Spatial){
-            //TODO: dont do it here, but above. If its spatial, but only one raster (eg aggregator over complete time series) it does not have to be closed.
-            out_dataset.reset(nullptr);
+        else if(qrect.order == Order::Spatial){
+            out_dataset.reset();
             out_rasterBand = nullptr;
         }
     }
