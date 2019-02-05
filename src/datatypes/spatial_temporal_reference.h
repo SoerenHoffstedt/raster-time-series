@@ -40,6 +40,11 @@ namespace rts {
          * @return The coordinates maximum extent of this projection.
          */
         SpatialReference getExtent() const;
+
+        /**
+         * The origin of the maximal extent of this projection. x1,y1 coordinates.
+         */
+        Origin getOrigin() const;
     };
 
     class TemporalReference {

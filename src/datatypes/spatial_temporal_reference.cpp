@@ -34,6 +34,17 @@ SpatialReference Projection::getExtent() const {
         return SpatialReference(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
 }
 
+Origin Projection::getOrigin() const {
+    if (authority == "EPSG" && code == 3857)
+        return Origin(-20037508.34, -20037508.34);
+    else if (authority == "EPSG" && code == 4326)
+        return Origin(-180, -90);
+    else if (authority == "SR-ORG" && code == 81 )
+        return Origin(-5568748.276, -5568748.276);
+    else
+        return Origin(-std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity());
+}
+
 Projection::Projection(const Json::Value &spatial_def) : Projection(spatial_def["projection"].asString()) {
 
 }
