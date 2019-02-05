@@ -135,29 +135,23 @@ void GDALSource::initialize() {
     setCurrTimeToFirstRaster();
 
     Json::Value coords = dataset_json["coords"];
-    auto extent = qrect.projection.getExtent();
-    if(params["dataset"] == "msg_eu_scaled_int") //TODO: bad hack for meteosat queries. test properly what the error is.
-        extent = SpatialReference(coords["extent"]);
 
-    //calc number of tiles
-    origin.x = extent.x1;
-    origin.y = extent.y1;
+    if(params["dataset"] == "msg_eu_scaled_int") {
+        //TODO: bad hack for meteosat queries. test properly what the error is.
+        auto extent = SpatialReference(coords["extent"]);
+        origin.x = extent.x1;
+        origin.y = extent.y1;
+    } else {
+        origin = qrect.projection.getOrigin();
+    }
+
     scale.x  = (qrect.x2 - qrect.x1) / (double)qrect.resX;
     scale.y  = (qrect.y2 - qrect.y1) / (double)qrect.resY;
 
-    rasterWorldPixelStart = RasterCalculations::coordinateToPixel(scale, origin, qrect.x1, qrect.y1);
+    auto tileCountAndPixelStart = RasterCalculations::calculateTileCount(qrect, origin, scale);
 
-    Resolution rasterStep = rasterWorldPixelStart;
-    rasterStep.resX -= rasterWorldPixelStart.resX % qrect.tileRes.resX;
-    rasterStep.resY -= rasterWorldPixelStart.resY % qrect.tileRes.resY;
-    Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(scale, origin, qrect.x2, qrect.y2);
-    Resolution size(rasterWorldPixelEnd.resX - rasterStep.resX, rasterWorldPixelEnd.resY - rasterStep.resY);
-    tileCount.resX = size.resX / qrect.tileRes.resX;
-    tileCount.resY = size.resY / qrect.tileRes.resY;
-    if(size.resX % qrect.tileRes.resX > 0)
-        tileCount.resX += 1;
-    if(size.resY % qrect.tileRes.resY > 0)
-        tileCount.resY += 1;
+    tileCount = tileCountAndPixelStart.first;
+    rasterWorldPixelStart = tileCountAndPixelStart.second;
 }
 
 OptionalDescriptor GDALSource::createDescriptor(double time, int pixelStartX, int pixelStartY, int tileIndex) {

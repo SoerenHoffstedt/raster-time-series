@@ -130,7 +130,9 @@ OptionalDescriptor Aggregator::getDescriptor(int tileIndex) {
 
     //calc spatial rectangle for tile
     //TODO: calculation does not work for arbitrary raster resolution and bounding box
+    // and things are calculated multiple times between both function calls here.
     auto spatInfo = RasterCalculations::tileIndexToSpatialRectangle(qrect, tileIndex);
+    Resolution rasterTileCount = RasterCalculations::calculateTileCount(qrect, qrect.projection.getOrigin(), qrect.scale).first;
 
     if(spatInfo.x1 < qrect.x1)
         spatInfo.x1 = qrect.x1;
@@ -163,10 +165,8 @@ OptionalDescriptor Aggregator::getDescriptor(int tileIndex) {
         inDesc.rasterInfo.resX = qrect.resX;
         inDesc.rasterInfo.resY = qrect.resY;
         inDesc.tileIndex = tileIndex;
-
-        //TODO: set these:
-        //inDesc.rasterTileCount;
-        //inDesc.rasterTileCountDimensional;
+        inDesc.rasterTileCount = rasterTileCount.resX * rasterTileCount.resY;
+        inDesc.rasterTileCountDimensional = rasterTileCount;
 
         descriptors.emplace_back(inDesc);
     }

@@ -116,3 +116,26 @@ SpatialReference RasterCalculations::tileIndexToSpatialRectangle(const QueryRect
     }
     return RasterCalculations::pixelToSpatialRectangle(scale, origin, rasterStep, rasterStep + tileRes);
 }
+
+std::pair<Resolution, Resolution>
+RasterCalculations::calculateTileCount(const QueryRectangle &qrect, const Origin &origin, const Scale &scale) {
+    std::pair<Resolution, Resolution> result;
+
+    auto rasterWorldPixelStart = RasterCalculations::coordinateToPixel(scale, origin, qrect.x1, qrect.y1);
+
+    Resolution rasterStep = rasterWorldPixelStart;
+    rasterStep.resX -= rasterWorldPixelStart.resX % qrect.tileRes.resX;
+    rasterStep.resY -= rasterWorldPixelStart.resY % qrect.tileRes.resY;
+    Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(scale, origin, qrect.x2, qrect.y2);
+    Resolution size(rasterWorldPixelEnd.resX - rasterStep.resX, rasterWorldPixelEnd.resY - rasterStep.resY);
+
+    Resolution tileCount(size.resX / qrect.tileRes.resX, size.resY / qrect.tileRes.resY);
+    if(size.resX % qrect.tileRes.resX > 0)
+        tileCount.resX += 1;
+    if(size.resY % qrect.tileRes.resY > 0)
+        tileCount.resY += 1;
+
+    result.first = tileCount;
+    result.second = rasterWorldPixelStart;
+    return result;
+}

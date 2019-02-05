@@ -67,6 +67,19 @@ namespace rts {
 
         static SpatialReference tileIndexToSpatialRectangle(const QueryRectangle &qrect, int tileIndex);
 
+
+        /**
+         * Calculate the tile count of a query and the start position of the query raster in world pixel.
+         * Both are Resolutions returned as a pair. The first item is the two dimensional tile count, the
+         * second item is the "rasterWorldPixelStart" (how it is called in GDALSource).
+         *
+         * @param qrect
+         * @param origin
+         * @param scale
+         * @return First item of the pair is the two-dimensional tile count, second item is the pixel start position in the world of the raster.
+         */
+        static std::pair<Resolution, Resolution> calculateTileCount(const QueryRectangle &qrect, const Origin &origin, const Scale &scale);
+
     };
 
 }
