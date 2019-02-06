@@ -11,8 +11,8 @@ template<class T1, class T2>
 struct AggregatorOperation {
     static void rasterOperation(TypedRaster<T1> *aggregated_out_raster, TypedRaster<T2> *aggregating_in_raster, int rasterCount, double nodata, AggregatorFunction function){
         Resolution tileResolution = aggregated_out_raster->getResolution();
-        for(int x = 0; x < tileResolution.resX; ++x){
-            for(int y = 0; y < tileResolution.resY; ++y){
+        for(int y = 0; y < tileResolution.resY; ++y){
+            for(int x = 0; x < tileResolution.resX; ++x){
                 T2 val = aggregating_in_raster->getCell(x,y);
                 T1 out_old = aggregated_out_raster->getCell(x,y);
 

@@ -218,8 +218,8 @@ namespace rts {
         struct AllValuesSetter {
             static void rasterOperation(TypedRaster <T> *raster, T val) {
                 Resolution res = raster->getResolution();
-                for (int x = 0; x < res.resX; ++x) {
-                    for (int y = 0; y < res.resY; ++y) {
+                for (int y = 0; y < res.resY; ++y) {
+                    for (int x = 0; x < res.resX; ++x) {
                         raster->setCell(x, y, val);
                     }
                 }
@@ -234,8 +234,8 @@ namespace rts {
         struct Squarer {
             static void rasterOperation(TypedRaster <T> *raster, const Descriptor &desc) {
                 Resolution res = raster->getResolution();
-                for (int x = 0; x < res.resX; ++x) {
-                    for (int y = 0; y < res.resY; ++y) {
+                for (int y = 0; y < res.resY; ++y) {
+                    for (int x = 0; x < res.resX; ++x) {
                         T val = raster->getCell(x, y);
                         if (val != static_cast<T>(desc.nodata))
                             raster->setCell(x, y, val * val);

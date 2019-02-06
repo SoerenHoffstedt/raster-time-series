@@ -11,8 +11,8 @@ template<class T1, class T2, class T3>
 struct BinaryExpression {
     static void rasterOperation(TypedRaster<T1> *output, TypedRaster<T2> *input1, TypedRaster<T3> *input2, Expression::Operator op){
         Resolution tileSize = output->getResolution();
-        for (int x = 0; x < tileSize.resX; ++x) {
-            for (int y = 0; y < tileSize.resY; ++y) {
+        for (int y = 0; y < tileSize.resY; ++y) {
+            for (int x = 0; x < tileSize.resX; ++x) {
                 T1 val = 0;
                 switch(op){
                     case Expression::Operator::ADD:
@@ -43,8 +43,8 @@ template<class T1, class T2>
 struct UnaryExpressionRasterFirst {
     static void rasterOperation(TypedRaster<T1> *output, TypedRaster<T2> *input1, double second_operand, Expression::Operator op){
         Resolution tileSize = output->getResolution();
-        for (int x = 0; x < tileSize.resX; ++x) {
-            for (int y = 0; y < tileSize.resY; ++y) {
+        for (int y = 0; y < tileSize.resY; ++y) {
+            for (int x = 0; x < tileSize.resX; ++x) {
                 T1 val = 0;
                 switch(op){
                     case Expression::Operator::ADD:
@@ -75,8 +75,8 @@ template<class T1, class T2>
 struct UnaryExpressionRasterSecond {
     static void rasterOperation(TypedRaster<T1> *output, TypedRaster<T2> *input1, double first_operand, Expression::Operator op){
         Resolution tileSize = output->getResolution();
-        for (int x = 0; x < tileSize.resX; ++x) {
-            for (int y = 0; y < tileSize.resY; ++y) {
+        for (int y = 0; y < tileSize.resY; ++y) {
+            for (int x = 0; x < tileSize.resX; ++x) {
                 T1 val = 0;
                 switch(op){
                     case Expression::Operator::ADD:

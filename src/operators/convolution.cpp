@@ -97,8 +97,8 @@ struct ConvolutionOperation {
 
         Resolution res = out_raster->getResolution();
 
-        for (int x = 0; x < res.resX; ++x) {
-            for (int y = 0; y < res.resY; ++y) {
+        for (int y = 0; y < res.resY; ++y) {
+            for (int x = 0; x < res.resX; ++x) {
 
                 //using laplacian edge detection for now. TODO: Make others usable by passing a kernel.
                 //taken from: http://desktop.arcgis.com/en/arcmap/10.3/manage-data/raster-and-images/convolution-function.htm
