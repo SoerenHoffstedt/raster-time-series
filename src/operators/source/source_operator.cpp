@@ -80,26 +80,32 @@ Resolution SourceOperator::tileIndexToStartPixel(int tileIndex) {
 }
 
 void SourceOperator::skipCurrentRaster() {
-    //skipping current raster means resetting pixelState to 0 and increasing rasterIndex and time.
-    increaseDimensions = false;
-    pixelStateX     =  0;
-    pixelStateY     =  0;
-    currTileIndex   =  0;
+    if(qrect.order == Order::Temporal) {
+        //for temporal order: reset pixel state to beginning of raster
+        pixelStateX     =  0;
+        pixelStateY     =  0;
+        currTileIndex   =  0;
+    }
+    //for both orders: advance time to next raster.
     currRasterIndex += 1;
     increaseCurrentTime();
+    increaseDimensions = false;
 }
 
 void SourceOperator::skipCurrentTile() {
-    //skipping current tile means increasing pixelState and resetting raster index and time to beginning.
-    increaseDimensions = false;
+    if(qrect.order == Order::Spatial){
+        //for spatial order: reset raster to first raster of rts
+        currRasterIndex = 0;
+        setCurrTimeToFirstRaster();
+    }
+    //for both orders: skip the tile by advancing pixel state to next tile
     pixelStateX += qrect.tileRes.resX;
     if(pixelStateX >= qrect.resX){
         pixelStateX = 0;
         pixelStateY += qrect.tileRes.resY;
     }
     currTileIndex += 1;
-    currRasterIndex = 0;
-    setCurrTimeToFirstRaster();
+    increaseDimensions = false;
 }
 
 bool SourceOperator::increaseTemporally() {
