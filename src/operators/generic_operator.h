@@ -69,13 +69,13 @@ namespace rts {
          * and next tile will be the first of the next raster.
          * For spatial order this skips the tile of the current raster, staying at the same tile index as before.
          */
-        virtual void skipCurrentRaster();
+        virtual void skipCurrentRaster(const uint32_t skipCount = 1);
 
         /**
          * For spatial order this skips the other rasters not yet processed for the current tile. For the next tile they will appear again.
          * For temporal order this skips a single tile of the raster.
          */
-        virtual void skipCurrentTile();
+        virtual void skipCurrentTile(const uint32_t skipCount = 1);
 
     protected:
 
@@ -118,37 +118,6 @@ namespace rts {
     };
 
     using UniqueOperatorVector = std::vector<std::unique_ptr<GenericOperator>>;
-
-    class OperatorUtil {
-    public:
-
-        /**
-         * Skips all the tiles belonging to the raster of the passed Descriptor (same temporal information as currentDesc).
-         * @param op The operator that provides the Descriptors.
-         * @param currentDesc All the other tiles of the raster this Descriptor belongs to are skipped.
-         * @return The first Descriptor of the next raster.
-         */
-        static OptionalDescriptor skipCurrentTemporal(GenericOperator &op, OptionalDescriptor &currentDesc);
-
-        /**
-         * Skips all the tiles of the same spatial coordinates as the passed Descriptor (currentDesc).
-         * @param op The operator that provides the Descriptors.
-         * @param currentDesc All the other tiles with the same spatial coordinates as this Descriptor are skipped.
-         * @return The first Descriptor of the next tile.
-         */
-        static OptionalDescriptor skipCurrentSpatial(GenericOperator &op, OptionalDescriptor &currentDesc);
-
-        /**
-         * Skips all tiles that are of the same first dimension as the passed Descriptor.
-         * If the order of the passed Descriptor is Temporal skipCurrentTemporal is called
-         * and if the order is Spatial skipCurrentSpatial is called.
-         * @param op The operator that provides the Descriptors.
-         * @param currentDesc The descriptor whose current dimension should be skipped.
-         * @return The first Descriptor that does not belong to the skipped dimension.
-         */
-        static OptionalDescriptor skipCurrentDimension(GenericOperator &op, OptionalDescriptor &currentDesc);
-    };
-
 }
 
 

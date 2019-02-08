@@ -79,33 +79,58 @@ Resolution SourceOperator::tileIndexToStartPixel(int tileIndex) {
     return pixelStart;
 }
 
-void SourceOperator::skipCurrentRaster() {
-    if(qrect.order == Order::Temporal) {
-        //for temporal order: reset pixel state to beginning of raster
-        pixelStateX     =  0;
-        pixelStateY     =  0;
-        currTileIndex   =  0;
+void SourceOperator::skipCurrentRaster(const uint32_t skipCount) {
+    bool spatiallyEndNotReached = true;
+
+    for(int i = 0; i < skipCount && spatiallyEndNotReached; ++i) {
+
+
+        if (qrect.order == Order::Temporal) {
+            //for temporal order: reset pixel state to beginning of raster
+            pixelStateX = 0;
+            pixelStateY = 0;
+            currTileIndex = 0;
+        }
+        //for both orders: advance time to next raster.
+        currRasterIndex += 1;
+        increaseCurrentTime();
+        increaseDimensions = false;
+
+        if (qrect.order == Order::Spatial && currTime >= qrect.t2) {
+            currRasterIndex = 0;
+            setCurrTimeToFirstRaster();
+            spatiallyEndNotReached = false;
+        }
     }
-    //for both orders: advance time to next raster.
-    currRasterIndex += 1;
-    increaseCurrentTime();
-    increaseDimensions = false;
 }
 
-void SourceOperator::skipCurrentTile() {
-    if(qrect.order == Order::Spatial){
-        //for spatial order: reset raster to first raster of rts
-        currRasterIndex = 0;
-        setCurrTimeToFirstRaster();
+void SourceOperator::skipCurrentTile(const uint32_t skipCount) {
+    bool rasterEndNotReached = true;
+
+    for(int i = 0; i < skipCount && rasterEndNotReached; ++i) {
+        if (qrect.order == Order::Spatial) {
+            //for spatial order: reset raster to first raster of rts
+            currRasterIndex = 0;
+            setCurrTimeToFirstRaster();
+        }
+        //for both orders: skip the tile by advancing pixel state to next tile
+        pixelStateX += qrect.tileRes.resX;
+        if (pixelStateX >= qrect.resX) {
+            pixelStateX = 0;
+            pixelStateY += qrect.tileRes.resY;
+        }
+        currTileIndex += 1;
+        increaseDimensions = false;
+
+        if (qrect.order == Order::Temporal && pixelStateY >= qrect.resY) {
+            pixelStateX = 0;
+            pixelStateY = 0;
+            currTileIndex = 0;
+            currRasterIndex += 1;
+            increaseCurrentTime();
+            rasterEndNotReached = false;
+        }
     }
-    //for both orders: skip the tile by advancing pixel state to next tile
-    pixelStateX += qrect.tileRes.resX;
-    if(pixelStateX >= qrect.resX){
-        pixelStateX = 0;
-        pixelStateY += qrect.tileRes.resY;
-    }
-    currTileIndex += 1;
-    increaseDimensions = false;
 }
 
 bool SourceOperator::increaseTemporally() {

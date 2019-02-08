@@ -43,15 +43,15 @@ void GenericOperator::callInitializeRecursively(GenericOperator *op){
     }
 }
 
-void GenericOperator::skipCurrentRaster() {
+void GenericOperator::skipCurrentRaster(const uint32_t skipCount) {
     for(auto &input_op : input_operators){
-        input_op->skipCurrentRaster();
+        input_op->skipCurrentRaster(skipCount);
     }
 }
 
-void GenericOperator::skipCurrentTile() {
+void GenericOperator::skipCurrentTile(const uint32_t skipCount) {
     for(auto &input_op : input_operators){
-        input_op->skipCurrentTile();
+        input_op->skipCurrentTile(skipCount);
     }
 }
 
@@ -67,37 +67,4 @@ void GenericOperator::setQrectRecursively(GenericOperator *op, const QueryRectan
     for(auto &in : op->input_operators){
         setQrectRecursively(in.get(), qrect);
     }
-}
-
-OptionalDescriptor OperatorUtil::skipCurrentDimension(GenericOperator &op, OptionalDescriptor &currentDesc) {
-    if(currentDesc->order == Order::Spatial)
-        return skipCurrentSpatial(op, currentDesc);
-    if(currentDesc->order == Order::Temporal)
-        return skipCurrentTemporal(op, currentDesc);
-}
-
-OptionalDescriptor OperatorUtil::skipCurrentTemporal(GenericOperator &op, OptionalDescriptor &currentDesc) {
-    OptionalDescriptor returnDesc = std::nullopt;
-    if(!currentDesc)
-        return returnDesc;
-
-    double time1_to_skip = currentDesc->rasterInfo.t1;
-    double time2_to_skip = currentDesc->rasterInfo.t2;
-
-    while(true){
-        returnDesc = op.nextDescriptor();
-        if(!returnDesc || (returnDesc->rasterInfo.t1 != time1_to_skip || returnDesc->rasterInfo.t2 != time2_to_skip))
-            break;
-    }
-
-    return returnDesc;
-}
-
-OptionalDescriptor OperatorUtil::skipCurrentSpatial(GenericOperator &op, OptionalDescriptor &currentDesc) {
-    OptionalDescriptor returnDesc = op.nextDescriptor();
-    const int tileIndex = currentDesc->tileIndex;
-    while(returnDesc.has_value() && currentDesc->tileIndex == tileIndex){
-        returnDesc = op.nextDescriptor();
-    }
-    return returnDesc;
 }

@@ -41,18 +41,21 @@ namespace rts {
         virtual bool increaseTemporally();
 
         /**
-         * skipCurrentRaster will set the spatial and temporal state variables to the start of the next raster.
-         * Should normally only be called for Temporal Order and only if user makes sure that only complete rasters
-         * will be returned.
+         * In temopral order, skipCurrentRaster will set the spatial and temporal state variables to the start
+         * of the next raster in temporal order. It will skip skipCount amount of rasters.
+         * In spatial order, it will skip tiles of rasters. If the last raster of that tile is skipped by skipCount skips
+         * it will reset to the first raster of the next tile but it does not skip any rasters of the next tile.
          */
-        void skipCurrentRaster() override;
+        void skipCurrentRaster(const uint32_t skipCount) override;
 
         /**
-         * skipCurrentTile will set the spatial and temporal state variables to the start of the next tile and reset
-         * time variables to beginning of time series. Should normally only be called for Spatial Order and only
-         * if it keeps the time series intact.
+         * In spatial order, skipCurrentTile will set the spatial and temporal state variables to the start of
+         * the next tile and reset the the temporal state to the first raster of the output time series.
+         * It will skip as many tiles as skipCount is set to.
+         * In temporal order, it skips single tiles of the raster. When skipCount is so big that the end of
+         * the raster is reached, it stays at the beginning of the next raster and does not skip tiles of it.
          */
-        void skipCurrentTile() override;
+        void skipCurrentTile(const uint32_t skipCount) override;
 
         /**
          * Calculates the pixel start position of a tile based on its index.
