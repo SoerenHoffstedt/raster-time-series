@@ -4,63 +4,50 @@
 using namespace rts;
 
 Sampler::Sampler(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(operator_tree, qrect, params, std::move(in)), lastSendT1(-1)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), lastSendT1(-1),
+          toSkip(params["to_skip"].asUInt()), toReturn(params["to_return"].asUInt())
 {
     checkInputCount(1);
 }
 
 void Sampler::initialize() {
-    toSkip = params["to_skip"].asUInt();
+
 }
 
 OptionalDescriptor Sampler::nextDescriptor() {
+
+    //if returningCount is bigger that toReturn: this is the last tile to return before skipping.
+    if(returningCount >= toReturn){
+
+        //skipCurrentRaster handles the skipping differently based on qrect.order, so no if-case here.
+        //state is still in the last tile of the last raster, thus + 1.
+        skipCurrentRaster(toSkip + 1);
+
+        returningCount = 0;
+    }
 
     auto currInput = input_operators[0]->nextDescriptor();
 
     if(!currInput.has_value())
         return currInput;
 
-    //TODO: how to handle the ordering?
-    // what is skipped? single tile descriptors?
-    // or a whole first order dimension, meaning skipping all tiles
-    // from one raster if the order is Temporal? -> this seems logical to me.
-
-    if(qrect.order == Order::Temporal){
-        //send all tiles that have same time as the last send time.
-        //TODO: check start and end time?
-        if(lastSendT1 != -1 && lastSendT1 == currInput->rasterInfo.t1){
-            return currInput;
-        }
-
-        for(int i = 0; i < toSkip; ++i){
-            //skip all tiles of this raster.
-            currInput = OperatorUtil::skipCurrentTemporal(*input_operators[0], currInput);
-        }
-
-    } else if(qrect.order == Order::Spatial){
-
-        //TODO: actually has to check if coords of tile are same as before, but coords are not provided rightly by FakeSource atm.
-        if(lastSendT1 != -1 && currInput->rasterInfo.t1 > lastSendT1){
-            return currInput;
-        }
-
-        //TODO: and here check if the same coords are skipped instead of time. but see above.
-        for(int i = 0; i < toSkip; ++i){
-           currInput = OperatorUtil::skipCurrentSpatial(*input_operators[0], currInput);
-        }
+    //if the input is the next tile in spatial order: reset returning count to zero.
+    if(qrect.order == Order::Spatial && currInput->tileIndex > lastSendTileIndex){
+        returningCount = 0;
     }
 
-    //TODO: can i simply return the descriptor I got? Some reproduction of the operator tree from a
-    //      descriptor might not be possible this way. But its more performant to skip this.
-    if(currInput.has_value())
-        lastSendT1 = currInput->rasterInfo.t1;
+    if(qrect.order == Order::Spatial || currInput->tileIndex == currInput->rasterTileCount - 1){
+        returningCount += 1;
+    }
 
+    lastSendTileIndex = currInput->tileIndex;
     return currInput;
 }
 
 OptionalDescriptor Sampler::getDescriptor(int tileIndex) {
-    //TODO: think about how to do this? save the last returned rasterIndex and if the passed rasterIndex
-    //would have to be skipped return nullopt
+    // The state of input/source operators is changed before calling nextDescriptor, so the state is as for the last
+    // returned descriptor. So simply use getDescriptor here.
+    // Because only rasters, not single tiles can be skipped, this works fine.
     return input_operators[0]->getDescriptor(tileIndex);
 }
 
