@@ -4,7 +4,7 @@
 using namespace rts;
 
 Sampler::Sampler(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(operator_tree, qrect, params, std::move(in)), lastSendT1(-1),
+        : GenericOperator(operator_tree, qrect, params, std::move(in)),
           toSkip(params["to_skip"].asUInt()), toReturn(params["to_return"].asUInt())
 {
     checkInputCount(1);
