@@ -27,6 +27,9 @@ OptionalDescriptor OrderChanger::nextDescriptor() {
 
         currTile += 1;
         if(temporalTargetDescriptor != std::nullopt && currTile >= temporalTargetDescriptor->rasterTileCount){
+            if(temporalTargetDescriptor->rasterInfo.t2 >= qrect.t2){
+                return std::nullopt;
+            }
             input_operators[0]->skipCurrentRaster();
             temporalTargetDescriptor = std::nullopt;
             currTile = 0;
