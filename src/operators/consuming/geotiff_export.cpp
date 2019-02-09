@@ -5,6 +5,7 @@
 #include "geotiff_export.h"
 #include "util/gdal_util.h"
 #include "util/raster_calculations.h"
+#include "util/benchmark.h"
 
 using namespace std::string_literals;
 using namespace rts;
@@ -61,6 +62,7 @@ void GeotiffExport::consume() {
 
     for(auto &in_desc : *in_op){
 
+        Benchmark::startConsuming();
         if(out_dataset == nullptr){
             //new raster.
             std::string timeString = GDALUtil::timeToString(static_cast<time_t>(in_desc.rasterInfo.t1), timeFormat);
@@ -104,9 +106,9 @@ void GeotiffExport::consume() {
             }
             out_rasterBand = out_dataset->GetRasterBand(1);
         }
-
+        Benchmark::endConsuming();
         auto raster = in_desc.getRaster();
-        void *data = raster->getVoidDataPointer();
+        Benchmark::startConsuming();
 
         out_rasterBand->SetNoDataValue(in_desc.nodata);
         int x = 0, y = 0;
@@ -142,6 +144,7 @@ void GeotiffExport::consume() {
             out_dataset.reset();
             out_rasterBand = nullptr;
         }
+        Benchmark::endConsuming();
     }
 }
 

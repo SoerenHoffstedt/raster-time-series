@@ -2,6 +2,7 @@
 #include "datatypes/raster_operations.h"
 #include "util/raster_calculations.h"
 #include "util/parsing.h"
+#include "util/benchmark.h"
 #include "gdal_source.h"
 
 #include <filesystem>
@@ -180,8 +181,10 @@ OptionalDescriptor GDALSource::createDescriptor(double time, int pixelStartX, in
     SpatialReference tileSpat = RasterCalculations::pixelToSpatialRectangle(scale, origin, tileStartWorldRes, tileStartWorldRes + qrect.tileRes);
 
     auto getter = [currDataset = currDataset, currRasterband = currRasterband, fillFrom = fillFrom, resLeftToFill = resLeftToFill](const Descriptor &self) -> std::unique_ptr<Raster> {
+        Benchmark::startSource();
         std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);
         RasterOperations::callUnary<GdalSourceWriter>(out.get(), currDataset, currRasterband, self, fillFrom, resLeftToFill);
+        Benchmark::endSource();
         return out;
     };
 

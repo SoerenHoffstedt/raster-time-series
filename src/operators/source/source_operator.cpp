@@ -1,6 +1,7 @@
 
 #include "operators/source/source_operator.h"
 #include "source_operator.h"
+#include "util/benchmark.h"
 
 
 using namespace rts;
@@ -13,6 +14,7 @@ SourceOperator::SourceOperator(const OperatorTree *operator_tree, const QueryRec
 }
 
 OptionalDescriptor SourceOperator::nextDescriptor() {
+    Benchmark::startSource();
     //increaseDimensions will be true normally.
     //Except at the start when first raster will be returned and variables are set correctly or
     //skipCurrentRaster/Tile is called it will also be set already.
@@ -50,12 +52,17 @@ OptionalDescriptor SourceOperator::nextDescriptor() {
         pixelStateY -= rasterWorldPixelStart.resY % qrect.tileRes.resY;
     }
 
-    return createDescriptor(currTime, pixelStateX, pixelStateY, currTileIndex);
+    auto ret = createDescriptor(currTime, pixelStateX, pixelStateY, currTileIndex);
+    Benchmark::endSource();
+    return ret;
 }
 
 OptionalDescriptor SourceOperator::getDescriptor(int tileIndex) {
+    Benchmark::startSource();
     Resolution pixelStart = tileIndexToStartPixel(tileIndex);
-    return createDescriptor(currTime, pixelStart.resX, pixelStart.resY, tileIndex);
+    auto ret = createDescriptor(currTime, pixelStart.resX, pixelStart.resY, tileIndex);
+    Benchmark::endSource();
+    return ret;
 }
 
 Resolution SourceOperator::tileIndexToStartPixel(int tileIndex) {
