@@ -22,51 +22,45 @@ void OrderChanger::initialize() {
 
 OptionalDescriptor OrderChanger::nextDescriptor() {
 
-    //new version: using random tile access for spatial -> temporal
+    if(!initialized)
+    {
+        currTile = 0;
+        descriptors.reserve(1024);
+        for(auto desc : *input_operators[0]){
+            desc.order = targetOrder;
+            descriptors.emplace_back(std::move(desc));
+        }
+        if(descriptors.empty())
+            return std::nullopt;
+
+        tilesPerRaster = descriptors[0]->rasterTileCount;
+        totalTiles = descriptors.size();
+        if(totalTiles % tilesPerRaster != 0){
+            throw std::runtime_error("Order Changer: number of tiles does not match a multiple of the tiles per raster count.");
+        }
+        rasterCount = totalTiles / tilesPerRaster;
+        initialized = true;
+    }
+
     if(targetOrder == Order::Temporal){
 
+        if(currRaster >= rasterCount)
+            return std::nullopt;
+
+        uint64_t index = currRaster + currTile * rasterCount;
+
+        //increase currTile until matches number of tiles per Raster
+        //than increase currRaster.
+
         currTile += 1;
-        if(temporalTargetDescriptor != std::nullopt && currTile >= temporalTargetDescriptor->rasterTileCount){
-            input_operators[0]->skipCurrentRaster();
-            temporalTargetDescriptor = std::nullopt;
+        if(currTile == tilesPerRaster){
             currTile = 0;
             currRaster += 1;
         }
 
-        if(currTile == 0){
-            temporalTargetDescriptor = input_operators[0]->nextDescriptor();
-            if(temporalTargetDescriptor == std::nullopt || temporalTargetDescriptor->tileIndex > 0)
-                return std::nullopt;
-        }
-
-        auto desc = (currTile == 0) ? temporalTargetDescriptor : input_operators[0]->getDescriptor(currTile);
-
-        desc->order = targetOrder;
-
-        return desc;
+        return descriptors[index];
 
     } else {
-
-        //Temporal to Spatial is not changed, still load into cache
-        if(!initialized)
-        {
-            descriptors.reserve(1024);
-            for(auto desc : *input_operators[0]){
-                desc.order = targetOrder;
-                descriptors.emplace_back(std::move(desc));
-            }
-            if(descriptors.empty())
-                return std::nullopt;
-
-            tilesPerRaster = descriptors[0]->rasterTileCount;
-            totalTiles = descriptors.size();
-            if(totalTiles % tilesPerRaster != 0){
-                throw std::runtime_error("Order Changer: number of tiles does not match a multiple of the tiles per raster count.");
-            }
-            rasterCount = totalTiles / tilesPerRaster;
-            initialized = true;
-        }
-
         if(currTile >= tilesPerRaster)
             return std::nullopt;
 
@@ -79,7 +73,6 @@ OptionalDescriptor OrderChanger::nextDescriptor() {
         }
 
         return descriptors[index];
-
     }
 }
 
