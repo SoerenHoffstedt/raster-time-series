@@ -93,7 +93,8 @@ OptionalDescriptor TemporalOverlap::nextDescriptor() {
                 descriptorCache1.clear();
                 loadRasterFromCache1 = false;
             } else {
-                input1 = OperatorUtil::skipCurrentTemporal(*input_operators[0], input1);
+                //TODO: replace this
+                //input1 = OperatorUtil::skipCurrentTemporal(*input_operators[0], input1);
             }
             input1Time = input1->rasterInfo;
         } else {
@@ -102,7 +103,8 @@ OptionalDescriptor TemporalOverlap::nextDescriptor() {
                 descriptorCache2.clear();
                 loadRasterFromCache2 = false;
             } else {
-                input2 = OperatorUtil::skipCurrentTemporal(*input_operators[1], input2);
+                //TODO: replace this
+                //input2 = OperatorUtil::skipCurrentTemporal(*input_operators[1], input2);
             }
             input2Time = input2->rasterInfo;
         }
