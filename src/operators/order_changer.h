@@ -10,7 +10,7 @@ namespace rts {
     public:
         OrderChanger(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
         OptionalDescriptor nextDescriptor() override;
-        OptionalDescriptor getDescriptor(int tileSize) override;
+        OptionalDescriptor getDescriptor(int tileIndex) override;
         void initialize() override;
         bool supportsOrder(Order order) const override;
     private:
@@ -18,7 +18,7 @@ namespace rts {
         std::vector<OptionalDescriptor> descriptors;
         uint32_t tilesPerRaster;
         uint64_t rasterCount;
-        uint32_t currTile;
+        int32_t currTile;
         uint32_t currRaster;
         uint64_t totalTiles;
         Order targetOrder;

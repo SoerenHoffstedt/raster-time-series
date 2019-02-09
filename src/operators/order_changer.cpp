@@ -17,12 +17,21 @@ void OrderChanger::initialize() {
     incomingOrder = targetOrder == Order::Temporal ? Order::Spatial : Order::Temporal;
     setOrderOfChildOperators(this, incomingOrder);
     currRaster = 0;
-    currTile = 0;
+    currTile = -1;
 }
 
 OptionalDescriptor OrderChanger::nextDescriptor() {
 
+    //new version: using random tile access for spatial -> temporal
     if(targetOrder == Order::Temporal){
+
+        currTile += 1;
+        if(temporalTargetDescriptor != std::nullopt && currTile >= temporalTargetDescriptor->rasterTileCount){
+            input_operators[0]->skipCurrentRaster();
+            temporalTargetDescriptor = std::nullopt;
+            currTile = 0;
+            currRaster += 1;
+        }
 
         if(currTile == 0){
             temporalTargetDescriptor = input_operators[0]->nextDescriptor();
@@ -34,18 +43,11 @@ OptionalDescriptor OrderChanger::nextDescriptor() {
 
         desc->order = targetOrder;
 
-        currTile += 1;
-        if(currTile >= temporalTargetDescriptor->rasterTileCount){
-            input_operators[0]->skipCurrentRaster();
-            temporalTargetDescriptor = std::nullopt;
-            currTile = 0;
-            currRaster += 1;
-        }
-
         return desc;
 
     } else {
 
+        //Temporal to Spatial is not changed, still load into cache
         if(!initialized)
         {
             descriptors.reserve(1024);
@@ -79,34 +81,6 @@ OptionalDescriptor OrderChanger::nextDescriptor() {
         return descriptors[index];
 
     }
-
-
-
-
-    if(targetOrder == Order::Temporal){
-
-        if(currRaster >= rasterCount)
-            return std::nullopt;
-
-        uint64_t index = currRaster + currTile * rasterCount;
-
-        //increase currTile until matches number of tiles per Raster
-        //than increase currRaster.
-
-        currTile += 1;
-        if(currTile == tilesPerRaster){
-            currTile = 0;
-            currRaster += 1;
-        }
-
-        return descriptors[index];
-
-    } else {
-
-
-
-    }
-
 }
 
 bool OrderChanger::supportsOrder(Order order) const {
@@ -122,7 +96,11 @@ void OrderChanger::setOrderOfChildOperators(GenericOperator *op, Order order) {
     }
 }
 
-OptionalDescriptor OrderChanger::getDescriptor(int tileSize) {
-    //TODO: implement
-    return std::nullopt;
+OptionalDescriptor OrderChanger::getDescriptor(int tileIndex) {
+    if(targetOrder == Order::Temporal){
+        return input_operators[0]->getDescriptor(tileIndex);
+    } else {
+        uint64_t index = tileIndex + currRaster * tilesPerRaster;
+        return descriptors[index];
+    }
 }
