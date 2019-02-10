@@ -25,9 +25,16 @@ TimeSeriesIterator &TimeSeriesIterator::operator++() {
 }
 
 bool TimeSeriesIterator::operator==(const TimeSeriesIterator &other) const {
-    //TODO: how to test equality? There can not be two Iterators with same next_descriptor because it is unique_ptr.
-    // For now only test if both are nullptr Iterators
-    return !next_descriptor && !other.next_descriptor;
+    if(!next_descriptor.has_value() && !other.next_descriptor.has_value())
+        return true;
+    if(!next_descriptor.has_value() || !other.next_descriptor.has_value())
+        return false;
+    if(other.op != op)
+        return false;
+    return next_descriptor->rasterInfo.t1 == other.next_descriptor->rasterInfo.t1 &&
+           next_descriptor->rasterInfo.t2 == other.next_descriptor->rasterInfo.t2 &&
+           next_descriptor->tileIndex == other.next_descriptor->tileIndex;
+
 }
 
 bool TimeSeriesIterator::operator!=(const TimeSeriesIterator &other) const {
