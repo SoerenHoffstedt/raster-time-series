@@ -47,7 +47,7 @@ struct AggregatorOperation {
 };
 
 Aggregator::Aggregator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(operator_tree, qrect, params, std::move(in)), hasTimeInterval(false), lastTileIndex(-1)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), hasTimeInterval(false), lastTileIndex(-1), nextDescriptorAfterSkipping(std::nullopt)
 {
     checkInputCount(1);
 }
@@ -64,8 +64,15 @@ void Aggregator::initialize() {
 }
 
 OptionalDescriptor Aggregator::nextDescriptor() {
-    //first descriptor could already be loaded and stored in nextDesc
-    OptionalDescriptor input = input_operators[0]->nextDescriptor();
+    //first descriptor could already be loaded in the skip method and stored in nextDescriptorAfterSkipping
+    OptionalDescriptor input;
+    if(nextDescriptorAfterSkipping.has_value()) {
+        input = std::move(nextDescriptorAfterSkipping);
+        nextDescriptorAfterSkipping = std::nullopt;
+    } else {
+        input = input_operators[0]->nextDescriptor();
+    }
+
     if(input == std::nullopt)
         return std::nullopt;
 
@@ -76,12 +83,12 @@ OptionalDescriptor Aggregator::nextDescriptor() {
     lastTileIndex = index;
 
     double aggregateFrom  = static_cast<double>(to_time_t(currTime));
-    double aggregateUntil = getNextTimeBorder();
+    double aggregateUntil = getNextTimeBorder(true);
 
     //
     while(aggregateFrom < input->rasterInfo.t1){
         aggregateFrom = aggregateUntil;
-        aggregateUntil = getNextTimeBorder();
+        aggregateUntil = getNextTimeBorder(true);
     }
 
     //
@@ -204,11 +211,38 @@ bool Aggregator::supportsOrder(Order order) const {
     return order == Order::Spatial;
 }
 
-double Aggregator::getNextTimeBorder() {
+double Aggregator::getNextTimeBorder(bool increaseCurrTime) {
     if(!hasTimeInterval)
         return std::numeric_limits<double>::max();
-    else{
+    else if(increaseCurrTime){
         interval.increase(currTime);
         return (double)to_time_t(currTime);
+    } else {
+        ptime currTimeCopy = currTime;
+        interval.increase(currTimeCopy);
+        return (double)to_time_t(currTimeCopy);
     }
+}
+
+void Aggregator::skipCurrentRaster(const uint32_t skipCount) {
+    if(skipCount == 0)
+        return;
+    interval.increase(currTime, skipCount - 1); //-1 because the currTime was already incremented once in nextDescriptor.
+    double aggregateFrom  = static_cast<double>(to_time_t(currTime));
+    double aggregateUntil = getNextTimeBorder(false);
+    if(aggregateFrom >= qrect.t2){
+        skipCurrentTile();
+        return;
+    }
+    OptionalDescriptor inputDesc = input_operators[0]->nextDescriptor();
+    //if t2 of inputDesc is >= aggregateFrom, the next returned raster will be part of the next result.
+    while(inputDesc->rasterInfo.t1 < aggregateFrom && inputDesc->rasterInfo.t2 < aggregateFrom){
+        input_operators[0]->skipCurrentRaster();
+        inputDesc = input_operators[0]->nextDescriptor();
+        if(!inputDesc.has_value()){
+            return;
+        }
+    }
+    if(inputDesc->rasterInfo.t1 >= aggregateFrom)
+        nextDescriptorAfterSkipping = inputDesc;
 }

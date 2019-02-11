@@ -36,6 +36,7 @@ namespace rts {
         OptionalDescriptor getDescriptor(int tileIndex);
         void initialize() override;
         bool supportsOrder(Order order) const override;
+        void skipCurrentRaster(uint32_t skipCount) override;
     private:
         OptionalDescriptor createOutput(OptionalDescriptorVector &list, double t1, double t2);
         GDALDataType customDataType;
@@ -44,8 +45,9 @@ namespace rts {
         TimeInterval interval;
         boost::posix_time::ptime currTime;
         int lastTileIndex;
+        OptionalDescriptor nextDescriptorAfterSkipping;
 
-        double getNextTimeBorder();
+        double getNextTimeBorder(bool increaseCurrTime);
     };
 
 }
