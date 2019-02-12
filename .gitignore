@@ -1,4 +1,6 @@
 target/
+test/data/gdal_source/srtm
+test/data/gdal_source/msg_eu_scaled_int
 
 
 
