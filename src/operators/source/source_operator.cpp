@@ -104,9 +104,17 @@ void SourceOperator::skipCurrentRaster(const uint32_t skipCount) {
         increaseDimensions = false;
 
         if (qrect.order == Order::Spatial && currTime >= qrect.t2) {
+            //next tile reached.
             currRasterIndex = 0;
+            currTileIndex += 1;
+            pixelStateX += qrect.tileRes.resX;
+            if (pixelStateX >= qrect.resX) {
+                pixelStateX = 0;
+                pixelStateY += qrect.tileRes.resY;
+            }
             setCurrTimeToFirstRaster();
             spatiallyEndNotReached = false;
+
         }
     }
 }
