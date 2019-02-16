@@ -5,6 +5,7 @@
 #include "operators/consuming/print.h"
 #include "operators/consuming/geotiff_export.h"
 #include "operators/consuming/raster_value_extraction.h"
+#include "operators/consuming/analyzer.h"
 #include "operators/expression_operator.h"
 #include "operators/source/fake_source.h"
 #include "operators/source/gdal_source.h"
@@ -94,6 +95,8 @@ std::unique_ptr<ConsumingOperator> OperatorTree::instantiateConsuming() const {
         res = std::make_unique<GeotiffExport>(this, qrect, params, std::move(sources));
     else if(operator_name == "raster_value_extraction")
         res =  std::make_unique<RasterValueExtraction>(this, qrect, params, std::move(sources));
+    else if(operator_name == "analyzer")
+        res =  std::make_unique<Analyzer>(this, qrect, params, std::move(sources));
     else
         throw std::runtime_error("Unknown operator: " + operator_name);
 
