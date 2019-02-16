@@ -13,26 +13,28 @@ struct BinaryExpression {
         Resolution tileSize = output->getResolution();
         for (int y = 0; y < tileSize.resY; ++y) {
             for (int x = 0; x < tileSize.resX; ++x) {
-                T1 val = 0;
+                double val = 0;
                 switch(op){
                     case Expression::Operator::ADD:
-                        val = (T1)(input1->getCell(x, y) + input2->getCell(x, y));
+                        val = ((double)input1->getCell(x, y) + (double)input2->getCell(x, y));
                         break;
                     case Expression::Operator::SUB:
-                        val = (T1)(input1->getCell(x, y) - input2->getCell(x, y));
+                        val = ((double)input1->getCell(x, y) - (double)input2->getCell(x, y));
                         break;
                     case Expression::Operator::DIV:
-                        val = (T1)(input1->getCell(x, y) / input2->getCell(x, y));
+                        val = ((double)input1->getCell(x, y) / (double)input2->getCell(x, y));
                         break;
                     case Expression::Operator::MUL:
-                        val = (T1)(input1->getCell(x, y) * input2->getCell(x, y));
+                        val = ((double)input1->getCell(x, y) * (double)input2->getCell(x, y));
                         break;
                     case Expression::Operator::MOD:
                         //TODO: ints
-                        val = (T1)((int)input1->getCell(x, y) % (int)input2->getCell(x, y));
+                        val = ((int)input1->getCell(x, y) % (int)input2->getCell(x, y));
                         break;
                 }
-                output->setCell(x, y, val);
+
+                val = std::abs(val);
+                output->setCell(x, y, (T1)val);
             }
         }
 
