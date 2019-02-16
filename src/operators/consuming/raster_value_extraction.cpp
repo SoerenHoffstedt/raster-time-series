@@ -1,5 +1,6 @@
 
-#include <util/raster_calculations.h>
+#include "util/raster_calculations.h"
+#include "util/benchmark.h"
 #include "raster_value_extraction.h"
 #include <fstream>
 
@@ -25,6 +26,7 @@ bool RasterValueExtraction::supportsOrder(Order order) const {
 
 void RasterValueExtraction::consume() {
 
+    Benchmark::startConsuming();
     OptionalDescriptor desc = input_operators[0]->nextDescriptor();
     if(desc == std::nullopt)
         return;
@@ -63,8 +65,13 @@ void RasterValueExtraction::consume() {
         file_output.open("results/ " + filename);
     }
 
+    UniqueRaster raster = nullptr;
+    int rasterLoadCount = 0;
+
+    Benchmark::endConsuming();
     //iterate points!
     for(int i = 0; i < points.size(); ++i){
+        Benchmark::startConsuming();
         auto &point = points[i];
         //TODO: solve: what happens when
         /*
@@ -81,8 +88,9 @@ void RasterValueExtraction::consume() {
         }
 
         //if descriptor is not valid at time of point or point is outside desc tile: load next descsriptor.
-        while(!desc->rasterInfo.containsTemporal(point.t) && !desc->tileSpatialInfo.containsSpatial(point.x, point.y)){
+        while(!desc->rasterInfo.containsTemporal(point.t) || !desc->tileSpatialInfo.containsSpatial(point.x, point.y)){
             desc = input_operators[0]->nextDescriptor();
+            raster = nullptr;
             if(desc == std::nullopt){
                 std::cout << "(" << point.x << "," << point.y << ") at [" << point.t << "] : ";
                 std::cout << "No valid raster at this point." << std::endl;
@@ -90,11 +98,16 @@ void RasterValueExtraction::consume() {
             }
         }
 
-        Resolution pixelCoord = RasterCalculations::coordinateToPixel(desc->rasterInfo, desc->rasterInfo, point.x,
-                                                                      point.y);
+        Resolution pixelCoord = RasterCalculations::coordinateToPixel(desc->rasterInfo.scale, desc->rasterInfo.projection.getOrigin(), point.x, point.y);
+
         pixelCoord.resX = pixelCoord.resX % desc->tileResolution.resX;
         pixelCoord.resY = pixelCoord.resY % desc->tileResolution.resY;
-        UniqueRaster raster = desc->getRaster();
+        if(raster == nullptr){
+            Benchmark::endConsuming();
+            raster = desc->getRaster();
+            rasterLoadCount++;
+            Benchmark::startConsuming();
+        }
         if(output == Output::Print){
             std::cout << "(" << point.x << "," << point.y << ") at [" << point.t << "] : ";
             printPixelAt(std::cout, raster.get(), pixelCoord.resX, pixelCoord.resY);
@@ -102,13 +115,15 @@ void RasterValueExtraction::consume() {
             file_output << "(" << point.x << "," << point.y << ") at [" << point.t << "] : ";
             printPixelAt(file_output, raster.get(), pixelCoord.resX, pixelCoord.resY);
         }
+        Benchmark::endConsuming();
     }
+    std::cout << "tiles loaded: " << rasterLoadCount << std::endl;
 }
 
 void RasterValueExtraction::printPixelAt(std::ostream &output, Raster *raster, int x, int y) const {
     switch(raster->getDataType()){
         case GDT_Byte:
-            output << ((TypedRaster<unsigned char>*)raster)->getCell(x,y) << std::endl;
+            output << (int)(((TypedRaster<unsigned char>*)raster)->getCell(x,y)) << std::endl;
             break;
         case GDT_UInt16:
             output << ((TypedRaster<uint16_t>*)raster)->getCell(x,y) << std::endl;
