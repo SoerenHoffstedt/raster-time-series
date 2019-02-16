@@ -13,7 +13,7 @@
 #include "operators/aggregator.h"
 #include "operators/convolution.h"
 #include "operators/order_changer.h"
-#include "operators/cache_simulator.h"
+#include "operators/raster_cache.h"
 
 using namespace rts;
 
@@ -69,8 +69,8 @@ std::unique_ptr<GenericOperator> OperatorTree::instantiate() const {
         res = std::make_unique<Convolution>(this, qrect, params, std::move(sources));
     else if(operator_name == "order_changer")
         res = std::make_unique<OrderChanger>(this, qrect, params, std::move(sources));
-    else if(operator_name == "cache_simulator")
-        res = std::make_unique<CacheSimulator>(this, qrect, params, std::move(sources));
+    else if(operator_name == "raster_cache")
+        res = std::make_unique<RasterCache>(this, qrect, params, std::move(sources));
     else
         throw std::runtime_error("Unknown operator: " + operator_name);
 

@@ -1,24 +1,23 @@
 
-#include "operators/cache_simulator.h"
-#include "cache_simulator.h"
+#include "operators/raster_cache.h"
 
 
-rts::CacheSimulator::CacheSimulator(const rts::OperatorTree *operator_tree, const rts::QueryRectangle &qrect,
+rts::RasterCache::RasterCache(const rts::OperatorTree *operator_tree, const rts::QueryRectangle &qrect,
                                     const Json::Value &params, rts::UniqueOperatorVector &&in)
                                     : GenericOperator(operator_tree, qrect, params, std::move(in)), lastTileIndex(0)
 {
     checkInputCount(1);
 }
 
-void rts::CacheSimulator::initialize() {
+void rts::RasterCache::initialize() {
 
 }
 
-bool rts::CacheSimulator::supportsOrder(rts::Order order) const {
+bool rts::RasterCache::supportsOrder(rts::Order order) const {
     return order == Order::Temporal;
 }
 
-rts::OptionalDescriptor rts::CacheSimulator::nextDescriptor() {
+rts::OptionalDescriptor rts::RasterCache::nextDescriptor() {
     auto input = input_operators[0]->nextDescriptor();
 
     if(input == std::nullopt)
@@ -36,14 +35,14 @@ rts::OptionalDescriptor rts::CacheSimulator::nextDescriptor() {
     return createOutput(input);
 }
 
-rts::OptionalDescriptor rts::CacheSimulator::getDescriptor(int tileIndex) {
+rts::OptionalDescriptor rts::RasterCache::getDescriptor(int tileIndex) {
     auto input = input_operators[0]->getDescriptor(tileIndex);
     if(input == std::nullopt)
         return std::nullopt;
     return createOutput(input);
 }
 
-rts::OptionalDescriptor rts::CacheSimulator::createOutput(OptionalDescriptor &input) {
+rts::OptionalDescriptor rts::RasterCache::createOutput(OptionalDescriptor &input) {
     lastTileIndex = input->tileIndex;
 
     DescriptorInfo info(input);
