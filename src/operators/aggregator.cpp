@@ -86,7 +86,7 @@ OptionalDescriptor Aggregator::nextDescriptor() {
     double aggregateUntil = getNextTimeBorder(true);
 
     //
-    while(aggregateFrom < input->rasterInfo.t1){
+    while(aggregateFrom < input->rasterInfo.t1 && aggregateUntil < input->rasterInfo.t1){
         aggregateFrom = aggregateUntil;
         aggregateUntil = getNextTimeBorder(true);
     }
@@ -111,6 +111,13 @@ OptionalDescriptor Aggregator::nextDescriptor() {
         input = input_operators[0]->nextDescriptor();
         if(input == std::nullopt)
             break;
+        if(input->tileIndex > index){
+            //TODO: this makes getDescriptor not work reliably on this operator, because the state of the input operator already advanced to the next tile/reset to first raster
+            // this is the case when (especially) the sampler makes the time series not continous (it can not know the end time of the raster it skipped without changing the state of the input operator)
+            // so fix it at the moment here because it is easier to hack it in here. but its not nice...
+            nextDescriptorAfterSkipping = input;
+            break;
+        }
         lastT2 = input->rasterInfo.t2;
         descriptors.emplace_back(std::move(input));
     }
