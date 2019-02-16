@@ -7,7 +7,7 @@
 		"temporal_reference" : {
 			"type" : "UNIX",
         	"start" : 1293840000,
-        	"end": 1294315200
+        	"end": 1293969600
 		},
 		"spatial_reference" : {
 			"projection": "SR-ORG:81",
@@ -16,34 +16,40 @@
 	        "y1": 3577980.775,
 	        "y2": 5108186.390
 		},
-		"order" : "Temporal",
+		"order" : "Spatial",
 		"tileRes" : {
 			"x" : 256,
 			"y" : 256
 		}
 	},
-	"operator" : "geotiff_export",
+	"operator" : "analyzer",
 	"params" : {
 		"time_format" : "%Y-%m-%dT%H:%M:%S",
-		"filename" : "benchmark_random_access_order_changer_%%%TIME_STRING%%%.tiff"
+		"filename" : "analyzed_sampling.txt"
 	},
 	"sources" : [		
 		{
-			"operator" : "order_changer",
+			"operator" : "aggregator",
 			"params" : {
-
+				"function" : "Max",
+				"time_interval" : {
+					"unit" : "Hour",
+					"length" : 6
+				}
 			},
 			"sources" : [
 				{
-					"operator" : "expression",
+					"operator" : "sampler",
 					"params" : {
-						"expression" : "A * 2"
+						"to_skip" : 1,
+						"to_return" : 1
 					},
 					"sources" : [
 						{					
 							"operator" : "gdal_source",
 							"params" : {
-								"dataset" : "msg_eu_scaled_int"
+								"dataset" : "msg_eu_scaled_int",
+								"channel" : 5
 							},
 							"sources" : [
 

@@ -1,0 +1,49 @@
+{
+	"query_rectangle" : {
+		"resolution" : {
+			"x" : 3600,
+			"y" : 1800
+		},
+		"temporal_reference" : {
+			"type" : "UNIX",
+        	"start" : 978307200,
+        	"end": 1007251200
+		},
+		"spatial_reference" : {
+			"projection": "EPSG:4326",
+	        "x1": -180,
+	        "x2": 180,
+	        "y1": -90,
+	        "y2": 90
+		},
+		"order" : "Spatial",
+		"tileRes" : {
+			"x" : 1000,
+			"y" : 1000
+		}
+	},
+	"operator" : "geotiff_export",
+	"params" : {
+		"time_format" : "%Y-%m-%dT%H:%M:%S",
+		"filename" : "benchmark_rasdaman_aggregation_%%%TIME_STRING%%%.tiff"
+	},
+	"sources" : [		
+		{	
+			"operator" : "aggregator",
+			"params" : {
+				"function" : "Sum"
+			},
+			"sources" : [
+				{						
+					"operator" : "gdal_source",
+					"params" : {
+						"dataset" : "temp_month"
+					},
+					"sources" : [
+
+					]
+				}
+			]									
+		}					
+	]
+}

@@ -1,0 +1,101 @@
+{
+	"query_rectangle" : {
+		"resolution" : {
+			"x" : 767,
+			"y" : 510
+		},
+		"temporal_reference" : {
+			"type" : "UNIX",
+        	"start" : 1293840000,
+        	"end": 1293969600
+		},
+		"spatial_reference" : {
+			"projection": "SR-ORG:81",
+	        "x1": -802607.847,
+	        "x2": 1498701.381,
+	        "y1": 3577980.775,
+	        "y2": 5108186.390
+		},
+		"order" : "Spatial",
+		"tileRes" : {
+			"x" : 256,
+			"y" : 256
+		}
+	},
+	"operator" : "analyzer",
+	"params" : {		
+		"filename" : "analyzed_diff.txt"
+	},
+	"sources" : [		
+		{
+			"operator" : "expression",
+			"params" : {
+				"expression" : "A - B"
+			}, 
+			"sources" : [ 				
+				
+				{
+					"operator" : "aggregator",
+					"params" : {
+						"custom_data_type" : "UInt16",
+						"function" : "Max",
+						"time_interval" : {
+							"unit" : "Hour",
+							"length" : 6
+						}
+					},
+					"sources" : [
+						{
+							"operator" : "sampler",
+							"params" : {
+								"to_skip" : 1,
+								"to_return" : 1
+							},
+							"sources" : [
+								{					
+									"operator" : "gdal_source",
+									"params" : {
+										"dataset" : "msg_eu_scaled_int",
+										"channel" : 5
+									},
+									"sources" : [
+
+									]					
+								}
+							]
+						}
+					]
+				},
+				{
+					"operator" : "aggregator",
+					"params" : {
+						"custom_data_type" : "UInt16",
+						"function" : "Max",
+						"time_interval" : {
+							"unit" : "Hour",
+							"length" : 6
+						}
+					},
+					"sources" : [
+						{							
+							"operator" : "gdal_source",
+							"params" : {
+								"dataset" : "msg_eu_scaled_int",
+								"channel" : 5
+							},
+							"sources" : [
+
+							]										
+						}
+					]
+				}
+			]
+		}
+	]
+}
+
+
+
+
+
+									
