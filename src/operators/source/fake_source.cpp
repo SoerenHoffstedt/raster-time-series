@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include "datatypes/raster_operations.h"
 #include "datatypes/descriptor.h"
 #include "util/raster_calculations.h"
@@ -74,8 +74,8 @@ void FakeSource::initialize() {
 }
 
 Json::Value FakeSource::loadDatasetJson(std::string name) {
-    std::filesystem::path p("../../test/data/fake_source");
-    p /= std::filesystem::path(name + ".json");
+    boost::filesystem::path p("../../test/data/fake_source");
+    p /= name + ".json";
     std::ifstream file_in(p.string());
     Json::Value dataset_json;
     file_in >> dataset_json;

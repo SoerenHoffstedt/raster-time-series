@@ -5,7 +5,7 @@
 #include "util/benchmark.h"
 #include "gdal_source.h"
 
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <fstream>
 #include <ctime>
 #include <gdal.h>
@@ -207,8 +207,8 @@ bool GDALSource::supportsOrder(Order o) const {
 }
 
 Json::Value GDALSource::loadDatasetJson(const std::string &name) {
-    std::filesystem::path p("../../test/data/gdal_source");
-    p /= std::filesystem::path(name + ".json");
+    boost::filesystem::path p("../../test/data/gdal_source");
+    p /= name + ".json";
     std::ifstream file_in(p.string());
     Json::Value dataset_json;
     file_in >> dataset_json;
@@ -252,8 +252,8 @@ void GDALSource::loadCurrentGdalDataset(double time) {
     }
     else
     {
-        std::filesystem::path file_path(path.c_str());
-        file_path /= fileName + ""; //i dont get how you can not append a std::filesystem::path with a std::string ?!?!
+        boost::filesystem::path file_path(path.c_str());
+        file_path /= fileName; //i dont get how you can not append a std::filesystem::path with a std::string ?!?!
 
         auto dataset = (GDALDataset *)GDALOpen(file_path.c_str(), GA_ReadOnly);
         if(dataset == nullptr){

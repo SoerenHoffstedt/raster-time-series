@@ -1,7 +1,7 @@
 
 #include <gdal_priv.h>
 #include <string>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include "geotiff_export.h"
 #include "util/gdal_util.h"
 #include "util/raster_calculations.h"
@@ -52,9 +52,9 @@ void GeotiffExport::consume() {
         papszOptions = CSLSetNameValue(papszOptions, "COMPRESS", "DEFLATE");
     }
 
-    std::filesystem::path p(path.c_str());
-    if(!std::filesystem::exists(p)){
-        std::filesystem::create_directory(p);
+    boost::filesystem::path p(path.c_str());
+    if(!boost::filesystem::exists(p)){
+        boost::filesystem::create_directory(p);
     }
 
     std::map<std::string, SharedGDALDataset> sharedDatasets;
@@ -70,12 +70,12 @@ void GeotiffExport::consume() {
             size_t placeholderPos = baseFilename.find(placeholder);
             std::string filename = baseFilename;
             filename.replace(placeholderPos, placeholder.length(), timeString);
-            std::filesystem::path filePath = path;
+            boost::filesystem::path filePath = path;
             filePath /= filename;
 
             if(qrect.order == Order::Spatial && in_desc.tileIndex > 0){
-                if(sharedDatasets.find(filePath) != sharedDatasets.end()){
-                    out_dataset = sharedDatasets[filePath];
+                if(sharedDatasets.find(filePath.string()) != sharedDatasets.end()){
+                    out_dataset = sharedDatasets[filePath.string()];
                 }
                 else {
                     out_dataset = SharedGDALDataset((GDALDataset *) GDALOpen(filePath.c_str(), GA_Update), GDALClose);
@@ -84,7 +84,7 @@ void GeotiffExport::consume() {
                 out_dataset = SharedGDALDataset(driver->Create(filePath.c_str(), in_desc.rasterInfo.resX, in_desc.rasterInfo.resY, 1, in_desc.dataType, papszOptions), GDALClose);
                 if(qrect.order == Order::Spatial && sharedDatasets.size() < MAX_OPEN_DATASETS){
                     //temporal order only opens a dataset once and is done.
-                    sharedDatasets[filePath] = out_dataset;
+                    sharedDatasets[filePath.string()] = out_dataset;
                 }
                 if(out_dataset == nullptr){
                     throw std::runtime_error("Dataset could not be opened or created.");

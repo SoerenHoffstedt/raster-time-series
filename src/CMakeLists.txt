@@ -54,8 +54,7 @@ find_package(GDAL REQUIRED)
 target_link_libraries(rts_base_lib ${GDAL_LIBRARY})
 target_include_directories(rts_base_lib PUBLIC ${GDAL_INCLUDE_DIR})
 
-find_package(Boost COMPONENTS date_time REQUIRED)
-target_link_libraries(rts_base_lib Boost::date_time)
+find_package(Boost COMPONENTS date_time filesystem REQUIRED)
+target_link_libraries(rts_base_lib Boost::date_time Boost::filesystem)
 target_include_directories(rts_base_lib PRIVATE ${Boost_INCLUDE_DIRS})
 
-target_link_libraries(rts_base_lib stdc++fs) #compiler option needed for using std::filesystem from C++17 with g++ 8

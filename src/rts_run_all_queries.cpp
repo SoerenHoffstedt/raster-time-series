@@ -1,5 +1,5 @@
 
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <chrono>
 #include <iostream>
 #include <fstream>
@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
     int countFailed = 0;
     std::vector<std::string> failedQueries;
 
-    for(auto &f : std::filesystem::directory_iterator("../../test/query/")) {
+    for(auto &f : boost::filesystem::directory_iterator("../../test/query/")) {
 
         try {
             std::ifstream file_in(f.path().string());
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
             countSuccessful += 1;
         } catch (const std::exception &e){
             countFailed += 1;
-            failedQueries.push_back(f.path().filename());
+            failedQueries.push_back(f.path().string());
             std::cout << "\nQuery failed: " << e.what() << std::endl;
         }
     }
