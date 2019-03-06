@@ -6,8 +6,6 @@
 #include <boost/optional.hpp>
 #include <vector>
 #include "datatypes/raster.h"
-#include "util/parameters.h"
-#include "util/make_unique.h"
 #include "datatypes/descriptor.h"
 #include "datatypes/timeseries_iterator.h"
 #include "queries/operator_tree.h"

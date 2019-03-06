@@ -1,0 +1,8 @@
+//
+// Created by soeren on 06.03.19.
+//
+
+#ifndef RASTER_TIME_SERIES_MAKE_OPTIONAL_H
+#define RASTER_TIME_SERIES_MAKE_OPTIONAL_H
+
+#endif //RASTER_TIME_SERIES_MAKE_OPTIONAL_H

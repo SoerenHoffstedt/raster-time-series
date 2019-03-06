@@ -6,7 +6,6 @@ include(LinkLibrariesInternal)
 add_library(rts_base_lib
         datatypes/descriptor.cpp
         datatypes/raster.cpp
-        util/parameters.cpp
         datatypes/timeseries_iterator.cpp
         datatypes/spatial_temporal_reference.cpp
         util/raster_calculations.cpp

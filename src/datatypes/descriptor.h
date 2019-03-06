@@ -8,7 +8,6 @@
 #include <functional>
 #include <gdal.h>
 #include "datatypes/raster.h"
-#include "util/parameters.h"
 #include "datatypes/spatial_temporal_reference.h"
 #include "datatypes/order.h"
 
