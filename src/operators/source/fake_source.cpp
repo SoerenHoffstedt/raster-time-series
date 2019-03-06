@@ -110,7 +110,7 @@ OptionalDescriptor FakeSource::createDescriptor(double time, int pixelStartX, in
     rasterInfo.t1 = tempInfo.t1;
     rasterInfo.t2 = tempInfo.t2;
 
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_spat, qrect.tileRes, qrect.order, tileIndex, tileCount, nodata, dataType);
+    return rts::make_optional<Descriptor>(std::move(getter), rasterInfo, tile_spat, qrect.tileRes, qrect.order, tileIndex, tileCount, nodata, dataType);
 }
 
 bool FakeSource::supportsOrder(Order o) const {

@@ -193,7 +193,7 @@ OptionalDescriptor GDALSource::createDescriptor(double time, int pixelStartX, in
     rasterInfo.t1 = tempInfo.t1;
     rasterInfo.t2 = tempInfo.t2;
 
-    return std::make_optional<Descriptor>(std::move(getter), rasterInfo, tileSpat, qrect.tileRes,
+    return rts::make_optional<Descriptor>(std::move(getter), rasterInfo, tileSpat, qrect.tileRes,
                                           qrect.order, tileIndex, tileCount, nodata, dataType);
 }
 

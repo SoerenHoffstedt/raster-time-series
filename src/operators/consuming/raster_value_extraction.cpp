@@ -28,7 +28,7 @@ void RasterValueExtraction::consume() {
 
     Benchmark::startConsuming();
     OptionalDescriptor desc = input_operators[0]->nextDescriptor();
-    if(desc == std::nullopt)
+    if(!desc)
         return;
     //initialize the stuff!!
     SpatialReference extent = desc->rasterInfo.projection.getExtent();
@@ -91,7 +91,7 @@ void RasterValueExtraction::consume() {
         while(!desc->rasterInfo.containsTemporal(point.t) || !desc->tileSpatialInfo.containsSpatial(point.x, point.y)){
             desc = input_operators[0]->nextDescriptor();
             raster = nullptr;
-            if(desc == std::nullopt){
+            if(!desc){
                 std::cout << "(" << point.x << "," << point.y << ") at [" << point.t << "] : ";
                 std::cout << "No valid raster at this point." << std::endl;
                 return;

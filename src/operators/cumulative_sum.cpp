@@ -32,7 +32,7 @@ OptionalDescriptor CumulativeSum::nextDescriptor() {
     auto input = input_operators[0]->nextDescriptor();
 
     if(!input)
-        return std::nullopt;
+        return boost::none;
 
     if(sum == nullptr){
         sum = Raster::createRaster(input->dataType, input->tileResolution);
@@ -56,7 +56,7 @@ OptionalDescriptor CumulativeSum::nextDescriptor() {
         return raster_in;
     };
 
-    return std::make_optional<Descriptor>(std::move(getter), descInfo);
+    return rts::make_optional<Descriptor>(std::move(getter), descInfo);
 }
 
 bool CumulativeSum::supportsOrder(Order order) const {
@@ -124,7 +124,7 @@ OptionalDescriptor CumulativeSum::getDescriptor(int tileIndex) {
     }
 
     if(descriptors.empty())
-        return std::nullopt;
+        return boost::none;
 
     DescriptorInfo descInfo(qrect, spatInfo, tileRes, Order::Spatial, tileIndex, tileCount, descriptors[0]->nodata, descriptors[0]->dataType);
 
@@ -142,5 +142,5 @@ OptionalDescriptor CumulativeSum::getDescriptor(int tileIndex) {
         return sum;
     };
 
-    return std::make_optional<Descriptor>(std::move(getter), descInfo);
+    return rts::make_optional<Descriptor>(std::move(getter), descInfo);
 }

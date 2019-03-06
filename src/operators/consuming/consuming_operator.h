@@ -19,12 +19,12 @@ namespace rts {
         virtual void consume() = 0;
 
         /**
-         * Not needed, only returns std::nullopt.
+         * Not needed, only returns boost::none.
          */
         OptionalDescriptor nextDescriptor() final;
 
         /**
-         * Not needed, only returns std::nullopt.
+         * Not needed, only returns boost::none.
          */
         OptionalDescriptor getDescriptor(int tileSize) final;
     };

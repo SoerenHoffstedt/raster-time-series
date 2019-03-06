@@ -34,12 +34,12 @@ OptionalDescriptor SourceOperator::nextDescriptor() {
 
     //if currTime is bigger than query or dataset and not reset to beginning, the end of time series is reached.
     if(currTime >= qrect.t2 || currTime > datasetEndTime){
-        return std::nullopt;
+        return boost::none;
     }
 
     //if currTileIndex is bigger than number of tiles in raster and not reset to 0, the end of time series is reached.
     if(currTileIndex >= tileCount.resX * tileCount.resY){
-        return std::nullopt;
+        return boost::none;
     }
 
     // starting a new raster sets pixelState variables to 0, but when raster does not start at sources origin,

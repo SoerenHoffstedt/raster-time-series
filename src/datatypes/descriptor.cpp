@@ -47,7 +47,7 @@ DescriptorInfo::DescriptorInfo(const OptionalDescriptor &desc)
 
 }
 
-DescriptorInfo &DescriptorInfo::operator=(const std::optional<Descriptor> &desc) {
+DescriptorInfo &DescriptorInfo::operator=(const boost::optional<Descriptor> &desc) {
     rasterInfo = desc->rasterInfo;
     order = desc->order;
     tileSpatialInfo = desc->tileSpatialInfo;
@@ -86,7 +86,7 @@ std::unique_ptr<Raster> Descriptor::getRaster() const {
     return getter(*this);
 }
 
-std::optional<Descriptor> Descriptor::createNodataDescriptor(SpatialTemporalReference &totalInfo,
+boost::optional<Descriptor> Descriptor::createNodataDescriptor(SpatialTemporalReference &totalInfo,
                                                              SpatialReference &tileSpatialInfo,
                                                              Resolution &tileResolution,
                                                              Order order,
@@ -101,7 +101,7 @@ std::optional<Descriptor> Descriptor::createNodataDescriptor(SpatialTemporalRefe
         RasterOperations::callUnary<RasterOperations::AllValuesSetter>(raster.get(), self.nodata);
         return raster;
     };
-    auto ret = std::make_optional<Descriptor>(std::move(getter), totalInfo, tileSpatialInfo, tileResolution, order, tileIndex, rasterTileCountDimensional, nodata, dataType);
+    auto ret = rts::make_optional<Descriptor>(std::move(getter), totalInfo, tileSpatialInfo, tileResolution, order, tileIndex, rasterTileCountDimensional, nodata, dataType);
     ret->_isOnlyNodata = true;
     return ret;
 }

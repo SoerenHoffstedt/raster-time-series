@@ -33,8 +33,8 @@ void TemporalOverlap::initialize() {
 OptionalDescriptor TemporalOverlap::nextDescriptor() {
     //TODO: make sure that the last loaded input descriptors are the ones being used for returning, dont load the next one.
     // should be checkable with the end time.
-    OptionalDescriptor input1 = std::nullopt;
-    OptionalDescriptor input2 = std::nullopt;
+    OptionalDescriptor input1 = boost::none;
+    OptionalDescriptor input2 = boost::none;
     //if last tile was last of its rasters and caching was needed, the raster has to be loaded from cache
     if(loadRasterFromCache1){
         input1 = std::move(descriptorCache1[0]);
@@ -43,8 +43,8 @@ OptionalDescriptor TemporalOverlap::nextDescriptor() {
             loadRasterFromCache1 = false;
     } else {
         input1 = input_operators[0]->nextDescriptor();
-        if(!input1.has_value())
-            return std::nullopt;
+        if(!input1)
+            return boost::none;
     }
 
     if(loadRasterFromCache2){
@@ -54,8 +54,8 @@ OptionalDescriptor TemporalOverlap::nextDescriptor() {
             loadRasterFromCache2 = false;
     } else {
         input2 = input_operators[1]->nextDescriptor();
-        if(!input2.has_value())
-            return std::nullopt;
+        if(!input2)
+            return boost::none;
     }
 
     if(input1Time.t1 < input1->rasterInfo.t1) { //new raster
@@ -153,7 +153,7 @@ OptionalDescriptor TemporalOverlap::createOutput(OptionalDescriptor &input1, Opt
 
     auto getter = expression.createGetter(std::move(inputs));
 
-    return std::make_optional<Descriptor>(std::move(getter), descInfo);
+    return rts::make_optional<Descriptor>(std::move(getter), descInfo);
 }
 
 bool TemporalOverlap::supportsOrder(Order order) const {

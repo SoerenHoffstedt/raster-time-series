@@ -47,7 +47,7 @@ struct AggregatorOperation {
 };
 
 Aggregator::Aggregator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(operator_tree, qrect, params, std::move(in)), hasTimeInterval(false), lastTileIndex(-1), nextDescriptorAfterSkipping(std::nullopt)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), hasTimeInterval(false), lastTileIndex(-1), nextDescriptorAfterSkipping(boost::none)
 {
     checkInputCount(1);
 }
@@ -66,15 +66,15 @@ void Aggregator::initialize() {
 OptionalDescriptor Aggregator::nextDescriptor() {
     //first descriptor could already be loaded in the skip method and stored in nextDescriptorAfterSkipping
     OptionalDescriptor input;
-    if(nextDescriptorAfterSkipping.has_value()) {
+    if(nextDescriptorAfterSkipping) {
         input = std::move(nextDescriptorAfterSkipping);
-        nextDescriptorAfterSkipping = std::nullopt;
+        nextDescriptorAfterSkipping = boost::none;
     } else {
         input = input_operators[0]->nextDescriptor();
     }
 
-    if(input == std::nullopt)
-        return std::nullopt;
+    if(!input)
+        return boost::none;
 
     int index = input->tileIndex;
     if(index > lastTileIndex){ //new tile started
@@ -95,8 +95,8 @@ OptionalDescriptor Aggregator::nextDescriptor() {
     while(input->rasterInfo.t1 < aggregateFrom){
         input = input_operators[0]->nextDescriptor();
 
-        if(input == std::nullopt)
-            return std::nullopt;
+        if(!input)
+            return boost::none;
     }
 
     double t1 = aggregateFrom;
@@ -109,7 +109,7 @@ OptionalDescriptor Aggregator::nextDescriptor() {
 
     while(lastT2 < aggregateUntil && lastT2 < qrect.t2){
         input = input_operators[0]->nextDescriptor();
-        if(input == std::nullopt)
+        if(!input)
             break;
         if(input->tileIndex > index){
             //TODO: this makes getDescriptor not work reliably on this operator, because the state of the input operator already advanced to the next tile/reset to first raster
@@ -211,7 +211,7 @@ OptionalDescriptor Aggregator::createOutput(OptionalDescriptorVector &descriptor
         return out_raster;
     };
 
-    return std::make_optional<Descriptor>(std::move(getter), info);
+    return rts::make_optional<Descriptor>(std::move(getter), info);
 }
 
 bool Aggregator::supportsOrder(Order order) const {
@@ -246,7 +246,7 @@ void Aggregator::skipCurrentRaster(const uint32_t skipCount) {
     while(inputDesc->rasterInfo.t1 < aggregateFrom && inputDesc->rasterInfo.t2 < aggregateFrom){
         input_operators[0]->skipCurrentRaster();
         inputDesc = input_operators[0]->nextDescriptor();
-        if(!inputDesc.has_value()){
+        if(!inputDesc){
             return;
         }
     }

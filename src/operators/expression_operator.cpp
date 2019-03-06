@@ -21,8 +21,8 @@ OptionalDescriptor ExpressionOperator::nextDescriptor() {
     for(int i = 0; i < input_operators.size(); ++i){
         inputs.emplace_back(input_operators[i]->nextDescriptor());
         //TODO: Can something be calculated when one of the inputs is nullopt?
-        if(inputs[i] == std::nullopt)
-            return std::nullopt;
+        if(!inputs[i])
+            return boost::none;
     }
 
     //TODO: what is spatial info, what is temporal info of result?
@@ -31,7 +31,7 @@ OptionalDescriptor ExpressionOperator::nextDescriptor() {
 
     auto getter = expression.createGetter(std::move(inputs));
 
-    return std::make_optional<Descriptor>(std::move(getter), descInfo);
+    return rts::make_optional<Descriptor>(std::move(getter), descInfo);
 }
 
 OptionalDescriptor ExpressionOperator::getDescriptor(int tileIndex) {
@@ -41,8 +41,8 @@ OptionalDescriptor ExpressionOperator::getDescriptor(int tileIndex) {
     for(int i = 0; i < input_operators.size(); ++i){
         inputs.emplace_back(input_operators[i]->getDescriptor(tileIndex));
         //TODO: Can something be calculated when one of the inputs is nullopt?
-        if(inputs[i] == std::nullopt)
-            return std::nullopt;
+        if(!inputs[i])
+            return boost::none;
     }
 
     //TODO: what is spatial info, what is temporal info of result?
@@ -51,7 +51,7 @@ OptionalDescriptor ExpressionOperator::getDescriptor(int tileIndex) {
 
     auto getter = expression.createGetter(std::move(inputs));
 
-    return std::make_optional<Descriptor>(std::move(getter), descInfo);
+    return rts::make_optional<Descriptor>(std::move(getter), descInfo);
 }
 
 bool ExpressionOperator::supportsOrder(Order order) const {

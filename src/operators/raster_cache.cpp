@@ -20,8 +20,8 @@ bool rts::RasterCache::supportsOrder(rts::Order order) const {
 rts::OptionalDescriptor rts::RasterCache::nextDescriptor() {
     auto input = input_operators[0]->nextDescriptor();
 
-    if(input == std::nullopt)
-        return std::nullopt;
+    if(!input)
+        return boost::none;
 
     if(input->tileIndex == 0){ //new raster
         cache.clear();
@@ -37,8 +37,8 @@ rts::OptionalDescriptor rts::RasterCache::nextDescriptor() {
 
 rts::OptionalDescriptor rts::RasterCache::getDescriptor(int tileIndex) {
     auto input = input_operators[0]->getDescriptor(tileIndex);
-    if(input == std::nullopt)
-        return std::nullopt;
+    if(!input)
+        return boost::none;
     return createOutput(input);
 }
 
@@ -56,5 +56,5 @@ rts::OptionalDescriptor rts::RasterCache::createOutput(OptionalDescriptor &input
     };
 
 
-    return std::make_optional<Descriptor>(std::move(getter), info);
+    return rts::make_optional<Descriptor>(std::move(getter), info);
 }

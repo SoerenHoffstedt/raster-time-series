@@ -141,8 +141,8 @@ OptionalDescriptor Convolution::nextDescriptor() {
 
     auto input = input_operators[0]->nextDescriptor();
 
-    if(input == std::nullopt)
-        return std::nullopt;
+    if(!input)
+        return boost::none;
 
     auto output = createOutput(input, input->tileIndex);
 
@@ -152,8 +152,8 @@ OptionalDescriptor Convolution::nextDescriptor() {
 OptionalDescriptor Convolution::getDescriptor(int tileIndex) {
     auto mainDescriptor = input_operators[0]->getDescriptor(tileIndex);
 
-    if(mainDescriptor == std::nullopt)
-        return std::nullopt;
+    if(!mainDescriptor)
+        return boost::none;
 
     return createOutput(mainDescriptor, tileIndex);
 }
@@ -177,7 +177,7 @@ OptionalDescriptor Convolution::createOutput(OptionalDescriptor &mainDescriptor,
         in_raster.reserve(9);
 
         for(int i = 0; i < 9; i++){
-            if(neighbours[i].has_value()){
+            if(neighbours[i]){
                 in_raster.push_back(neighbours[i]->getRaster());
                 inputs.push_back(in_raster[i].get());
             } else {
@@ -191,7 +191,7 @@ OptionalDescriptor Convolution::createOutput(OptionalDescriptor &mainDescriptor,
         return out_raster;
     };
 
-    return std::make_optional<Descriptor>(std::move(getter), info);
+    return rts::make_optional<Descriptor>(std::move(getter), info);
 }
 
 bool Convolution::supportsOrder(Order order) const {
@@ -256,7 +256,7 @@ void Convolution::fillWithNeighbourTiles(OptionalDescriptorVector &neighbours, i
             int index = x + y * tileCountDimensional.resX;
             neighbours.push_back(input_operators[0]->getDescriptor(index));
         } else {
-            neighbours.emplace_back(std::nullopt);
+            neighbours.emplace_back(boost::none);
 
         }
     }

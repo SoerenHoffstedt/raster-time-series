@@ -4,7 +4,7 @@
 using namespace rts;
 
 OrderChanger::OrderChanger(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
-        : GenericOperator(operator_tree, qrect, params, std::move(in)), initialized(false), temporalTargetDescriptor(std::nullopt)
+        : GenericOperator(operator_tree, qrect, params, std::move(in)), initialized(false), temporalTargetDescriptor(boost::none)
 {
     checkInputCount(1);
 }
@@ -26,20 +26,20 @@ OptionalDescriptor OrderChanger::nextDescriptor() {
     if(targetOrder == Order::Temporal){
 
         currTile += 1;
-        if(temporalTargetDescriptor != std::nullopt && currTile >= temporalTargetDescriptor->rasterTileCount){
+        if(temporalTargetDescriptor && currTile >= temporalTargetDescriptor->rasterTileCount){
             if(temporalTargetDescriptor->rasterInfo.t2 >= qrect.t2){
-                return std::nullopt;
+                return boost::none;
             }
             input_operators[0]->skipCurrentRaster();
-            temporalTargetDescriptor = std::nullopt;
+            temporalTargetDescriptor = boost::none;
             currTile = 0;
             currRaster += 1;
         }
 
         if(currTile == 0){
             temporalTargetDescriptor = input_operators[0]->nextDescriptor();
-            if(temporalTargetDescriptor == std::nullopt || temporalTargetDescriptor->tileIndex > 0)
-                return std::nullopt;
+            if(!temporalTargetDescriptor || temporalTargetDescriptor->tileIndex > 0)
+                return boost::none;
         }
 
         auto desc = (currTile == 0) ? temporalTargetDescriptor : input_operators[0]->getDescriptor(currTile);
@@ -59,7 +59,7 @@ OptionalDescriptor OrderChanger::nextDescriptor() {
                 descriptors.emplace_back(std::move(desc));
             }
             if(descriptors.empty())
-                return std::nullopt;
+                return boost::none;
 
             tilesPerRaster = descriptors[0]->rasterTileCount;
             totalTiles = descriptors.size();
@@ -71,7 +71,7 @@ OptionalDescriptor OrderChanger::nextDescriptor() {
         }
 
         if(currTile >= tilesPerRaster)
-            return std::nullopt;
+            return boost::none;
 
         uint64_t index = currTile + currRaster * tilesPerRaster;
 

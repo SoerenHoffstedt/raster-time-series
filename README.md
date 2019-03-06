@@ -12,13 +12,7 @@ sudo apt install libboost-all-dev
 sudo apt install libgdal-dev
 ```
 
-### G++ 8
-
-IPRTS uses the `C++17` features `std::optional` and `std::filesystem`. Because many compilers only have limited `C++17` support, the used compiler is `g++ 8`.
-
-```
-sudo apt install g++-8
-```
+IPRTS requires a `C++14` compiler.
 
 ## Usage
 

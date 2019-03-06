@@ -7,6 +7,8 @@
 #include <memory>
 #include <functional>
 #include <gdal.h>
+#include <boost/optional.hpp>
+#include "util/make_optional.h"
 #include "datatypes/raster.h"
 #include "datatypes/spatial_temporal_reference.h"
 #include "datatypes/order.h"
@@ -36,8 +38,8 @@ namespace rts {
                             Resolution rasterTileCountDimensional,
                             double nodata,
                             GDALDataType dataType);
-        explicit DescriptorInfo(const std::optional<Descriptor> &desc);
-        DescriptorInfo& operator=(const std::optional<Descriptor> &desc);
+        explicit DescriptorInfo(const boost::optional<Descriptor> &desc);
+        DescriptorInfo& operator=(const boost::optional<Descriptor> &desc);
         DescriptorInfo(const DescriptorInfo &desc) = default;
         DescriptorInfo& operator=(const DescriptorInfo &desc) = default;
 
@@ -124,7 +126,7 @@ namespace rts {
         /**
          * Creates a descriptor that is only nodata. Adds a getter that fills the raster only with nodata and saves that work.
          */
-        static std::optional<Descriptor> createNodataDescriptor(SpatialTemporalReference &totalInfo,
+        static boost::optional<Descriptor> createNodataDescriptor(SpatialTemporalReference &totalInfo,
                                                                 SpatialReference &tileSpatialInfo,
                                                                 Resolution &tileResolution,
                                                                 Order order,
@@ -149,8 +151,8 @@ namespace rts {
         std::function<UniqueRaster(const Descriptor&)> getter;
     };
 
-    using OptionalDescriptor = std::optional<Descriptor>;
-    using OptionalDescriptorVector = std::vector<std::optional<Descriptor>>;
+    using OptionalDescriptor = boost::optional<Descriptor>;
+    using OptionalDescriptorVector = std::vector<boost::optional<Descriptor>>;
 }
 
 #endif //RASTER_TIME_SERIES_DESCRIPTOR_H

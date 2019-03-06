@@ -1,6 +1,7 @@
 
 #include "datatypes/spatial_temporal_reference.h"
 #include "spatial_temporal_reference.h"
+#include <limits>
 
 using namespace rts;
 

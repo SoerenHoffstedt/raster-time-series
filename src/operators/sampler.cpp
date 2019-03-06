@@ -28,7 +28,7 @@ OptionalDescriptor Sampler::nextDescriptor() {
 
     auto currInput = input_operators[0]->nextDescriptor();
 
-    if(!currInput.has_value())
+    if(!currInput)
         return currInput;
 
     //if the input is the next tile in spatial order: reset returning count to zero.
