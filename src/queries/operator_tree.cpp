@@ -7,8 +7,7 @@
 #include "operators/consuming/raster_value_extraction.h"
 #include "operators/consuming/analyzer.h"
 #include "operators/expression_operator.h"
-#include "operators/source/fake_source.h"
-#include "operators/source/gdal_source.h"
+#include "operators/source/source_operator.h"
 #include "operators/sampler.h"
 #include "operators/aggregator.h"
 #include "operators/convolution.h"
@@ -53,10 +52,8 @@ std::unique_ptr<GenericOperator> OperatorTree::instantiate() const {
 
     if(operator_name == "expression")
         res = std::make_unique<ExpressionOperator>(this, qrect, params, std::move(sources));
-    else if(operator_name == "fake_source")
-        res = std::make_unique<FakeSource>(this, qrect, params, std::move(sources));
-    else if(operator_name == "gdal_source")
-        res = std::make_unique<GDALSource>(this, qrect, params, std::move(sources));
+    else if(operator_name == "source")
+        res = std::make_unique<SourceOperator>(this, qrect, params, std::move(sources));
     else if(operator_name == "sampler")
         res = std::make_unique<Sampler>(this, qrect, params, std::move(sources));
     else if(operator_name == "aggregator")

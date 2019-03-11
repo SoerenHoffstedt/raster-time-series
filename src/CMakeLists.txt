@@ -30,8 +30,8 @@ add_library(rts_operators_lib
         operators/consuming/consuming_operator.cpp
         operators/consuming/geotiff_export.cpp
         operators/source/source_operator.cpp
-        operators/source/fake_source.cpp
-        operators/source/gdal_source.cpp
+        operators/source/backend/fake_source.cpp
+        operators/source/backend/gdal_source.cpp
         operators/consuming/print.cpp
         operators/expression_operator.cpp
         operators/sampler.cpp
@@ -42,7 +42,8 @@ add_library(rts_operators_lib
         operators/consuming/raster_value_extraction.cpp
         operators/temporal_overlap.cpp
         operators/consuming/analyzer.cpp
-        operators/raster_cache.cpp)
+        operators/raster_cache.cpp
+        operators/source/backend/source_backend.cpp)
 target_link_libraries_internal(rts_operators_lib rts_base_lib)
 target_link_libraries_internal(rts_base_lib rts_operators_lib)
 

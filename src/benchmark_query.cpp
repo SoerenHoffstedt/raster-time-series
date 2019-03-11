@@ -7,7 +7,7 @@
 #include "queries/operator_tree.h"
 #include "operators/consuming/print.h"
 #include "operators/expression_operator.h"
-#include "operators/source/fake_source.h"
+#include "operators/source/backend/fake_source.h"
 
 
 /**

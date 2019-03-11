@@ -4,6 +4,7 @@
 
 #include "operators/generic_operator.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include "backend/source_backend.h"
 
 namespace rts {
 
@@ -16,15 +17,8 @@ namespace rts {
     class SourceOperator : public GenericOperator {
     public:
         SourceOperator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in);
-        /**
-         * Method for returning a descriptor for a specific time and space. Will be used by nextDescriptor()
-         * as well as getDescriptor().
-         * @param time The time identifying the raster to be used.
-         * @param pixelStartX pixel positions from where to return the tile.
-         * @param pixelStartY pixel positions from where to return the tile.
-         * @return Descriptor for the tile.
-         */
-        virtual OptionalDescriptor createDescriptor(double time, int pixelStartX, int pixelStartY, int tileIndex) = 0;
+        void initialize() override;
+        bool supportsOrder(Order order) const override;
         OptionalDescriptor nextDescriptor() override;
         OptionalDescriptor getDescriptor(int tileIndex) override;
     protected:
@@ -32,13 +26,13 @@ namespace rts {
          * Increases the spatial position of the pixelState
          * @return true when increasing the spatial tile went over the end of the current raster.
          */
-        virtual bool increaseSpatially();
+        bool increaseSpatially();
 
         /**
          * Increases the time to the next rasters starting time in the time series.
          * @return true when increasing the time to the next raster went over the end of the time series.
          */
-        virtual bool increaseTemporally();
+        bool increaseTemporally();
 
         /**
          * In temopral order, skipCurrentRaster will set the spatial and temporal state variables to the start
@@ -111,28 +105,13 @@ namespace rts {
          * The coordinate origin of the source raster.
          */
         Origin origin;
-        /**
-         * The start time of the dataset used by the operator.
-         */
-        double datasetStartTime;
-        /**
-         * The end time of the dataset used by the operator.
-         */
-        double datasetEndTime;
-        /**
-         * Increase the currTime variable to the time the next raster starts.
-         */
-        virtual void increaseCurrentTime() = 0;
-        /**
-         * Get the end time of the validity of the current raster.
-         * @return The exclusive end time of the raster's temporal validity.
-         */
-        virtual double getCurrentTimeEnd() const = 0;
+
         /**
          * Sets internal currTime variable to the start of the first raster that is part of the query.
          */
-        virtual void setCurrTimeToFirstRaster();
+        void setCurrTimeToFirstRaster();
 
+        std::unique_ptr<SourceBackend> backend;
     };
 
 }

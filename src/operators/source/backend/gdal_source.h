@@ -15,16 +15,18 @@ namespace rts {
      * A GDALSource dataset is defined by a start and end point, and a time interval (time unit and value).
      * Therefore it represents rasters that are valid in regular time intervals.
      */
-    class GDALSource : public SourceOperator {
+    class GDALSource : public SourceBackend {
     public:
-        GDALSource(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params,
-                   std::vector<std::unique_ptr<GenericOperator>> &&in);
-        //OptionalDescriptor nextDescriptor() override;
+        GDALSource(const QueryRectangle &qrect, const Json::Value &params);
+
         void initialize() override;
         bool supportsOrder(Order o) const override;
+        OptionalDescriptor createDescriptor(double time, int pixelStartX, int pixelStartY, int tileIndex, const Resolution &rasterWorldPixelStart, const Scale &scale, const Origin &origin, const Resolution &tileCount) override;
+        double getCurrentTimeEnd(double currTime) const override;
+        void increaseCurrentTime(double &currTime) override;
+        void beforeTemporalIncrease() override;
+        Origin getOrigin() const override;
     private:
-        OptionalDescriptor createDescriptor(double time, int pixelStartX, int pixelStartY, int tileIndex) override;
-
         std::shared_ptr<GDALDataset> currDataset;
         GDALRasterBand *currRasterband; //this can stay a normal ptr, because it is handled by the dataset. The dataset now always has to live as long as the rasterband. maybe put them in one structure?
         double currDatasetTime;
@@ -34,16 +36,12 @@ namespace rts {
         std::string baseFileName;
         std::string path;
         int channel;
-
+        Origin origin;
         std::map<std::string, std::shared_ptr<GDALDataset>> openDatasets;
 
         Json::Value loadDatasetJson(const std::string &name);
         double parseIsoTime(const std::string &str) const;
         void loadCurrentGdalDataset(double time);
-
-        bool increaseTemporally() override;
-        double getCurrentTimeEnd() const override;
-        void increaseCurrentTime() override;
     };
 
 }

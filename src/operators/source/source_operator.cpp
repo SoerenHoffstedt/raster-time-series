@@ -1,16 +1,38 @@
 
+#include "util/raster_calculations.h"
 #include "operators/source/source_operator.h"
 #include "source_operator.h"
 #include "util/benchmark.h"
-
+#include "backend/gdal_source.h"
+#include "backend/fake_source.h"
 
 using namespace rts;
 
-SourceOperator::SourceOperator(const OperatorTree *operator_tree, const QueryRectangle &qrect,
-                               const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
+SourceOperator::SourceOperator(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, std::vector<std::unique_ptr<GenericOperator>> &&in)
         : GenericOperator(operator_tree, qrect, params, std::move(in)), increaseDimensions(false), pixelStateX(0), pixelStateY(0), currTileIndex(0), currRasterIndex(0)
 {
+    const std::string &backendName = params["backend"].asString();
+    if(backendName == "gdal_source"){
+        backend = std::make_unique<GDALSource>(qrect, params);
+    }
+    else if(backendName == "fake_source"){
+        backend = std::make_unique<FakeSource>(qrect, params);
+    }
+}
 
+
+void SourceOperator::initialize(){
+    backend->initialize();
+
+    origin = backend->getOrigin();
+    scale.x  = (qrect.x2 - qrect.x1) / (double)qrect.resX;
+    scale.y  = (qrect.y2 - qrect.y1) / (double)qrect.resY;
+
+    auto tileCountAndPixelStart = RasterCalculations::calculateTileCount(qrect, origin, scale);
+    tileCount = tileCountAndPixelStart.first;
+    rasterWorldPixelStart = tileCountAndPixelStart.second;
+
+    setCurrTimeToFirstRaster();
 }
 
 OptionalDescriptor SourceOperator::nextDescriptor() {
@@ -33,7 +55,7 @@ OptionalDescriptor SourceOperator::nextDescriptor() {
     increaseDimensions = true;
 
     //if currTime is bigger than query or dataset and not reset to beginning, the end of time series is reached.
-    if(currTime >= qrect.t2 || currTime > datasetEndTime){
+    if(currTime >= qrect.t2 || currTime > backend->datasetEndTime){
         return boost::none;
     }
 
@@ -52,7 +74,7 @@ OptionalDescriptor SourceOperator::nextDescriptor() {
         pixelStateY -= rasterWorldPixelStart.resY % qrect.tileRes.resY;
     }
 
-    auto ret = createDescriptor(currTime, pixelStateX, pixelStateY, currTileIndex);
+    auto ret = backend->createDescriptor(currTime, pixelStateX, pixelStateY, currTileIndex, rasterWorldPixelStart, scale, origin, tileCount);
     Benchmark::endSource();
     return ret;
 }
@@ -60,7 +82,7 @@ OptionalDescriptor SourceOperator::nextDescriptor() {
 OptionalDescriptor SourceOperator::getDescriptor(int tileIndex) {
     Benchmark::startSource();
     Resolution pixelStart = tileIndexToStartPixel(tileIndex);
-    auto ret = createDescriptor(currTime, pixelStart.resX, pixelStart.resY, tileIndex);
+    auto ret = backend->createDescriptor(currTime, pixelStart.resX, pixelStart.resY, tileIndex, rasterWorldPixelStart, scale, origin, tileCount);
     Benchmark::endSource();
     return ret;
 }
@@ -100,7 +122,7 @@ void SourceOperator::skipCurrentRaster(const uint32_t skipCount) {
         }
         //for both orders: advance time to next raster.
         currRasterIndex += 1;
-        increaseCurrentTime();
+        backend->increaseCurrentTime(currTime);
         increaseDimensions = false;
 
         if (qrect.order == Order::Spatial && currTime >= qrect.t2) {
@@ -142,17 +164,18 @@ void SourceOperator::skipCurrentTile(const uint32_t skipCount) {
             pixelStateY = 0;
             currTileIndex = 0;
             currRasterIndex += 1;
-            increaseCurrentTime();
+            backend->increaseCurrentTime(currTime);
             rasterEndNotReached = false;
         }
     }
 }
 
 bool SourceOperator::increaseTemporally() {
+    backend->beforeTemporalIncrease();
     //increasing time means going to next raster.
     currRasterIndex += 1;
-    increaseCurrentTime();
-    if(currTime >= qrect.t2 || currTime > datasetEndTime){
+    backend->increaseCurrentTime(currTime);
+    if(currTime >= qrect.t2 || currTime > backend->datasetEndTime){
         //end of time series or query reached.
         if(qrect.order == Order::Spatial){
             //reset to beginning of time series only if order is spatial and return true to move on to next tile
@@ -166,6 +189,7 @@ bool SourceOperator::increaseTemporally() {
 }
 
 bool SourceOperator::increaseSpatially() {
+    backend->beforeSpatialIncrease();
     //increasing to next tile
     currTileIndex += 1;
     pixelStateX += qrect.tileRes.resX;
@@ -190,9 +214,13 @@ bool SourceOperator::increaseSpatially() {
 void SourceOperator::setCurrTimeToFirstRaster() {
     //advance start point for raster, until it is not smaller than t1.
     //if currTime is already bigger than t2, the query will not return any rasters in nextDescriptor() method.
-    currTime = datasetStartTime;
-    while(currTime < qrect.t1 && getCurrentTimeEnd() <= qrect.t1){
-        increaseCurrentTime();
+    currTime = backend->datasetStartTime;
+    while(currTime < qrect.t1 && backend->getCurrentTimeEnd(currTime) <= qrect.t1){
+        backend->increaseCurrentTime(currTime);
     }
+}
+
+bool SourceOperator::supportsOrder(Order order) const {
+    return backend->supportsOrder(order);
 }
 

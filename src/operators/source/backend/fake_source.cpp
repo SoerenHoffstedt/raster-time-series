@@ -28,9 +28,10 @@ struct FakeSourceWriter {
     }
 };
 
-FakeSource::FakeSource(const OperatorTree *operator_tree, const QueryRectangle &qrect, const Json::Value &params, UniqueOperatorVector &&in)
-        : SourceOperator(operator_tree, qrect, params, std::move(in)) {
-
+FakeSource::FakeSource(const QueryRectangle &qrect, const Json::Value &params) : SourceBackend(qrect, params)
+{
+    lastTime = -1;
+    currRasterIndex = 0;
 }
 
 void FakeSource::initialize() {
@@ -39,35 +40,9 @@ void FakeSource::initialize() {
     datasetStartTime = dataset_json["time_start"].asDouble();
     datasetEndTime = std::numeric_limits<double>::max();
     timeDuration = dataset_json["time_duration"].asDouble();
-    setCurrTimeToFirstRaster();
 
     nodata = dataset_json["nodata"].asDouble();
     dataType = Parsing::parseDataType(dataset_json["data_type"].asString());
-
-    if(dataset_json.isMember("spatial_reference")){
-        SpatialReference sref(dataset_json["spatial_reference"]);
-        this->qrect.x1 = sref.x1;
-        this->qrect.x2 = sref.x2;
-        this->qrect.y1 = sref.y1;
-        this->qrect.y2 = sref.y2;
-    }
-
-    //calc number of tiles
-    rasterWorldPixelStart = RasterCalculations::coordinateToPixel(qrect, qrect.x1, qrect.y1);
-    origin.x = qrect.x1;
-    origin.y = qrect.y1;
-
-    Resolution rasterStep = rasterWorldPixelStart;
-    rasterStep.resX -= rasterWorldPixelStart.resX % qrect.tileRes.resX;
-    rasterStep.resY -= rasterWorldPixelStart.resY % qrect.tileRes.resY;
-    Resolution rasterWorldPixelEnd = RasterCalculations::coordinateToPixel(qrect, qrect.x2, qrect.y2);
-    Resolution size(rasterWorldPixelEnd.resX - rasterStep.resX, rasterWorldPixelEnd.resY - rasterStep.resY);
-    tileCount.resX = size.resX / qrect.tileRes.resX;
-    tileCount.resY = size.resY / qrect.tileRes.resY;
-    if(size.resX % qrect.tileRes.resX > 0)
-        tileCount.resX += 1;
-    if(size.resY % qrect.tileRes.resY > 0)
-        tileCount.resY += 1;
 
     extent = qrect.projection.getExtent();
     fill_with_index = params.get("fill_with_index", false).asBool();
@@ -82,7 +57,7 @@ Json::Value FakeSource::loadDatasetJson(std::string name) {
     return dataset_json;
 }
 
-OptionalDescriptor FakeSource::createDescriptor(double time, int pixelStartX, int pixelStartY, int tileIndex) {
+OptionalDescriptor FakeSource::createDescriptor(double time, int pixelStartX, int pixelStartY, int tileIndex, const Resolution &rasterWorldPixelStart, const Scale &scale, const Origin &origin, const Resolution &tileCount) {
 
     Resolution fillFrom(0, 0);
 
@@ -96,8 +71,12 @@ OptionalDescriptor FakeSource::createDescriptor(double time, int pixelStartX, in
     Resolution res_left_to_fill(qrect.resX - pixelStartX, qrect.resY - pixelStartY);
 
     Resolution tile_start_world_res(rasterWorldPixelStart.resX + pixelStartX, rasterWorldPixelStart.resY + pixelStartY);
-    SpatialReference tile_spat = RasterCalculations::pixelToSpatialRectangle(qrect, tile_start_world_res,
-                                                                             tile_start_world_res + qrect.tileRes);
+    SpatialReference tile_spat = RasterCalculations::pixelToSpatialRectangle(qrect, tile_start_world_res, tile_start_world_res + qrect.tileRes);
+
+    if(lastTime > -1 && lastTime < time){
+        currRasterIndex += 1;
+        lastTime = time;
+    }
 
     auto getter = [index = currRasterIndex, res_left_to_fill = res_left_to_fill, fillFrom = fillFrom, fill_index = fill_with_index](const Descriptor &self) -> std::unique_ptr<Raster> {
         std::unique_ptr<Raster> out = Raster::createRaster(self.dataType, self.tileResolution);
@@ -117,10 +96,14 @@ bool FakeSource::supportsOrder(Order o) const {
     return o == Order::Spatial || o == Order::Temporal;
 }
 
-void FakeSource::increaseCurrentTime() {
+void FakeSource::increaseCurrentTime(double &currTime) {
     currTime += timeDuration;
 }
 
-double FakeSource::getCurrentTimeEnd() const {
+double FakeSource::getCurrentTimeEnd(double currTime) const {
     return currTime + timeDuration;
+}
+
+Origin FakeSource::getOrigin() const {
+    return origin;
 }
