@@ -29,8 +29,9 @@
 	},
 	"sources" : [		
 		{				
-			"operator" : "fake_source",
+			"operator" : "source",
 			"params" : {
+				"backend" : "fake_source",
 				"dataset" : "byte_dataset",
 				"fill_index" : false
 			},

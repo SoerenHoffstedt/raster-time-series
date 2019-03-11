@@ -62,8 +62,9 @@
 	},
 	"sources" : [
 		{
-			"operator" : "gdal_source",
+			"operator" : "source",
 			"params" : {
+				"backend" : "gdal_source",
 				"dataset" : "temp_month"
 			},
 			"sources" : [

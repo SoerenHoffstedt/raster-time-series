@@ -34,8 +34,9 @@
 			},
 			"sources" : [
 				{
-					"operator" : "fake_source",
+					"operator" : "source",
 					"params" : {
+						"backend" : "fake_source",
 						"dataset" : "first_dataset",
 						"fill_with_index" : true
 					},

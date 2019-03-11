@@ -35,8 +35,9 @@
 			},
 			"sources" : [
 				{
-					"operator" : "gdal_source",
+					"operator" : "source",
 					"params" : {
+						"backend" : "gdal_source",
 						"dataset" : "leaf_area_index"
 					},
 					"sources" : [

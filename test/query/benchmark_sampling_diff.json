@@ -53,8 +53,9 @@
 							},
 							"sources" : [
 								{					
-									"operator" : "gdal_source",
+									"operator" : "source",
 									"params" : {
+										"backend" : "gdal_source",
 										"dataset" : "msg_eu_scaled_int",
 										"channel" : 5
 									},
@@ -78,8 +79,9 @@
 					},
 					"sources" : [
 						{							
-							"operator" : "gdal_source",
+							"operator" : "source",
 							"params" : {
+								"backend" : "gdal_source",
 								"dataset" : "msg_eu_scaled_int",
 								"channel" : 5
 							},

@@ -46,8 +46,9 @@
 					]
 				},
 				{
-					"operator" : "fake_source",
+					"operator" : "source",
 					"params" : {
+						"backend" : "fake_source",
 						"dataset" : "temp_overlap_2",
 						"fill_with_index" : true
 					},
