@@ -1,6 +1,6 @@
 # Iterator-Based Processing of Raster Time Series
 
-This is the prototype implementation of a concept for processing raster time series called *Iterator-Based Processing of Raster Time Series (IPRTS)*.
+This is the prototype implementation of a concept for processing raster time series called *Iterator-Based Processing of Raster Time Series (IPRTS)*. It was developed for my Bachelor thesis. The finished thesis can be read [here](https://github.com/SoerenHoffstedt/raster-time-series/blob/dc3b0d6dde009d0fa9985a539ab29a4972a50471/Bacheloarbeit_S%C3%B6renHoffstedt_Iterator-Basd-Processing-of-Raster-Time-Series.pdf).
 
 ## Dependencies
 
